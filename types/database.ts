@@ -20,6 +20,9 @@ export interface Profile {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
+  github_username: string | null;
+  github_access_token: string | null;
+  github_connected_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -115,6 +118,22 @@ export interface AIFinancialEvaluation {
   created_at: string;
 }
 
+export interface AIGithubEvaluation {
+  id: string;
+  user_id: string;
+  developer_score: number;
+  career_readiness: {
+    frontend: number;
+    backend: number;
+    mobile: number;
+    fullstack: number;
+  };
+  habit_analysis: string;
+  portfolio_review: string[];
+  learning_insights: string;
+  created_at: string;
+}
+
 export interface AIInsight {
   category: string;
   message: string;
@@ -130,6 +149,55 @@ export interface Notification {
   type: "info" | "warning" | "success";
   is_read: boolean;
   created_at: string;
+}
+
+// ─── Gamification Types ──────────────────────────────────────
+
+export type BadgeCategory = "productivity" | "finances" | "routine" | "github" | "synergy";
+
+export interface UserGamification {
+  id: string;
+  xp: number;
+  level: number;
+  streak_count: number;
+  last_active_date: string | null;
+  updated_at: string;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  category: BadgeCategory;
+  icon: string;
+  xp_reward: number;
+  requirements: Record<string, any>;
+}
+
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  unlocked_at: string;
+}
+
+export interface BadgeWithStatus extends Badge {
+  is_unlocked: boolean;
+  unlocked_at: string | null;
+}
+
+export interface AddXPResult {
+  newXP: number;
+  newLevel: number;
+  previousLevel: number;
+  leveledUp: boolean;
+  xpAdded: number;
+}
+
+export interface WeeklySynergyData {
+  pillar: string;
+  value: number;
+  fullMark: number;
 }
 
 // ─── DTO Types (Create / Update) ─────────────────────────────
