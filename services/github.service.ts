@@ -89,7 +89,11 @@ export const githubService = {
       headers: createHeaders(token),
     });
 
-    if (!res.ok) throw new Error("Failed to fetch GitHub profile");
+    if (!res.ok) {
+      if (res.status === 403) throw new Error("GitHub API rate limit exceeded. Please provide a Personal Access Token.");
+      if (res.status === 404) throw new Error("GitHub user not found. Please check the username.");
+      throw new Error(`Failed to fetch GitHub profile: ${res.status} ${res.statusText}`);
+    }
     return res.json();
   },
 
@@ -103,7 +107,11 @@ export const githubService = {
       { headers: createHeaders(token) }
     );
 
-    if (!res.ok) throw new Error("Failed to fetch repositories");
+    if (!res.ok) {
+      if (res.status === 403) throw new Error("GitHub API rate limit exceeded while fetching repositories.");
+      if (res.status === 404) throw new Error("Repositories not found for this user.");
+      throw new Error(`Failed to fetch repositories: ${res.status} ${res.statusText}`);
+    }
     return res.json();
   },
 
