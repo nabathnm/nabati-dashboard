@@ -9,7 +9,7 @@ export const createTaskSchema = z.object({
     .string()
     .max(5000, "Description is too long")
     .optional(),
-  category: z.enum(["kuliah", "organisasi", "praktikum", "lainnya"]),
+  category: z.enum(["Kuliah", "Organisasi", "Praktikum", "Lainnya"]),
   progress: z
     .number()
     .min(0)
