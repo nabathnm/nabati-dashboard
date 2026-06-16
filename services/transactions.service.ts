@@ -28,7 +28,7 @@ export const transactionsService = {
     let query = supabase
       .from("transactions")
       .select(
-        "*, account:accounts!account_id(*), category:transaction_categories!category_id(*), destination_account:accounts!destination_account_id(*)",
+        "*, account:accounts!account_id(*), category:transaction_categories!category_id(*), destination_account:accounts!destination_account_id(*), items:transaction_items(id)",
         { count: "exact" }
       );
 
@@ -62,7 +62,7 @@ export const transactionsService = {
     const { data, error } = await supabase
       .from("transactions")
       .select(
-        "*, account:accounts!account_id(*), category:transaction_categories!category_id(*)"
+        "*, account:accounts!account_id(*), category:transaction_categories!category_id(*), items:transaction_items(id)"
       )
       .order("transaction_date", { ascending: false })
       .order("created_at", { ascending: false })
@@ -74,13 +74,34 @@ export const transactionsService = {
 
   async create(dto: CreateTransactionDTO): Promise<Transaction> {
     const { data: userData } = await supabase.auth.getUser();
+
+    // Separate items from the main DTO
+    const { items, ...transactionData } = dto;
+
     const { data, error } = await supabase
       .from("transactions")
-      .insert({ ...dto, user_id: userData.user?.id })
+      .insert({ ...transactionData, user_id: userData.user?.id })
       .select()
       .single();
 
     if (error) throw error;
+
+    // If there are items, insert them
+    if (items && items.length > 0) {
+      const itemsToInsert = items.map((item) => ({
+        ...item,
+        transaction_id: data.id,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("transaction_items")
+        .insert(itemsToInsert);
+
+      if (itemsError) {
+        console.error("Failed to insert transaction items:", itemsError);
+        // We might want to handle rollback or notify user here depending on strictness
+      }
+    }
 
     // Update account balance
     await this.updateAccountBalance(dto);
@@ -161,7 +182,7 @@ export const transactionsService = {
 
     let newBalance = Number(account.balance || 0);
     const amount = Number(dto.amount || 0);
-    
+
     if (dto.type === "income") {
       newBalance += amount;
     } else if (dto.type === "expense") {
@@ -190,6 +211,50 @@ export const transactionsService = {
           .update({ balance: destBalance + amount })
           .eq("id", dto.destination_account_id);
       }
+    }
+  },
+
+  async findByAmountAndDate(amount: number, date: string, type: "expense" | "income" | "transfer"): Promise<Transaction[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("amount", amount)
+      .eq("type", type)
+      .eq("transaction_date", date + "T00:00:00Z");
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async attachItemsToTransaction(transactionId: string, merchant: string, items: any[]): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Update merchant name
+    await supabase
+      .from("transactions")
+      .update({ merchant })
+      .eq("id", transactionId);
+
+    // Insert items
+    if (items && items.length > 0) {
+      const { error: itemsError } = await supabase
+        .from("transaction_items")
+        .insert(
+          items.map(item => ({
+            transaction_id: transactionId,
+            name: item.name,
+            amount: item.amount,
+            category_id: item.category_id,
+            user_id: user.id
+          }))
+        );
+
+      if (itemsError) throw itemsError;
     }
   },
 };
