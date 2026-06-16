@@ -7,7 +7,7 @@
 
 export type TaskStatus = "todo" | "in_progress" | "done";
 
-export type TaskCategory = "kuliah" | "organisasi" | "praktikum" | "lainnya";
+export type TaskCategory = "Kuliah" | "Organisasi" | "Praktikum" | "Lainnya";
 
 // ─── Database Row Type ───────────────────────────────────────
 
