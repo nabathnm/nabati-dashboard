@@ -115,7 +115,7 @@ function TransactionsContent() {
     }
   }, [deleteId, deleteMutation]);
 
-  const handleUpdateCategory = async (tx: any, newCategoryId: string) => {
+  const handleUpdateCategory = async (tx: any, newCategoryId: string | null) => {
     if (tx.category_id === newCategoryId) return;
     try {
       await updateMutation.mutateAsync({

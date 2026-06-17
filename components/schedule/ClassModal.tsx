@@ -106,7 +106,7 @@ export default function ClassModal({
               <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                 <CalendarDays className="h-3.5 w-3.5" /> Day
               </Label>
-              <Select value={day} onValueChange={setDay}>
+              <Select value={day} onValueChange={(val) => val && setDay(val)}>
                 <SelectTrigger className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus:ring-1 focus:ring-ring/40">
                   <SelectValue placeholder="Select Day" />
                 </SelectTrigger>
@@ -124,7 +124,7 @@ export default function ClassModal({
               <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                 <Tag className="h-3.5 w-3.5" /> Category
               </Label>
-              <Select value={category} onValueChange={(val) => setCategory(val as "class" | "practical")}>
+              <Select value={category} onValueChange={(val) => val && setCategory(val as "class" | "practical")}>
                 <SelectTrigger className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus:ring-1 focus:ring-ring/40">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>

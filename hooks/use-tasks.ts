@@ -27,13 +27,6 @@ export function useTasks(filters: TaskFilters = {}) {
   });
 }
 
-export function useTaskStats() {
-  return useQuery({
-    queryKey: taskKeys.stats(),
-    queryFn: () => tasksService.getStats(),
-    staleTime: 1000 * 60 * 1, // 1 minute cache
-  });
-}
 
 export function useTaskById(id: string) {
   return useQuery({

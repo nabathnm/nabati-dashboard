@@ -129,7 +129,7 @@ export default function AddRoutineModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={(val) => setCategory(val as RoutineCategory)}>
+              <Select value={category} onValueChange={(val) => val && setCategory(val as RoutineCategory)}>
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -144,7 +144,7 @@ export default function AddRoutineModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
+              <Select value={priority} onValueChange={(val) => val && setPriority(val)}>
                 <SelectTrigger id="priority">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>

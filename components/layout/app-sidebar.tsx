@@ -100,7 +100,7 @@ export default function AppSidebar() {
     router.push("/login");
   };
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  const userName = (user as any)?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
   const userId = user?.id ? user.id.slice(0, 8).toUpperCase() : "—";
   const userInitials = userName
     .split(" ")

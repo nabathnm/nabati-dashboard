@@ -61,7 +61,7 @@ export default function PendingTasksWidget() {
         ) : pendingTasks.length > 0 ? (
           <div className="space-y-4">
             {pendingTasks.map((task) => {
-              const catStyle = categoryStyles[task.category] || categoryStyles.lainnya;
+              const catStyle = categoryStyles[task.category] || categoryStyles.Lainnya;
               
               return (
                 <div key={task.id} className="flex items-start gap-3 group">

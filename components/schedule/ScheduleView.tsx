@@ -11,7 +11,7 @@ import { useScheduleManager, useClassModal } from "@/components/schedule/Schedul
 
 export default function SchedulePage() {
     const { data: profile, isLoading } = useRoutineProfile();
-    const { schedule, saveClass, deleteClass, isSaving } = useScheduleManager(profile);
+    const { schedule, saveClass, deleteClass, isSaving } = useScheduleManager(profile || undefined);
     const classModal = useClassModal();
 
     const [profileModalOpen, setProfileModalOpen] = useState(false);
