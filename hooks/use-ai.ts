@@ -11,6 +11,7 @@ export function useAIEvaluation(year: number, month: number) {
   return useQuery({
     queryKey: aiKeys.latest(year, month),
     queryFn: () => aiEvaluationService.getLatest(year, month),
+    staleTime: 1000 * 60 * 30, // 30 minutes cache
   });
 }
 

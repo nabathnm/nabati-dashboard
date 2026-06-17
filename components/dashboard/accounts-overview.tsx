@@ -17,10 +17,10 @@ const typeIcons: Record<string, React.ElementType> = {
 };
 
 const typeColors: Record<string, string> = {
-  bank: "bg-blue-500/10 text-blue-400",
-  ewallet: "bg-violet-500/10 text-violet-400",
-  cash: "bg-emerald-500/10 text-emerald-400",
-  savings: "bg-amber-500/10 text-amber-400",
+  bank: "bg-blue-500/10 text-blue-600",
+  ewallet: "bg-violet-500/10 text-violet-600",
+  cash: "bg-emerald-500/10 text-emerald-600",
+  savings: "bg-amber-500/10 text-amber-600",
 };
 
 export default function AccountsOverview() {
@@ -29,7 +29,7 @@ export default function AccountsOverview() {
   const activeAccounts = (accounts ?? []).filter((a) => a.is_active).slice(0, 4);
 
   return (
-    <Card className="border-border/30 bg-card/50">
+    <Card className="bg-card shadow-sm">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
         <CardTitle className="text-sm font-semibold">Accounts</CardTitle>
         <Button variant="ghost" size="sm" asChild className="text-xs text-muted-foreground hover:text-foreground">

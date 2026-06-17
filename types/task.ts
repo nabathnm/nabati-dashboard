@@ -1,12 +1,6 @@
-// ============================================================
-// GrowthMe Task Management — Type Definitions
-// Mirrors Supabase tasks table schema
-// ============================================================
-
 // ─── Enums ───────────────────────────────────────────────────
 
 export type TaskStatus = "todo" | "in_progress" | "done";
-
 export type TaskCategory = "Kuliah" | "Organisasi" | "Praktikum" | "Lainnya";
 
 // ─── Database Row Type ───────────────────────────────────────

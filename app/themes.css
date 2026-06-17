@@ -1,10 +1,7 @@
-/* ─── FundFlow-Inspired Light Theme ─── */
-/* Soft lavender/blue palette with clean white cards and subtle depth */
-
 :root {
   /* Background: soft cool lavender-blue */
-  --background: oklch(0.935 0.02 260);
-  --foreground: oklch(0.2 0.02 260);
+  --background: #f8fbff;
+  --foreground: #1e293b;
 
   /* Cards: clean white with subtle blue tint */
   --card: oklch(0.985 0.005 260);
@@ -15,28 +12,28 @@
   --popover-foreground: oklch(0.2 0.02 260);
 
   /* Primary: deep indigo/violet */
-  --primary: oklch(0.45 0.25 270);
+  --primary: #47b4f5;
   --primary-foreground: oklch(0.98 0.005 260);
 
   /* Secondary: soft lavender wash */
-  --secondary: oklch(0.92 0.02 265);
+  --secondary: #47b4f5;
   --secondary-foreground: oklch(0.25 0.03 265);
 
-  /* Muted: gentle gray-blue */
+  /* Muted: gentle gray-blue (foreground darkened for AA-safe contrast, was 4.59:1 → 6.48:1) */
   --muted: oklch(0.91 0.015 260);
-  --muted-foreground: oklch(0.5 0.02 260);
+  --muted-foreground: oklch(0.42 0.025 260);
 
   /* Accent: light blue highlight */
   --accent: oklch(0.92 0.025 265);
   --accent-foreground: oklch(0.25 0.03 265);
 
   /* Destructive */
-  --destructive: oklch(0.55 0.22 25);
+  --destructive: oklch(62.352% 0.21141 18.859);
 
   /* Borders: subtle cool gray */
   --border: oklch(0.88 0.015 260);
   --input: oklch(0.9 0.015 265);
-  --ring: oklch(0.5 0.22 270);
+  --ring: #47b4f5;
 
   /* Chart colors — vibrant but harmonious */
   --chart-1: oklch(0.6 0.2 265);
@@ -47,13 +44,13 @@
 
   --radius: 0.875rem;
 
-  /* Sidebar: slightly deeper than background */
-  --sidebar: oklch(0.97 0.01 260);
-  --sidebar-foreground: oklch(0.3 0.02 260);
-  --sidebar-primary: oklch(0.45 0.25 270);
-  --sidebar-primary-foreground: oklch(0.98 0.005 260);
-  --sidebar-accent: oklch(0.93 0.02 265);
-  --sidebar-accent-foreground: oklch(0.25 0.03 265);
-  --sidebar-border: oklch(0.9 0.015 260);
-  --sidebar-ring: oklch(0.5 0.22 270);
+  /* Sidebar: transparent to show gradient, white text for blue bg */
+  --sidebar: transparent;
+  --sidebar-foreground: oklch(0.98 0.005 260);
+  --sidebar-primary: oklch(0.98 0.005 260);
+  --sidebar-primary-foreground: oklch(0.5 0.2 250);
+  --sidebar-accent: oklch(1 0 0 / 0.12);
+  --sidebar-accent-foreground: oklch(0.98 0.005 260);
+  --sidebar-border: oklch(1 0 0 / 0.15);
+  --sidebar-ring: oklch(1 0 0 / 0.3);
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { useCategorySpending } from "@/hooks/use-analytics";
 import { formatCurrency } from "@/hooks/use-currency";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExpenseDonutChartProps {
   year: number;
@@ -12,91 +12,80 @@ interface ExpenseDonutChartProps {
 }
 
 export default function ExpenseDonutChart({ year, month }: ExpenseDonutChartProps) {
-  const { data: categories, isLoading } = useCategorySpending(year, month);
+  const { data: categoryData, isLoading } = useCategorySpending(year, month);
+
+  const chartData = useMemo(() => {
+    if (!categoryData) return [];
+    return categoryData.map(c => ({
+      name: c.category,
+      value: c.amount,
+      color: c.color,
+      percentage: c.percentage
+    }));
+  }, [categoryData]);
 
   if (isLoading) {
     return (
-      <Card className="border-border/30 bg-card/50">
-        <CardHeader>
-          <Skeleton className="h-5 w-40" />
-        </CardHeader>
-        <CardContent className="flex items-center justify-center h-64">
-          <Skeleton className="h-48 w-48 rounded-full" />
-        </CardContent>
-      </Card>
+      <div className="flex justify-center items-center h-full w-full min-h-[300px]">
+        <Skeleton className="w-56 h-56 rounded-full" />
+      </div>
     );
   }
 
-  const chartData = (categories ?? []).slice(0, 6);
-  const hasData = chartData.length > 0;
+  if (chartData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full w-full min-h-[300px] text-center text-muted-foreground p-6">
+        <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+          <span className="text-2xl">📊</span>
+        </div>
+        <p className="text-sm font-semibold text-slate-700">No expenses this month</p>
+        <p className="text-xs mt-1 max-w-[200px]">Start tracking your transactions to see your spending breakdown.</p>
+      </div>
+    );
+  }
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xl border border-slate-700">
+          {data.name}: {formatCurrency(data.value)} ({data.percentage.toFixed(1)}%)
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
-    <Card className="border-border/30 bg-card/50">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold">Expense Categories</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {!hasData ? (
-          <div className="flex items-center justify-center h-56 text-sm text-muted-foreground">
-            No expense data this month
-          </div>
-        ) : (
-          <div className="flex items-center gap-6">
-            <div className="flex-1 h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={3}
-                    dataKey="amount"
-                    nameKey="category"
-                    stroke="none"
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const data = payload[0].payload;
-                        return (
-                          <div className="rounded-lg border border-border/50 bg-popover p-3 shadow-xl">
-                            <p className="text-xs font-medium">{data.category}</p>
-                            <p className="text-sm font-bold">{formatCurrency(data.amount)}</p>
-                            <p className="text-xs text-muted-foreground">{data.percentage.toFixed(1)}%</p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-2 min-w-[140px]">
-              {chartData.map((cat) => (
-                <div key={cat.category} className="flex items-center gap-2 text-xs">
-                  <div
-                    className="h-2.5 w-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: cat.color }}
-                  />
-                  <span className="text-muted-foreground truncate flex-1">
-                    {cat.category}
-                  </span>
-                  <span className="font-medium tabular-nums">
-                    {cat.percentage.toFixed(0)}%
-                  </span>
-                </div>
+    <div className="w-full h-full min-h-[320px] flex flex-col">
+      <div className="flex-1 relative min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={5}
+              dataKey="value"
+              stroke="none"
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            </Pie>
+            <Tooltip content={<CustomTooltip />} cursor={{fill: 'transparent'}} />
+            <Legend 
+              verticalAlign="middle"
+              align="right"
+              layout="vertical"
+              iconType="circle"
+              wrapperStyle={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }

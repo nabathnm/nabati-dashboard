@@ -12,9 +12,10 @@ interface TaskPopoverProps {
     task: Task;
     onDateChange: (taskId: string, newDate: string) => void;
     onStatusChange: (taskId: string, status: "todo" | "done") => void;
+    onDescriptionChange?: (taskId: string, newDescription: string) => void;
 }
 
-export default function TaskPopover({ task, onDateChange, onStatusChange }: TaskPopoverProps) {
+export default function TaskPopover({ task, onDateChange, onStatusChange, onDescriptionChange }: TaskPopoverProps) {
     return (
         <Popover>
             <PopoverTrigger
@@ -23,7 +24,7 @@ export default function TaskPopover({ task, onDateChange, onStatusChange }: Task
                         type="button"
                         onClick={(e) => e.stopPropagation()}
                         className={cn(
-                            "text-xs px-2 py-1 rounded-sm border truncate flex items-center gap-1.5 cursor-pointer w-full text-left",
+                            "text-xs px-2 py-1 rounded-sm border-0 border-l-4 truncate flex items-center cursor-pointer w-full text-left transition-opacity hover:opacity-80",
                             categoryStyles[task.category]?.bg,
                             task.status === "done" ? "opacity-50" : ""
                         )}
@@ -36,7 +37,7 @@ export default function TaskPopover({ task, onDateChange, onStatusChange }: Task
             <PopoverContent
                 side="right"
                 align="start"
-                className="w-80 p-0 overflow-hidden shadow-xl"
+                className="w-80 p-0 overflow-hidden shadow-xl rounded-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-4 bg-muted/30 border-b">
@@ -95,12 +96,19 @@ export default function TaskPopover({ task, onDateChange, onStatusChange }: Task
                             </span>
                         </div>
                     </div>
-                    {task.description && (
-                        <div className="pt-2 border-t mt-4">
-                            <span className="text-sm text-muted-foreground block mb-1">Detail</span>
-                            <p className="text-sm text-slate-600">{task.description}</p>
-                        </div>
-                    )}
+                    <div className="pt-2 border-t mt-4">
+                        <span className="text-sm text-muted-foreground block mb-1">Detail</span>
+                        <textarea
+                            className="w-full text-sm text-slate-600 bg-transparent border border-transparent hover:border-input focus:border-input rounded-md p-2 min-h-[80px] resize-none focus:bg-background transition-colors"
+                            placeholder="Tambahkan detail kegiatan..."
+                            defaultValue={task.description || ""}
+                            onBlur={(e) => {
+                                if (e.target.value !== task.description && onDescriptionChange) {
+                                    onDescriptionChange(task.id, e.target.value);
+                                }
+                            }}
+                        />
+                    </div>
                 </div>
             </PopoverContent>
         </Popover>

@@ -1,8 +1,3 @@
-// ============================================================
-// GrowthMe Financial Tracker — Database Types
-// Mirrors Supabase PostgreSQL table schemas
-// ============================================================
-
 // ─── Enums ───────────────────────────────────────────────────
 
 export type AccountType = "bank" | "ewallet" | "cash" | "savings";

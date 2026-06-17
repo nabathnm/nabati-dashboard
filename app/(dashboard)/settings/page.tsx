@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default function SettingsPage() {
   const { user } = useAppSelector((state) => state.auth);
@@ -18,10 +19,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage your account preferences and settings</p>
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Manage your account preferences and settings"
+      />
 
       <div className="grid gap-6">
         <Card className="border-border/30 bg-card/50">
@@ -42,7 +43,7 @@ export default function SettingsPage() {
                 <Button variant="outline" size="sm">Change Avatar</Button>
               </div>
             </div>
-            
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Email</Label>
@@ -114,12 +115,12 @@ export default function SettingsPage() {
               <li>Buka halaman <strong>Keamanan Akun Google</strong> Anda di <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Account Security</a>.</li>
               <li>Pastikan <strong>Verifikasi 2 Langkah (2-Step Verification)</strong> sudah aktif.</li>
               <li>Masuk ke menu <strong>Sandi Aplikasi (App Passwords)</strong> di bagian bawah halaman keamanan.</li>
-              <li>Pilih aplikasi <strong>Lainnya (Nama Kustom)</strong>, beri nama <code>GrowthMe</code>, lalu klik <strong>Buat (Generate)</strong>.</li>
+              <li>Pilih aplikasi <strong>Lainnya (Nama Kustom)</strong>, beri nama, lalu klik <strong>Buat (Generate)</strong>.</li>
               <li>Salin sandi 16 karakter yang muncul.</li>
-              <li>Buka file <code>.env</code> di direktori root project GrowthMe Anda, lalu tambahkan konfigurasi berikut:</li>
+              <li>Buka file <code>.env</code> di direktori root project Anda, lalu tambahkan konfigurasi berikut:</li>
             </ol>
             <pre className="bg-muted p-3 rounded-lg text-xs font-mono text-foreground select-all">
-{`IMAP_USER=email-anda@gmail.com
+              {`IMAP_USER=email-anda@gmail.com
 IMAP_PASSWORD="sandi 16 karakter tanpa spasi"
 IMAP_HOST=imap.gmail.com
 IMAP_PORT=993`}

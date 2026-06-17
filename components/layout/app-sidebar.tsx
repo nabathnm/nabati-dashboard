@@ -9,34 +9,27 @@ import {
   Users,
   BarChart3,
   Brain,
-  Settings,
   LogOut,
-  Sparkles,
-  ChevronUp,
+  CheckSquare,
+  CalendarDays,
+  Sunrise,
+  BookOpen,
+  Activity,
+  Gamepad2,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAppSelector } from "@/redux/hooks";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const navigation = [
   {
@@ -45,19 +38,44 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
+    title: "Tasks",
+    href: "/tasks",
+    icon: CheckSquare,
+  },
+  {
+    title: "Calendar",
+    href: "/calendar",
+    icon: CalendarDays,
+  },
+  {
+    title: "Schedule",
+    href: "/schedule",
+    icon: BookOpen,
+  },
+  {
+    title: "Daily Plan",
+    href: "/daily",
+    icon: Sunrise,
+  },
+  {
+    title: "GitHub",
+    href: "/github",
+    icon: Activity,
+  },
+  {
     title: "Transactions",
     href: "/transactions",
     icon: ArrowLeftRight,
   },
   {
-    title: "Accounts",
-    href: "/accounts",
+    title: "Balance",
+    href: "/balance",
     icon: Wallet,
   },
   {
-    title: "Shared Expenses",
-    href: "/shared-expenses",
-    icon: Users,
+    title: "Life RPG",
+    href: "/rpg",
+    icon: Gamepad2,
   },
   {
     title: "Analytics",
@@ -77,114 +95,83 @@ export default function AppSidebar() {
   const { user } = useAppSelector((state) => state.auth);
   const supabase = createClient();
 
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
 
-  const userInitials = user?.email
-    ? user.email
-        .split("@")[0]
-        .slice(0, 2)
-        .toUpperCase()
-    : "GM";
+  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  const userId = user?.id ? user.id.slice(0, 8).toUpperCase() : "—";
+  const userInitials = userName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="p-4">
+    <Sidebar
+      collapsible="icon"
+      className="border-none rounded-r-[1.7rem] bg-gradient-to-b from-[#47b4f5] via-[#3a9de8] to-[#2d7ad6] text-white [&_[data-slot=sidebar-rail]]:hidden overflow-visible pt-6"
+    >
+      {/* Profile */}
+      <div className="flex flex-col items-center gap-2.5 px-4 pt-4 pb-6 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pb-3">
+        <Avatar className="h-[72px] w-[72px] ring-[3px] ring-white/50 shadow-lg shadow-blue-700/20 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:ring-2">
+          {/* <AvatarImage src={user?.user_metadata?.avatar_url} alt={userName} /> */}
+          <AvatarFallback className="bg-white/25 text-white text-lg font-bold group-data-[collapsible=icon]:text-xs">
+            {userInitials}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col items-center gap-0.5 group-data-[collapsible=icon]:hidden">
+          <span className="text-sm font-bold tracking-wide text-white">{userName}</span>
+          <span className="text-[11px] text-white/60 font-medium">ID:{userId}</span>
+        </div>
+      </div>
+
+      <SidebarContent className="bg-transparent px-0 overflow-visible group-data-[collapsible=icon]:px-1">
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" className="flex items-center gap-3" />}>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/20">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold tracking-tight">
-                    GrowthMe
+          {navigation.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/");
+
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  isActive={isActive}
+                  tooltip={item.title}
+                  className={cn(
+                    "h-12 transition-all duration-200 pl-6",
+                    "group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:mx-1",
+                    isActive
+                      ? "!bg-background font-bold !text-[#3a9de8] rounded-none rounded-l-full ml-4 w-[calc(100%-1rem)]"
+                      : "text-white hover:bg-white/10 hover:text-white font-medium rounded-full mx-4"
+                  )}
+                  render={<Link href={item.href} />}
+                >
+                  <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-[#3a9de8]" : "text-white")} />
+                  <span className="group-data-[collapsible=icon]:hidden text-[13px] tracking-wide uppercase ml-1">
+                    {item.title}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Financial Tracker
-                  </span>
-                </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
-            Menu
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navigation.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(item.href + "/");
-
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      tooltip={item.title}
-                      className={
-                        isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground hover:text-foreground"
-                      }
-                      render={<Link href={item.href} />}
-                    >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="bg-transparent px-4 pb-6">
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger render={<SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-accent"
-                />}>
-                  <Avatar className="h-7 w-7">
-                    <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-600 text-[10px] text-white font-bold">
-                      {userInitials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-1 flex-col text-left text-sm leading-tight">
-                    <span className="truncate text-xs font-medium">
-                      {user?.email || "Guest"}
-                    </span>
-                  </div>
-                  <ChevronUp className="ml-auto h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                align="start"
-                className="w-56"
-              >
-                <DropdownMenuItem render={<Link href="/settings" />}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SidebarMenuButton
+              onClick={handleLogout}
+              tooltip="Logout"
+              className="h-11 px-4 text-white/80 hover:bg-white/10 hover:text-white rounded-full font-medium"
+            >
+              <LogOut className="h-[18px] w-[18px] shrink-0" />
+              <span className="group-data-[collapsible=icon]:hidden text-[13px] uppercase tracking-wide">
+                Logout
+              </span>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

@@ -116,7 +116,7 @@ export const transactionsService = {
   ): Promise<Transaction> {
     const { data, error } = await supabase
       .from("transactions")
-      .update({ ...dto, updated_at: new Date().toISOString() })
+      .update(dto)
       .eq("id", id)
       .select()
       .single();

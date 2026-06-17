@@ -22,14 +22,16 @@ const severityConfig = {
 export default function AIEvaluationPage() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
+
   const month = selectedDate.getMonth() + 1;
   const year = selectedDate.getFullYear();
+
+  const currentMonthValue = format(selectedDate, "yyyy-MM");
 
   const monthsList = Array.from({ length: 6 }).map((_, i) => {
     const d = subMonths(new Date(), i);
     return {
-      value: d.toISOString(),
+      value: format(d, "yyyy-MM"),
       label: format(d, "MMMM yyyy"),
       date: d,
     };
@@ -53,33 +55,38 @@ export default function AIEvaluationPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="AI Financial Evaluation" 
+      <PageHeader
+        title="AI Financial Evaluation"
         description="Get personalized insights and scoring based on your spending patterns"
       >
-          <Select 
-            value={selectedDate.toISOString()} 
-            onValueChange={(v) => { if (typeof v === "string") setSelectedDate(new Date(v)) }}
-          >
-            <SelectTrigger className="w-full sm:w-[180px] bg-card/50">
-              <SelectValue placeholder="Select month" />
-            </SelectTrigger>
-            <SelectContent>
-              {monthsList.map((m) => (
-                <SelectItem key={m.value} value={m.value}>
-                  {m.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button 
-            onClick={() => generateMutation.mutate()} 
-            disabled={generateMutation.isPending}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 shadow-lg shadow-violet-500/20"
-          >
-            <Sparkles className={`mr-2 h-4 w-4 ${generateMutation.isPending ? 'animate-spin' : ''}`} /> 
-            {generateMutation.isPending ? "Analyzing..." : "Generate Insights"}
-          </Button>
+        <Select
+          value={currentMonthValue}
+          onValueChange={(v) => {
+            if (typeof v === "string") {
+              const [y, m] = v.split("-");
+              setSelectedDate(new Date(parseInt(y), parseInt(m) - 1, 1));
+            }
+          }}
+        >
+          <SelectTrigger className="w-full sm:w-[180px] bg-card/50">
+            <SelectValue placeholder="Select month" />
+          </SelectTrigger>
+          <SelectContent>
+            {monthsList.map((m) => (
+              <SelectItem key={m.value} value={m.value}>
+                {m.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          onClick={() => generateMutation.mutate()}
+          disabled={generateMutation.isPending}
+          className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 shadow-lg shadow-violet-500/20"
+        >
+          <Sparkles className={`mr-2 h-4 w-4 ${generateMutation.isPending ? 'animate-spin' : ''}`} />
+          {generateMutation.isPending ? "Analyzing..." : "Generate Insights"}
+        </Button>
       </PageHeader>
 
       {isLoading ? (
@@ -108,15 +115,15 @@ export default function AIEvaluationPage() {
             </div>
             <h2 className="text-xl font-semibold mb-2">No Insights Available</h2>
             <p className="text-muted-foreground max-w-md mb-6">
-              We don't have any AI evaluation generated for {format(selectedDate, "MMMM yyyy")} yet. 
+              We don't have any AI evaluation generated for {format(selectedDate, "MMMM yyyy")} yet.
               Click the generate button above to analyze your financial data.
             </p>
-            <Button 
-              onClick={() => generateMutation.mutate()} 
+            <Button
+              onClick={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}
               className="bg-gradient-to-r from-violet-600 to-indigo-600"
             >
-              <Sparkles className="mr-2 h-4 w-4" /> 
+              <Sparkles className="mr-2 h-4 w-4" />
               Generate {format(selectedDate, "MMMM")} Insights
             </Button>
           </CardContent>
@@ -135,12 +142,12 @@ export default function AIEvaluationPage() {
                 <div className="relative flex items-center justify-center h-40 w-40 mb-4">
                   <svg className="absolute w-full h-full transform -rotate-90">
                     <circle cx="80" cy="80" r="70" fill="transparent" stroke="currentColor" strokeWidth="10" className="text-muted/20" />
-                    <circle cx="80" cy="80" r="70" fill="transparent" stroke="currentColor" strokeWidth="10" 
-                      strokeDasharray="439.8" 
+                    <circle cx="80" cy="80" r="70" fill="transparent" stroke="currentColor" strokeWidth="10"
+                      strokeDasharray="439.8"
                       strokeDashoffset={439.8 - (439.8 * evaluation.financial_score) / 100}
                       className={
-                        evaluation.financial_score >= 80 ? "text-emerald-500" : 
-                        evaluation.financial_score >= 60 ? "text-amber-500" : "text-rose-500"
+                        evaluation.financial_score >= 80 ? "text-emerald-500" :
+                          evaluation.financial_score >= 60 ? "text-amber-500" : "text-rose-500"
                       }
                       strokeLinecap="round"
                     />
@@ -152,8 +159,8 @@ export default function AIEvaluationPage() {
                 </div>
                 <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted/50 text-sm font-medium">
                   <TrendingUp className="h-4 w-4" />
-                  {evaluation.financial_score >= 80 ? "Excellent Standing" : 
-                   evaluation.financial_score >= 60 ? "Needs Improvement" : "Critical Action Needed"}
+                  {evaluation.financial_score >= 80 ? "Excellent Standing" :
+                    evaluation.financial_score >= 60 ? "Needs Improvement" : "Critical Action Needed"}
                 </div>
               </CardContent>
             </Card>
@@ -176,7 +183,7 @@ export default function AIEvaluationPage() {
           {/* Detailed Insights */}
           <div className="lg:col-span-2 space-y-4">
             <h3 className="text-lg font-semibold mb-2">Key Findings & Recommendations</h3>
-            
+
             <div className="grid gap-3">
               {evaluation.insights?.map((insight: any, index: number) => {
                 // If it's old string array format

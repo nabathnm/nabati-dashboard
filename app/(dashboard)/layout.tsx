@@ -3,7 +3,7 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import AppSidebar from "@/components/layout/app-sidebar";
-import TopNav from "@/components/layout/top-nav";
+import { TaskReduxSync } from "@/components/tasks/TaskReduxSync";
 
 export default function DashboardLayout({
   children,
@@ -12,15 +12,19 @@ export default function DashboardLayout({
 }) {
   return (
     <TooltipProvider>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <TopNav />
-          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
-            {children}
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
+      <div className="bg-background">
+        <SidebarProvider>
+          <TaskReduxSync />
+          <AppSidebar />
+          <SidebarInset>
+            <main className="flex-1 overflow-auto">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 w-full">
+                {children}
+              </div>
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
     </TooltipProvider>
   );
 }

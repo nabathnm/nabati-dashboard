@@ -1,8 +1,3 @@
-// ============================================================
-// GrowthMe AI Daily Routine Planner — Type Definitions
-// Mirrors Supabase daily_routines & routine_user_profiles tables
-// ============================================================
-
 // ─── Enums ───────────────────────────────────────────────────
 
 export type RoutineCategory =
@@ -20,7 +15,7 @@ export interface CollegeClass {
   start_time: string; // e.g., "08:00"
   end_time: string;   // e.g., "10:30"
   room?: string;
-  category?: "college" | "organization"; // Replaces color
+  category?: "class" | "practical"; // Replaces color
 }
 
 // ─── Database Row Types ──────────────────────────────────────

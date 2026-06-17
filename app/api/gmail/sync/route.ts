@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { toTitleCase } from "@/lib/utils";
 
 // ============================================================
 // HELPER TYPES
@@ -138,7 +139,7 @@ export function parseEmail(
   const incomeKeywords = [
     "diterima", "masuk", "incoming", "kredit", "credit",
     "transfer dari", "receive", "didapat", "diteruskan",
-    "ditambahkan", "top up", "topup", "cash-in", "cashin",
+    "ditambahkan", "cash-in", "cashin",
   ];
   const combinedText = subject + " " + bodyText;
   if (incomeKeywords.some((kw) => new RegExp(`\\b${kw}\\b`, "i").test(combinedText))) {
@@ -178,6 +179,7 @@ export function parseEmail(
 
   // ── Post-process description (pass bodyText for BRI re-parse) ──
   description = normalizeDescription(description, bodyText, type);
+  description = toTitleCase(description);
 
   // ── Date extraction ─────────────────────────────────────
   let dateStr = emailDate.toISOString().split("T")[0];
@@ -218,7 +220,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
     "padang", "macaroni", "sambel", "nasi", "mie", "bakmie",
     "seafood", "sate", "pecel", "rawon", "soto",
     "rm ", "roda baru", "esb restaurant", "esb rest",
-    "aventree", "turned in", "bb -", "kk-",
+    "aventree", "turned in", "bb -", "kk-", "lesehan",
     "cincau", "aiciro",
   ],
   Transportasi: [
@@ -245,7 +247,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   ],
   Hiburan: [
     "netflix", "spotify", "disney", "youtube premium",
-    "bioskop", "cgv", "xxi", "cinema",
+    "bioskop", "cgv", "xxi", "cinema", "ps",
     "game", "steam", "playstation", "nintendo",
     "karaoke", "entertainment", "nonton",
   ],
@@ -393,7 +395,6 @@ export async function POST() {
         .eq("account_id", targetAccount.id)
         .eq("amount", tx.amount)
         .eq("type", tx.type)
-        .eq("merchant", tx.description)
         .eq("transaction_date", `${tx.date}T00:00:00Z`)
         .limit(1);
 

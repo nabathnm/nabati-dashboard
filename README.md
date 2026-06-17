@@ -1,6 +1,6 @@
-# GrowthMe 💸
+# Nabathi Dashboard
 
-GrowthMe is a modern, AI-powered personal finance and task management dashboard built with Next.js. It helps you track your expenses, manage multiple accounts, sync banking transactions automatically from Gmail, and receive personalized AI financial insights to improve your financial health.
+Dashboard is a modern, AI-powered personal finance and task management dashboard built with Next.js. It helps you track your expenses, manage multiple accounts, sync banking transactions automatically from Gmail, and receive personalized AI financial insights to improve your financial health.
 
 ## 🌟 Features
 

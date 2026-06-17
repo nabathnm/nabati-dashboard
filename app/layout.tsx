@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GrowthMe — Financial Tracker",
+  title: "Nabath ",
   description:
     "Your personal financial operating system. Track income, expenses, accounts, and get AI-powered insights.",
 };
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("h-full", "antialiased", inter.variable, "font-sans")}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col bg-orange text-foreground">
         <ReduxProvider>
           <QueryProvider>
             <AuthProvider>
@@ -37,9 +37,9 @@ export default function RootLayout({
           position="top-right"
           toastOptions={{
             style: {
-              background: "oklch(0.16 0.008 260)",
-              border: "1px solid oklch(0.25 0.015 260)",
-              color: "oklch(0.95 0.01 260)",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
+              color: "var(--card-foreground)",
             },
           }}
         />

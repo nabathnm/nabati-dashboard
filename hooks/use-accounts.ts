@@ -14,6 +14,7 @@ export function useAccounts() {
   return useQuery({
     queryKey: accountKeys.all,
     queryFn: () => accountsService.getAll(),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 }
 
@@ -29,6 +30,7 @@ export function useAccount(id: string) {
     queryKey: accountKeys.detail(id),
     queryFn: () => accountsService.getById(id),
     enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 }
 
@@ -36,6 +38,7 @@ export function useTotalBalance() {
   return useQuery({
     queryKey: accountKeys.totalBalance,
     queryFn: () => accountsService.getTotalBalance(),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 }
 

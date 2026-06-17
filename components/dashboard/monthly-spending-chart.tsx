@@ -35,34 +35,35 @@ export default function MonthlySpendingChart({ year }: MonthlySpendingChartProps
   }
 
   return (
-    <Card className="border-border/30 bg-card/50">
+    <Card className="">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold">Monthly Trend</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={trend ?? []}>
+            <AreaChart data={trend ?? []} margin={{ top: 25, right: 10, left: -20, bottom: 20 }}>
               <defs>
                 <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#34d399" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#fb7185" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#fb7185" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.25 0.015 260)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 11, fill: "oklch(0.6 0.02 260)" }}
+                tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 600 }}
                 axisLine={false}
                 tickLine={false}
+                tickMargin={20}
               />
               <YAxis
                 tickFormatter={(v) => formatCompactCurrency(v)}
-                tick={{ fontSize: 11, fill: "oklch(0.6 0.02 260)" }}
+                tick={{ fontSize: 11, fill: "#94a3b8", fontWeight: 600 }}
                 axisLine={false}
                 tickLine={false}
                 width={65}
@@ -71,20 +72,24 @@ export default function MonthlySpendingChart({ year }: MonthlySpendingChartProps
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="rounded-lg border border-border/50 bg-popover p-3 shadow-xl">
-                        <p className="text-xs font-medium mb-1">{label}</p>
-                        {payload.map((p) => (
-                          <div key={p.name} className="flex items-center gap-2 text-xs">
-                            <div
-                              className="h-2 w-2 rounded-full"
-                              style={{ backgroundColor: p.color }}
-                            />
-                            <span className="text-muted-foreground capitalize">{p.name}</span>
-                            <span className="font-bold ml-auto">
-                              {formatCompactCurrency(p.value as number)}
-                            </span>
-                          </div>
-                        ))}
+                      <div className="bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-xl shadow-xl border border-slate-700 min-w-[140px]">
+                        <p className="text-slate-400 mb-2 uppercase tracking-wider text-[10px]">{label}</p>
+                        <div className="space-y-1.5">
+                          {payload.map((p) => (
+                            <div key={p.name} className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className="h-2 w-2 rounded-full shadow-sm"
+                                  style={{ backgroundColor: p.color }}
+                                />
+                                <span className="capitalize text-slate-200">{p.name}</span>
+                              </div>
+                              <span className="font-extrabold text-white">
+                                {formatCompactCurrency(p.value as number)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     );
                   }
@@ -92,30 +97,30 @@ export default function MonthlySpendingChart({ year }: MonthlySpendingChartProps
                 }}
               />
               <Area
-                type="monotone"
+                type="natural"
                 dataKey="income"
-                stroke="#10b981"
-                strokeWidth={2}
+                stroke="#34d399"
+                strokeWidth={3}
                 fill="url(#incomeGradient)"
               />
               <Area
-                type="monotone"
+                type="natural"
                 dataKey="expense"
-                stroke="#f43f5e"
-                strokeWidth={2}
+                stroke="#fb7185"
+                strokeWidth={3}
                 fill="url(#expenseGradient)"
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex items-center justify-center gap-6 mt-3">
-          <div className="flex items-center gap-2 text-xs">
-            <div className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-muted-foreground">Income</span>
+        <div className="flex items-center justify-center gap-6 mt-4">
+          <div className="flex items-center gap-2 text-xs font-bold">
+            <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-sm" />
+            <span className="text-slate-500">Income</span>
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <div className="h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-muted-foreground">Expense</span>
+          <div className="flex items-center gap-2 text-xs font-bold">
+            <div className="h-2.5 w-2.5 rounded-full bg-rose-400 shadow-sm" />
+            <span className="text-slate-500">Expense</span>
           </div>
         </div>
       </CardContent>

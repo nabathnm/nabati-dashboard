@@ -22,6 +22,7 @@ export function useTransactions(filters: TransactionFilters = {}) {
   return useQuery({
     queryKey: transactionKeys.list(filters),
     queryFn: () => transactionsService.getAll(filters),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 }
 
@@ -29,6 +30,7 @@ export function useRecentTransactions(limit: number = 5) {
   return useQuery({
     queryKey: transactionKeys.recent(limit),
     queryFn: () => transactionsService.getRecent(limit),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 }
 
@@ -36,7 +38,7 @@ export function useTransactionCategories() {
   return useQuery({
     queryKey: transactionKeys.categories,
     queryFn: () => transactionsService.getCategories(),
-    staleTime: 5 * 60 * 1000, // 5 minutes — categories rarely change
+    staleTime: 1000 * 60 * 30, // 30 minutes cache
   });
 }
 
@@ -44,6 +46,7 @@ export function useMonthlyTotals(year: number, month: number) {
   return useQuery({
     queryKey: transactionKeys.monthlyTotals(year, month),
     queryFn: () => transactionsService.getMonthlyTotals(year, month),
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 }
 
