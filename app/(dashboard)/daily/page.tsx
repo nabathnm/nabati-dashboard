@@ -12,6 +12,11 @@ import {
   Sun,
   Moon,
   Loader2,
+  CalendarDays,
+  Plus,
+  Target,
+  Clock,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/layout/page-header";
@@ -51,13 +56,20 @@ function groupByTimeOfDay(routines: DailyRoutine[]) {
 // ─── Page Component ──────────────────────────────────────────
 
 export default function RoutinePage() {
+  const [isMounted, setIsMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  useEffect(() => {
+    setSelectedDate(new Date());
+    setIsMounted(true);
+  }, []);
+
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showReflectionModal, setShowReflectionModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
   const dateStr = format(selectedDate, "yyyy-MM-dd");
-  const isToday = dateStr === format(new Date(), "yyyy-MM-dd");
+  const isToday = isMounted ? dateStr === format(new Date(), "yyyy-MM-dd") : false;
 
   // Data
   const { data: routines, isLoading } = useRoutinesByDate(dateStr);
@@ -79,7 +91,8 @@ export default function RoutinePage() {
     const total = routines?.length ?? 0;
     const completed = routines?.filter((r) => r.is_completed).length ?? 0;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-    return { total, completed, completionRate };
+    const totalMinutes = routines?.reduce((sum, r) => sum + (r.estimated_duration || 0), 0) ?? 0;
+    return { total, completed, completionRate, totalMinutes };
   }, [routines]);
 
   // Grouped routines
@@ -95,14 +108,13 @@ export default function RoutinePage() {
       return;
     }
 
-    // Pass pending tasks that are due on or after the selected date
     const relevantTasks = (tasks ?? [])
       .filter((t) => t.status !== "done" && t.due_date && t.due_date >= dateStr)
-      .map((t) => ({ 
-        title: t.title, 
+      .map((t) => ({
+        title: t.title,
         description: t.description,
-        due_date: t.due_date, 
-        category: t.category 
+        due_date: t.due_date,
+        category: t.category,
       }));
 
     generateRoutine({
@@ -115,10 +127,21 @@ export default function RoutinePage() {
 
   // ─── Render ────────────────────────────────────────────────
 
+  if (!isMounted) {
+    return (
+      <div className="space-y-6 pb-10">
+        <PageHeader title="My Routine" description="AI-powered daily routine planner" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
+        </div>
+      </div>
+    );
+  }
+
   const timeGroups = [
-    { key: "morning", label: "Morning", icon: Sunrise, items: grouped.morning, color: "text-amber-500" },
-    { key: "afternoon", label: "Afternoon", icon: Sun, items: grouped.afternoon, color: "text-blue-500" },
-    { key: "evening", label: "Evening", icon: Moon, items: grouped.evening, color: "text-violet-500" },
+    { key: "morning", label: "Morning", icon: Sunrise, items: grouped.morning, color: "text-amber-500", gradient: "from-amber-500/10 to-orange-500/5" },
+    { key: "afternoon", label: "Afternoon", icon: Sun, items: grouped.afternoon, color: "text-blue-500", gradient: "from-blue-500/10 to-sky-500/5" },
+    { key: "evening", label: "Evening", icon: Moon, items: grouped.evening, color: "text-violet-500", gradient: "from-violet-500/10 to-purple-500/5" },
   ];
 
   return (
@@ -136,147 +159,201 @@ export default function RoutinePage() {
         </button>
       </PageHeader>
 
-      {/* Date Navigator */}
-      <div className="flex items-center justify-center gap-4">
-        <button
-          onClick={() => setSelectedDate((d) => subDays(d, 1))}
-          className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4 text-slate-500" />
-        </button>
-        <div className="text-center min-w-[160px]">
-          <p className="text-sm font-bold text-slate-800">
-            {isToday ? "Today" : format(selectedDate, "EEEE")}
-          </p>
-          <p className="text-xs text-muted-foreground font-semibold">
-            {format(selectedDate, "MMM d, yyyy")}
-          </p>
-        </div>
-        <button
-          onClick={() => setSelectedDate((d) => addDays(d, 1))}
-          className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
-        >
-          <ChevronRight className="w-4 h-4 text-slate-500" />
-        </button>
-      </div>
+      {/* Main two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
 
-      {/* Progress Ring + Generate Button */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 flex flex-col items-center gap-5">
-        {isLoading ? (
-          <Skeleton className="w-40 h-40 rounded-full" />
-        ) : (
-          <ProgressRing
-            percentage={stats.completionRate}
-            label={`${stats.completed} of ${stats.total} completed`}
-            sublabel={
-              stats.total === 0
-                ? "Generate a routine to get started"
-                : stats.completionRate === 100
-                  ? "🎉 All done! Great job!"
-                  : undefined
-            }
-          />
-        )}
+        {/* ─── Left Column: Summary Panel (sticky on desktop) ─── */}
+        <div className="space-y-5 lg:sticky lg:top-6 lg:self-start">
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className={cn(
-              "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
-              routines && routines.length > 0
-                ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                : "bg-slate-900 text-white hover:bg-slate-800 shadow-md"
-            )}
-          >
-            {isGenerating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Sparkles className="w-4 h-4" />
-            )}
-            {isGenerating
-              ? "Generating..."
-              : routines && routines.length > 0
-                ? "Regenerate Routine"
-                : "Generate Today's Routine"}
-          </button>
-
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center p-2.5 rounded-xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
-            title="Add Routine Manually"
-          >
-            <span className="font-bold text-lg leading-none">+</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Routine Checklist */}
-      {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-2xl" />
-          ))}
-        </div>
-      ) : routines && routines.length > 0 ? (
-        <div className="space-y-6">
-          {timeGroups.map(
-            (group) =>
-              group.items.length > 0 && (
-                <div key={group.key}>
-                  {/* Section Header */}
-                  <div className="flex items-center gap-2 mb-3 px-1">
-                    <group.icon className={cn("w-4 h-4", group.color)} />
-                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                      {group.label}
-                    </h3>
-                    <span className="text-[10px] font-semibold text-muted-foreground">
-                      {group.items.filter((r) => r.is_completed).length}/
-                      {group.items.length}
-                    </span>
-                  </div>
-
-                  {/* Items */}
-                  <div className="space-y-2">
-                    {group.items.map((routine) => (
-                      <RoutineItem
-                        key={routine.id}
-                        routine={routine}
-                        onToggle={(id, completed) =>
-                          toggleRoutine({ id, completed })
-                        }
-                        onDelete={(id) => deleteRoutine(id)}
-                        isPending={isToggling}
-                      />
-                    ))}
-                  </div>
+          {/* Date Navigator Card */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setSelectedDate((d) => subDays(d, 1))}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+              </button>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                  <CalendarDays className="w-3.5 h-3.5 text-primary" />
+                  <p className="text-sm font-bold text-slate-800">
+                    {isToday ? "Today" : format(selectedDate, "EEEE")}
+                  </p>
                 </div>
-              )
+                <p className="text-xs text-muted-foreground font-semibold">
+                  {format(selectedDate, "MMMM d, yyyy")}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedDate((d) => addDays(d, 1))}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+          </div>
+
+          {/* Progress Ring Card */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col items-center">
+            {isLoading ? (
+              <Skeleton className="w-36 h-36 rounded-full" />
+            ) : (
+              <ProgressRing
+                percentage={stats.completionRate}
+                size={144}
+                label={`${stats.completed} of ${stats.total} completed`}
+                sublabel={
+                  stats.total === 0
+                    ? "Generate a routine to get started"
+                    : stats.completionRate === 100
+                      ? "🎉 All done! Great job!"
+                      : undefined
+                }
+              />
+            )}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <Target className="w-4 h-4 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-lg font-black text-slate-800 tabular-nums leading-none">{stats.total}</p>
+                <p className="text-[10px] font-semibold text-muted-foreground mt-0.5">Activities</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
+                <Clock className="w-4 h-4 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-lg font-black text-slate-800 tabular-nums leading-none">
+                  {stats.totalMinutes > 60 ? `${Math.floor(stats.totalMinutes / 60)}h ${stats.totalMinutes % 60}m` : `${stats.totalMinutes}m`}
+                </p>
+                <p className="text-[10px] font-semibold text-muted-foreground mt-0.5">Total Duration</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-2.5">
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className={cn(
+                "w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all",
+                routines && routines.length > 0
+                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  : "bg-slate-900 text-white hover:bg-slate-800 shadow-md"
+              )}
+            >
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+              {isGenerating
+                ? "Generating..."
+                : routines && routines.length > 0
+                  ? "Regenerate Routine"
+                  : "Generate Today's Routine"}
+            </button>
+
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Add Manually
+            </button>
+
+            {routines && routines.length > 0 && isToday && (
+              <button
+                onClick={() => setShowReflectionModal(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 font-bold text-sm hover:bg-violet-100 transition-colors"
+              >
+                <PenTool className="w-4 h-4" />
+                Daily Reflection
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ─── Right Column: Routine Checklist ─── */}
+        <div className="min-w-0">
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+              ))}
+            </div>
+          ) : routines && routines.length > 0 ? (
+            <div className="space-y-6">
+              {timeGroups.map(
+                (group) =>
+                  group.items.length > 0 && (
+                    <div key={group.key} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                      {/* Section Header */}
+                      <div className={cn("flex items-center justify-between px-5 py-3.5 border-b border-slate-50 bg-gradient-to-r", group.gradient)}>
+                        <div className="flex items-center gap-2.5">
+                          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center bg-white/80 shadow-sm")}>
+                            <group.icon className={cn("w-4 h-4", group.color)} />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-800">
+                              {group.label}
+                            </h3>
+                            <p className="text-[10px] font-semibold text-muted-foreground">
+                              {group.items.filter((r) => r.is_completed).length} of {group.items.length} completed
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs font-bold text-slate-600 tabular-nums">
+                            {group.items.length > 0
+                              ? Math.round((group.items.filter(r => r.is_completed).length / group.items.length) * 100)
+                              : 0}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Items */}
+                      <div className="divide-y divide-slate-50">
+                        {group.items.map((routine) => (
+                          <div key={routine.id} className="px-3 py-1">
+                            <RoutineItem
+                              routine={routine}
+                              onToggle={(id, completed) =>
+                                toggleRoutine({ id, completed })
+                              }
+                              onDelete={(id) => deleteRoutine(id)}
+                              isPending={isToggling}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+              )}
+            </div>
+          ) : (
+            /* Empty State */
+            <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-16 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
+                <Sparkles className="w-7 h-7 text-indigo-400" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">No routine for this day</h3>
+              <p className="text-sm text-muted-foreground mt-1 max-w-[320px]">
+                Click &quot;Generate Today&apos;s Routine&quot; to let AI create a personalized daily plan based on your goals and schedule.
+              </p>
+            </div>
           )}
         </div>
-      ) : (
-        /* Empty State */
-        <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-12 flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
-            <Sparkles className="w-7 h-7 text-indigo-400" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-800">No routine for this day</h3>
-          <p className="text-sm text-muted-foreground mt-1 max-w-[280px]">
-            Click &quot;Generate Today&apos;s Routine&quot; to let AI create a personalized daily plan based on your goals and schedule.
-          </p>
-        </div>
-      )}
-
-      {/* Daily Reflection Button */}
-      {routines && routines.length > 0 && isToday && (
-        <button
-          onClick={() => setShowReflectionModal(true)}
-          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-violet-200 bg-violet-50 text-violet-700 font-bold text-sm hover:bg-violet-100 transition-colors"
-        >
-          <PenTool className="w-4 h-4" />
-          Daily Reflection
-        </button>
-      )}
+      </div>
 
       {/* Modals */}
       <RoutineProfileModal
