@@ -17,7 +17,7 @@ export default function DashboardLayout({
           <TaskReduxSync />
           <AppSidebar />
           <SidebarInset>
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 w-full">
                 {children}
               </div>
