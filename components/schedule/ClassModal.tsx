@@ -73,7 +73,7 @@ export default function ClassModal({
 
   const handleSave = () => {
     if (!subject.trim() || !startTime || !endTime) return;
-    
+
     const cls: CollegeClass = {
       id: initialData?.cls.id || crypto.randomUUID(),
       subject: subject.trim(),
@@ -82,15 +82,15 @@ export default function ClassModal({
       room: room.trim() || undefined,
       category,
     };
-    
+
     onSave(day, cls);
     onClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="rounded-3xl border-none p-0 overflow-hidden sm:max-w-md">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 bg-muted/30">
+      <DialogContent>
+        <DialogHeader>
           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
             <BookOpen className="h-3.5 w-3.5" />
             Class Schedule
@@ -119,7 +119,7 @@ export default function ClassModal({
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                 <Tag className="h-3.5 w-3.5" /> Category
@@ -192,34 +192,34 @@ export default function ClassModal({
           </div>
         </div>
 
-        <DialogFooter className="px-6 pb-6 pt-2 gap-2 flex flex-col sm:flex-row justify-between sm:justify-between items-center w-full">
+        <DialogFooter className="px-6 pb-6 pt-4 gap-2 border-t border-border/50 bg-muted/10 flex flex-col sm:flex-row justify-between sm:justify-between items-center w-full">
           {initialData && onDelete ? (
             <Button
-              variant="destructive"
+              variant="ghost"
               onClick={() => {
                 onDelete(initialData.day, initialData.cls.id);
                 onClose();
               }}
-              className="rounded-xl h-10 shadow-sm bg-rose-100 text-rose-700 hover:bg-rose-200 w-full sm:w-auto"
+              className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 w-full sm:w-auto"
             >
               Delete
             </Button>
           ) : (
             <div className="hidden sm:block"></div>
           )}
-          
+
           <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={onClose}
-              className="rounded-xl h-10 flex-1 sm:flex-none shadow-sm"
+              className="flex-1 sm:flex-none"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
               disabled={!subject.trim() || !startTime || !endTime}
-              className="rounded-xl h-10 flex-1 sm:flex-none shadow-sm"
+              className="flex-1 sm:flex-none"
             >
               Save Class
             </Button>

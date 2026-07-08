@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { X, Plus, Trash2, Target } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useRoutineProfile, useUpsertRoutineProfile } from "@/hooks/use-routines";
@@ -51,25 +53,19 @@ export default function RoutineProfileModal({ open, onClose }: RoutineProfileMod
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-              <Target className="w-5 h-5 text-indigo-500" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">Setup Your Routine Profile</h2>
-              <p className="text-xs text-muted-foreground">Tell the AI about your goals and schedule</p>
-            </div>
+    <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
+      <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <Target className="w-3.5 h-3.5 text-indigo-500" />
+            Routine Profile
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
-            <X className="w-4 h-4 text-slate-500" />
-          </button>
-        </div>
+          <DialogTitle className="text-xl font-bold">
+            Setup Your Routine Profile
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="px-6 py-5 space-y-6">
+        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-6">
           {/* Goals */}
           <div>
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-3">
@@ -183,22 +179,23 @@ export default function RoutineProfileModal({ open, onClose }: RoutineProfileMod
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
-          <button
+        <div className="px-6 py-4 border-t border-border/50 flex justify-end gap-3 flex-shrink-0 bg-muted/10">
+          <Button
+            variant="outline"
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+            className="h-11 rounded-xl"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSubmit}
             disabled={isPending || goals.every((g) => g.trim() === "")}
-            className="px-6 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors disabled:opacity-50 disabled:pointer-events-none"
+            className="h-11 px-6 rounded-xl"
           >
             {isPending ? "Saving..." : "Save Profile"}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

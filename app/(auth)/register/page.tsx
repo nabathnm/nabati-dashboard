@@ -76,7 +76,7 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="full_name" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <Label htmlFor="full_name">
             Full Name
           </Label>
           <div className="relative">
@@ -95,7 +95,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <Label htmlFor="email">
             Email
           </Label>
           <div className="relative">
@@ -114,7 +114,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <Label htmlFor="password">
             Password
           </Label>
           <div className="relative">
@@ -133,7 +133,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirm_password" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <Label htmlFor="confirm_password">
             Confirm Password
           </Label>
           <div className="relative">

@@ -30,7 +30,7 @@ export default function TaskStats({ tasks, isLoading }: TaskStatsProps) {
   const allTasks = tasks ?? [];
   const total = allTasks.length;
   const completed = allTasks.filter((t) => t.status === "done").length;
-  const inProgress = allTasks.filter((t) => t.status === "in_progress").length;
+  const inProgress = total - completed;
   const overdue = allTasks.filter(
     (t) => t.due_date && t.status !== "done" && isPast(parseISO(t.due_date))
   ).length;
@@ -80,11 +80,11 @@ export default function TaskStats({ tasks, isLoading }: TaskStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 ">
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className={`bg-white rounded-md shadow-sm border border-slate-100 border-t-2 p-4 hover:shadow-md transition-shadow duration-200`}
+          className={`bg-white rounded-xl shadow-sm border border-slate-100 border-t-2 p-4 duration-200`}
         >
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium text-slate-500">{stat.label}</p>

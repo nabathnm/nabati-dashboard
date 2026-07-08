@@ -7,6 +7,7 @@ import { LanguageChart } from "@/components/github/language-chart";
 import { CareerReadiness } from "@/components/github/career-readiness";
 import { AiEvaluationCard } from "@/components/github/ai-evaluation-card";
 import { Code2, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import {
   useGithubCredentials,
@@ -113,14 +114,14 @@ export default function GithubGrowthPage() {
               </div>
             )}
 
-            <button
+            <Button
               type="submit"
               disabled={connecting}
-              className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full flex items-center gap-2 h-12"
             >
               {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Code2 className="w-5 h-5" />}
               {connecting ? "Connecting..." : "Connect Account"}
-            </button>
+            </Button>
           </form>
         </div>
       </div>
@@ -147,17 +148,18 @@ export default function GithubGrowthPage() {
           description="AI-powered insights based on your GitHub activity."
         />
         <div className="flex gap-3">
-          <button
+          <Button
+            variant="ghost"
             onClick={handleDisconnect}
             disabled={disconnectMutation.isPending}
-            className="px-4 py-2.5 text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors disabled:opacity-50"
+            className="text-rose-600 bg-rose-50 hover:bg-rose-100 hover:text-rose-700"
           >
             {disconnectMutation.isPending ? "Disconnecting..." : "Disconnect"}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleEvaluate}
             disabled={evaluating}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200 disabled:opacity-50"
+            className="flex items-center gap-2"
           >
             {evaluating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -165,7 +167,7 @@ export default function GithubGrowthPage() {
               <Sparkles className="w-4 h-4" />
             )}
             {evaluating ? "Evaluating..." : "Generate AI Report"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -196,13 +198,14 @@ export default function GithubGrowthPage() {
                   <p className="text-sm text-slate-400 max-w-sm relative z-10 mb-6">
                     We haven't generated an AI analysis for your profile yet. Click the button above to get your personalized growth report.
                   </p>
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={handleEvaluate}
                     disabled={evaluating}
-                    className="relative z-10 px-6 py-3 bg-background text-primary font-bold rounded-xl hover:bg-background/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    className="relative z-10 flex items-center gap-2"
                   >
                     {evaluating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate Report Now"}
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

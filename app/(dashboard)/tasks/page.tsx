@@ -50,9 +50,9 @@ function TasksContent() {
         >
           <Button
             onClick={handleCreateTask}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg shadow-blue-200 border-0 rounded-xl px-5 h-10 font-medium transition-all duration-200"
+            className="flex items-center gap-1.5"
           >
-            <Plus className="mr-1.5 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             New Task
           </Button>
         </PageHeader>

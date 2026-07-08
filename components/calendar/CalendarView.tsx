@@ -71,25 +71,26 @@ export default function CalendarView() {
         description="View your tasks and deadlines across the month"
       >
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={goToToday} className="h-9">
+          <Button onClick={goToToday}>
             Today
           </Button>
-          <div className="flex items-center rounded-lg border border-input bg-transparent overflow-hidden">
+          <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="icon"
-              className="h-9 w-9 rounded-none border-r border-input"
               onClick={prevMonth}
+              title="Previous Month"
             >
-              <ChevronLeft className="h-4 w-4 text-slate-600" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
             <Button
-              variant="ghost"
+              variant="secondary"
               size="icon"
-              className="h-9 w-9 rounded-none"
+              className="h-11 w-11"
               onClick={nextMonth}
+              title="Next Month"
             >
-              <ChevronRight className="h-4 w-4 text-slate-600" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
         </div>

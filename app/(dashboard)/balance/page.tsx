@@ -94,23 +94,23 @@ export default function AccountsPage() {
       >
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={
-            <Button onClick={openAddDialog} className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 shadow-lg shadow-violet-500/20">
-              <Plus className="mr-2 h-4 w-4" /> Add Account
+            <Button onClick={openAddDialog}>
+              Add Account
             </Button>
           } />
-          <DialogContent className="sm:max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingAccount ? "Edit Account" : "New Account"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
               <div className="space-y-2">
-                <Label className="text-xs">Account Name</Label>
+                <Label>Account Name</Label>
                 <Input placeholder="e.g., Main Checking, Cash, GoPay" {...register("name")} />
                 {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Account Type</Label>
+                <Label>Account Type</Label>
                 <Select value={watchType} onValueChange={(v) => { if (typeof v === "string") setValue("type", v as any) }}>
                   <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
@@ -124,14 +124,14 @@ export default function AccountsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">{editingAccount ? "Current Balance" : "Initial Balance"}</Label>
+                <Label>{editingAccount ? "Current Balance" : "Initial Balance"}</Label>
                 <Input type="number" step="0.01" placeholder="0.00" {...register("balance")} />
                 {errors.balance && <p className="text-xs text-destructive">{errors.balance.message}</p>}
               </div>
 
               <div className="flex items-center gap-2 pt-2">
                 <Input type="checkbox" id="is_active" className="w-4 h-4 rounded" {...register("is_active")} />
-                <Label htmlFor="is_active" className="text-sm font-medium leading-none cursor-pointer">Active Account</Label>
+                <Label htmlFor="is_active">Active Account</Label>
               </div>
 
               <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 mt-4">
