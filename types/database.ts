@@ -158,39 +158,12 @@ export interface Notification {
   created_at: string;
 }
 
-// ─── Gamification Types ──────────────────────────────────────
-
-export type BadgeCategory = "productivity" | "finances" | "routine" | "github" | "synergy";
-
-export interface UserGamification {
-  id: string;
-  xp: number;
-  level: number;
-  streak_count: number;
-  last_active_date: string | null;
-  updated_at: string;
-}
-
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  category: BadgeCategory;
-  icon: string;
-  xp_reward: number;
-  requirements: Record<string, any>;
-}
 
 export interface UserBadge {
   id: string;
   user_id: string;
   badge_id: string;
   unlocked_at: string;
-}
-
-export interface BadgeWithStatus extends Badge {
-  is_unlocked: boolean;
-  unlocked_at: string | null;
 }
 
 export interface AddXPResult {

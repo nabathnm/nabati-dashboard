@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { tasksService } from "@/services/tasks.service";
-import { gamificationService } from "@/services/gamification.service";
-import { gamificationKeys } from "@/hooks/use-gamification";
 import type {
   Task,
   CreateTaskInput,
@@ -145,20 +143,6 @@ export function useUpdateTaskStatus() {
     onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all });
 
-      // Award XP when task is marked as done
-      if (variables.status === "done") {
-        gamificationService.addXP(15).then((result) => {
-          queryClient.invalidateQueries({ queryKey: gamificationKeys.all });
-          if (result.leveledUp) {
-            toast.success(`🎉 Level Up! Anda sekarang Level ${result.newLevel}!`, {
-              description: `+15 XP dari menyelesaikan task`,
-              duration: 5000,
-            });
-          } else {
-            toast(`⚡ +15 XP`, { description: "Task selesai!", duration: 2000 });
-          }
-        }).catch(console.error);
-      }
     },
   });
 }

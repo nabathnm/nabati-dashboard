@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { routinesService } from "@/services/routines.service";
 import { routineProfileService } from "@/services/routine-profile.service";
-import { gamificationService } from "@/services/gamification.service";
-import { gamificationKeys } from "@/hooks/use-gamification";
 import type {
   CreateRoutineDTO,
   UpsertRoutineProfileDTO,
@@ -75,12 +73,12 @@ export function useToggleRoutine() {
           return old.map((r: any) =>
             r.id === id
               ? {
-                  ...r,
-                  is_completed: completed,
-                  completed_at: completed
-                    ? new Date().toISOString()
-                    : null,
-                }
+                ...r,
+                is_completed: completed,
+                completed_at: completed
+                  ? new Date().toISOString()
+                  : null,
+              }
               : r
           );
         }
@@ -102,20 +100,6 @@ export function useToggleRoutine() {
         queryKey: routineKeys.todayStats,
       });
 
-      // Award XP when routine is marked as completed
-      if (variables?.completed) {
-        gamificationService.addXP(15).then((result) => {
-          queryClient.invalidateQueries({ queryKey: gamificationKeys.all });
-          if (result.leveledUp) {
-            toast.success(`🎉 Level Up! Anda sekarang Level ${result.newLevel}!`, {
-              description: `+15 XP dari menyelesaikan routine`,
-              duration: 5000,
-            });
-          } else {
-            toast(`⚡ +15 XP`, { description: "Routine selesai!", duration: 2000 });
-          }
-        }).catch(console.error);
-      }
     },
   });
 }
@@ -173,7 +157,7 @@ export function useGenerateRoutine() {
     }) => {
       // 1. Hapus data yang sudah ada di database terlebih dahulu
       await routinesService.deleteByDate(date);
-      
+
       // Update UI seketika agar terlihat kosong
       queryClient.setQueryData(routineKeys.byDate(date), []);
 
