@@ -166,6 +166,17 @@ export interface UserBadge {
   unlocked_at: string;
 }
 
+export interface BadgeWithStatus {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  xp_reward: number;
+  is_unlocked: boolean;
+  unlocked_at?: string | null;
+}
+
 export interface AddXPResult {
   newXP: number;
   newLevel: number;
