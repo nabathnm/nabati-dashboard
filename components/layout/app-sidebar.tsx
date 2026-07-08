@@ -15,7 +15,6 @@ import {
   Sunrise,
   BookOpen,
   Activity,
-  Gamepad2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -71,11 +70,6 @@ const navigation = [
     title: "Balance",
     href: "/balance",
     icon: Wallet,
-  },
-  {
-    title: "Life RPG",
-    href: "/rpg",
-    icon: Gamepad2,
   },
   {
     title: "Analytics",
