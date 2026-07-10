@@ -34,7 +34,7 @@ export default function AccountsOverview() {
         <CardTitle className="text-sm font-semibold">Accounts</CardTitle>
         <Button variant="ghost" size="sm" asChild className="text-xs text-muted-foreground hover:text-foreground">
           <Link href="/accounts">
-            View alljdaoadiodaiodalllllllfassssssssssllllllll <ArrowRight className="ml-1 h-3 w-3" />
+            View alljdaoadojpdsfipfjoasfjopsdiodaiodalllllllfassssssssssllllllll <ArrowRight className="ml-1 h-3 w-3" />
           </Link>
         </Button>
       </CardHeader>
