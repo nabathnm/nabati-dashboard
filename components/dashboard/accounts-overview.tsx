@@ -31,7 +31,7 @@ export default function AccountsOverview() {
   return (
     <Card className="bg-card shadow-sm">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-semibold">Accouuuuunts</CardTitle>
+        <CardTitle className="text-sm font-semibold">Accounts</CardTitle>
         <Button variant="ghost" size="sm" asChild className="text-xs text-muted-foreground hover:text-foreground">
           <Link href="/accounts">
             View all <ArrowRight className="ml-1 h-3 w-3" />
