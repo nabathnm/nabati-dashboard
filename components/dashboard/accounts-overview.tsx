@@ -52,7 +52,7 @@ export default function AccountsOverview() {
           ))
         ) : !activeAccounts.length ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
-            No accounts yetouhhouohg
+            No accounts yet
           </div>
         ) : (
           activeAccounts.map((account) => {
