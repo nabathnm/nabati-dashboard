@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, ChevronDown } from "lucide-react";
+import { FileText, ChevronDown, CalendarDays } from "lucide-react";
 import type { Task, TaskFilters, TaskStatus, TaskCategory } from "@/types/task";
 import { useTasks, useUpdateTaskStatus } from "@/hooks/use-tasks";
 import EmptyState from "./EmptyState";

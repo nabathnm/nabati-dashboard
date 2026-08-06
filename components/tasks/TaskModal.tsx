@@ -250,12 +250,12 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <CalendarDays className="h-3.5 w-3.5" /> Deadline
+                  <CalendarDays className="h-3.5 w-3.5" /> Hari Kegiatan
                 </Label>
                 <Input
                   type="date"
                   className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 text-sm"
-                  {...register("due_date")}
+                  {...register("activity_date")}
                 />
               </div>
             </div>
