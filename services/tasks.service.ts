@@ -24,8 +24,8 @@ export const tasksService = {
       case "oldest":
         query = query.order("created_at", { ascending: true });
         break;
-      case "due_date":
-        query = query.order("due_date", { ascending: true, nullsFirst: false });
+      case "activity_date":
+        query = query.order("activity_date", { ascending: true, nullsFirst: false });
         break;
       case "category":
         query = query.order("category", { ascending: true });

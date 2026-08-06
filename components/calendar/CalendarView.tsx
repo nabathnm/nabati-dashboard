@@ -40,7 +40,7 @@ export default function CalendarView() {
         title: newTaskTitle,
         description: newTaskDescription,
         category: newTaskCategory as TaskCategory,
-        due_date: format(selectedDateForAdd, "yyyy-MM-dd"),
+        activity_date: format(selectedDateForAdd, "yyyy-MM-dd"),
       },
       {
         onSuccess: () => setIsAddDialogOpen(false),
@@ -49,7 +49,7 @@ export default function CalendarView() {
   };
 
   const handleTaskDateChange = (taskId: string, newDate: string) => {
-    updateTask.mutate({ id: taskId, data: { due_date: newDate } });
+    updateTask.mutate({ id: taskId, data: { activity_date: newDate } });
   };
 
   const handleTaskStatusChange = (taskId: string, status: "todo" | "done") => {

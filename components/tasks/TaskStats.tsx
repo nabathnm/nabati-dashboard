@@ -32,7 +32,7 @@ export default function TaskStats({ tasks, isLoading }: TaskStatsProps) {
   const completed = allTasks.filter((t) => t.status === "done").length;
   const inProgress = allTasks.filter((t) => t.status === "in_progress").length;
   const overdue = allTasks.filter(
-    (t) => t.due_date && t.status !== "done" && isPast(parseISO(t.due_date))
+    (t) => t.activity_date && t.status !== "done" && isPast(parseISO(t.activity_date))
   ).length;
   const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 

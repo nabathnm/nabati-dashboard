@@ -22,11 +22,11 @@ export default function PendingTasksWidget() {
     .filter((t) => t.status !== "done")
     .sort((a, b) => {
       // Sort by due date (closest first), then by creation date
-      if (a.due_date && b.due_date) {
-        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      if (a.activity_date && b.activity_date) {
+        return new Date(a.activity_date).getTime() - new Date(b.activity_date).getTime();
       }
-      if (a.due_date) return -1;
-      if (b.due_date) return 1;
+      if (a.activity_date) return -1;
+      if (b.activity_date) return 1;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     })
     .slice(0, 4); // Show top 4 pending tasks
@@ -74,9 +74,9 @@ export default function PendingTasksWidget() {
                       <span className={cn("text-[10px] px-2 py-0.5 rounded-full border font-medium", catStyle.bg, catStyle.border)}>
                         {task.category}
                       </span>
-                      {task.due_date && (
+                      {task.activity_date && (
                         <span className="text-[10px] text-muted-foreground font-medium">
-                          Due: {format(new Date(task.due_date), "MMM d")}
+                          Hari: {format(new Date(task.activity_date), "MMM d")}
                         </span>
                       )}
                     </div>

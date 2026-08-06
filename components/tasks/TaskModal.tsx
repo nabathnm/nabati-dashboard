@@ -93,7 +93,8 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
       description: "",
       category: "Lainnya",
       progress: 0,
-      due_date: "",    },
+      activity_date: "",
+    },
   });
 
   const watchCategory = watch("category");
@@ -106,12 +107,12 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
         description: task.description || "",
         category: task.category,
         progress: task.progress,
-        due_date: task.due_date
-          ? format(new Date(task.due_date), "yyyy-MM-dd")
+        activity_date: task.activity_date
+          ? format(new Date(task.activity_date), "yyyy-MM-dd")
           : "",
       });
     } else if (!task && open) {
-      reset({ title: "", description: "", category: "Lainnya", progress: 0, due_date: "" });
+      reset({ title: "", description: "", category: "Lainnya", progress: 0, activity_date: "" });
     }
   }, [task, open, reset]);
 
@@ -119,7 +120,7 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
     async (values: CreateTaskFormValues) => {
       const payload = {
         ...values,
-        due_date: values.due_date || null,
+        activity_date: values.activity_date || null,
         description: values.description || "",
       };
       if (isEditing && task) {
@@ -249,14 +250,14 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
                     </div>
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                    Deadline
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <CalendarDays className="h-3.5 w-3.5" /> Hari Kegiatan
                   </Label>
                   <Input
                     type="date"
-                    className="text-sm h-9 border-slate-200 bg-slate-50 rounded-xl focus:bg-white focus:border-blue-300 transition-colors"
-                    {...register("due_date")}
+                    className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 text-sm"
+                    {...register("activity_date")}
                   />
                 </div>
               </div>
