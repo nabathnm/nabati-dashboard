@@ -110,11 +110,11 @@ export default function RoutinePage() {
     }
 
     const relevantTasks = (tasks ?? [])
-      .filter((t) => t.status !== "done" && t.due_date && t.due_date >= dateStr)
+      .filter((t) => t.status !== "done" && t.activity_date && t.activity_date >= dateStr)
       .map((t) => ({
         title: t.title,
         description: t.description,
-        due_date: t.due_date,
+        activity_date: t.activity_date,
         category: t.category,
       }));
 

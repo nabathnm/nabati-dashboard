@@ -85,7 +85,7 @@ export interface AIRoutineItem {
 export interface GenerateRoutinePayload {
   date: string; // YYYY-MM-DD
   profile: RoutineUserProfile;
-  existingTasks: { title: string; due_date: string | null }[];
+  existingTasks: { title: string; activity_date: string | null }[];
   previousCompletionRate: number; // 0-100
 }
 

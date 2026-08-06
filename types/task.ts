@@ -13,7 +13,7 @@ export interface Task {
   status: TaskStatus;
   category: TaskCategory;
   progress: number;
-  due_date: string | null;
+  activity_date: string | null;
   completed_at: string | null;
   position: number;
   created_at: string;
@@ -28,7 +28,7 @@ export interface CreateTaskInput {
   status?: TaskStatus;
   category: TaskCategory;
   progress?: number;
-  due_date?: string | null;
+  activity_date?: string | null;
 }
 
 export interface UpdateTaskInput {
@@ -37,13 +37,13 @@ export interface UpdateTaskInput {
   status?: TaskStatus;
   category?: TaskCategory;
   progress?: number;
-  due_date?: string | null;
+  activity_date?: string | null;
   position?: number;
 }
 
 // ─── Filter / Query Types ────────────────────────────────────
 
-export type TaskSortBy = "newest" | "oldest" | "due_date" | "category" | "progress";
+export type TaskSortBy = "newest" | "oldest" | "activity_date" | "category" | "progress";
 
 export interface TaskFilters {
   status?: TaskStatus;

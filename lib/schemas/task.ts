@@ -15,7 +15,7 @@ export const createTaskSchema = z.object({
     .min(0)
     .max(100)
     .default(0),
-  due_date: z.string().optional().nullable(),
+  activity_date: z.string().optional().nullable(),
 });
 
 export type CreateTaskFormValues = z.infer<typeof createTaskSchema>;

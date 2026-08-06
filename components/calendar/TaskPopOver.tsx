@@ -61,7 +61,7 @@ export default function TaskPopover({ task, onDateChange, onStatusChange, onDesc
                         </span>
                         <Input
                             type="date"
-                            value={task.due_date ? format(new Date(task.due_date), "yyyy-MM-dd") : ""}
+                            value={task.activity_date ? format(new Date(task.activity_date), "yyyy-MM-dd") : ""}
                             onChange={(e) => onDateChange(task.id, e.target.value)}
                             className="h-8 text-xs font-medium border-transparent hover:border-input focus:border-input bg-transparent hover:bg-muted"
                         />

@@ -63,15 +63,15 @@ export async function POST(req: Request) {
 
     // ─── Tasks: upcoming (next 3 days) + today ────────────────
     const upcomingTasks = (existingTasks ?? [])
-      .filter((t: any) => t.due_date)
-      .sort((a: any, b: any) => a.due_date.localeCompare(b.due_date));
+      .filter((t: any) => t.activity_date)
+      .sort((a: any, b: any) => a.activity_date.localeCompare(b.activity_date));
 
     const dueTodayTasks = upcomingTasks.filter((t: any) =>
-      t.due_date.startsWith(date)
+      t.activity_date.startsWith(date)
     );
     const urgentTasks = upcomingTasks.filter((t: any) => {
       const diff =
-        (new Date(t.due_date).getTime() - new Date(date).getTime()) /
+        (new Date(t.activity_date).getTime() - new Date(date).getTime()) /
         (1000 * 60 * 60 * 24);
       return diff > 0 && diff <= 3;
     });
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
         ? `UPCOMING (next 3 days):\n${urgentTasks
             .map(
               (t: any) =>
-                `  • ${t.title} (due ${t.due_date})${t.category ? ` [${t.category}]` : ""}${t.description ? `\n    Details: ${t.description}` : ""}`
+                `  • ${t.title} (due ${t.activity_date})${t.category ? ` [${t.category}]` : ""}${t.description ? `\n    Details: ${t.description}` : ""}`
             )
             .join("\n")}`
         : "",

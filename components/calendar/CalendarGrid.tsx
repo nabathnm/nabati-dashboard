@@ -41,8 +41,8 @@ export default function CalendarGrid({
     const tasksByDate = useMemo(() => {
         const map = new Map<string, Task[]>();
         tasks.forEach((task) => {
-            if (!task.due_date) return;
-            const dateStr = format(new Date(task.due_date), "yyyy-MM-dd");
+            if (!task.activity_date) return;
+            const dateStr = format(new Date(task.activity_date), "yyyy-MM-dd");
             if (!map.has(dateStr)) map.set(dateStr, []);
             map.get(dateStr)!.push(task);
         });

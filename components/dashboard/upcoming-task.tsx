@@ -21,11 +21,11 @@ export default function UpcomingTask() {
   const activeTasks = (tasks ?? [])
     .filter((t) => t.status !== "done")
     .sort((a, b) => {
-      if (a.due_date && b.due_date) {
-        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      if (a.activity_date && b.activity_date) {
+        return new Date(a.activity_date).getTime() - new Date(b.activity_date).getTime();
       }
-      if (a.due_date) return -1;
-      if (b.due_date) return 1;
+      if (a.activity_date) return -1;
+      if (b.activity_date) return 1;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     })
     .slice(0, 3);
@@ -77,11 +77,11 @@ export default function UpcomingTask() {
                   const IconComponent = config.icon;
                   
                   // Format due date badge
-                  const isTaskToday = task.due_date && isToday(new Date(task.due_date));
-                  const formattedDate = task.due_date
+                  const isTaskToday = task.activity_date && isToday(new Date(task.activity_date));
+                  const formattedDate = task.activity_date
                     ? isTaskToday
                       ? "Today"
-                      : format(new Date(task.due_date), "MMM d")
+                      : format(new Date(task.activity_date), "MMM d")
                     : "No date";
 
                   const categoryLabel = config.label;

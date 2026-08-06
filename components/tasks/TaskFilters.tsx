@@ -102,7 +102,7 @@ export default function TaskFiltersBar({
           <SelectContent className="rounded-xl">
             <SelectItem value="newest">Newest</SelectItem>
             <SelectItem value="oldest">Oldest</SelectItem>
-            <SelectItem value="due_date">Deadline</SelectItem>
+            <SelectItem value="activity_date">Hari Kegiatan</SelectItem>
             <SelectItem value="category">Category</SelectItem>
             <SelectItem value="progress">Progress</SelectItem>
           </SelectContent>

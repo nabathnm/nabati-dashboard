@@ -94,7 +94,7 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
       description: "",
       category: "Lainnya",
       progress: 0,
-      due_date: "",
+      activity_date: "",
     },
   });
 
@@ -108,12 +108,12 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
         description: task.description || "",
         category: task.category,
         progress: task.progress,
-        due_date: task.due_date
-          ? format(new Date(task.due_date), "yyyy-MM-dd")
+        activity_date: task.activity_date
+          ? format(new Date(task.activity_date), "yyyy-MM-dd")
           : "",
       });
     } else if (!task && open) {
-      reset({ title: "", description: "", category: "Lainnya", progress: 0, due_date: "" });
+      reset({ title: "", description: "", category: "Lainnya", progress: 0, activity_date: "" });
     }
   }, [task, open, reset]);
 
@@ -121,7 +121,7 @@ export default function TaskModal({ open, onOpenChange, task }: TaskModalProps) 
     async (values: CreateTaskFormValues) => {
       const payload = {
         ...values,
-        due_date: values.due_date || null,
+        activity_date: values.activity_date || null,
         description: values.description || "",
       };
       if (isEditing && task) {

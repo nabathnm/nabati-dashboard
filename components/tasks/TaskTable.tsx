@@ -75,7 +75,7 @@ export default function TaskTable({ filters, onEditTask, onCreateTask }: TaskTab
   return (
     <div className="bg-white rounded-xl shadow-sm border border-border/50 overflow-hidden">
       <div className="overflow-x-auto min-w-[800px]">
-        <HeaderRow labels={["Task Name", "Category", "Done", "Progress", "Detail", "Deadline"]} />
+        <HeaderRow labels={["Task Name", "Category", "Done", "Progress", "Detail", "Hari Kegiatan"]} />
 
         <div className="divide-y divide-slate-50 bg-card/10">
           {tasks.map((task) => {
@@ -148,10 +148,11 @@ export default function TaskTable({ filters, onEditTask, onCreateTask }: TaskTab
 
                 {/* Deadline */}
                 <div className="flex-1 px-4 py-3.5 flex justify-center">
-                  {task.due_date ? (
-                    <span className="text-sm text-slate-600 font-medium truncate">
-                      {format(parseISO(task.due_date), "MMM d, yyyy")}
-                    </span>
+                  {task.activity_date ? (
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2 py-1 rounded-md max-w-max border border-slate-200">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {format(parseISO(task.activity_date), "MMM d, yyyy")}
+                    </div>
                   ) : (
                     <span className="text-slate-300">—</span>
                   )}
