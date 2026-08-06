@@ -28,13 +28,13 @@ export function ReceiptScannerModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<"upload" | "scanning" | "review">("upload");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  
+
   // Form State
   const [merchant, setMerchant] = useState("");
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [accountId, setAccountId] = useState<string>("");
   const [items, setItems] = useState<ScannedItem[]>([]);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: accounts } = useActiveAccounts();
@@ -52,7 +52,7 @@ export function ReceiptScannerModal() {
     reader.onload = async (e) => {
       const base64String = e.target?.result as string;
       setImagePreview(base64String);
-      
+
       // Extract base64 payload
       const base64Payload = base64String.split(",")[1];
       const mimeType = file.type;
@@ -77,7 +77,7 @@ export function ReceiptScannerModal() {
       }
 
       const data = await response.json();
-      
+
       setMerchant(toTitleCase(data.merchant || "Unknown Merchant"));
       if (data.date) {
         // basic validation of date format
@@ -89,7 +89,7 @@ export function ReceiptScannerModal() {
       // Map categories
       const mappedItems = (data.items || []).map((item: any, idx: number) => {
         // Try to find matching category by name
-        const match = categories?.find(c => 
+        const match = categories?.find(c =>
           c.name.toLowerCase().includes(item.category_name?.toLowerCase() || "") ||
           (item.category_name || "").toLowerCase().includes(c.name.toLowerCase())
         );
@@ -143,7 +143,7 @@ export function ReceiptScannerModal() {
       if (existing && existing.length > 0) {
         // Find the one that matches best or just use the first one
         const targetTx = existing[0];
-        
+
         await transactionsService.attachItemsToTransaction(
           targetTx.id,
           toTitleCase(merchant),
@@ -216,38 +216,36 @@ export function ReceiptScannerModal() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="bg-white border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 rounded-xl h-10 shadow-sm font-semibold transition-all group"
         />
       }>
         <Sparkles className="w-4 h-4 mr-2 text-indigo-400 group-hover:text-indigo-500 transition-colors" />
         AI Scan Receipt
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl bg-white border-slate-200 rounded-2xl shadow-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="h-1.5 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400" />
-        
-        <DialogHeader className="px-6 py-5 border-b border-slate-100 flex-shrink-0">
-          <DialogTitle className="text-xl font-black text-slate-800 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
             AI Receipt Scanner
+          </div>
+          <DialogTitle className="text-xl font-bold">
+            Scan & Auto-categorize
           </DialogTitle>
-          <p className="text-xs text-slate-500 font-medium">
-            Upload a receipt to automatically itemize and categorize your purchases.
-          </p>
         </DialogHeader>
 
         <div className="overflow-y-auto flex-1 bg-slate-50/50">
           {step === "upload" && (
             <div className="p-8 flex flex-col items-center justify-center min-h-[300px]">
-              <input 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
                 ref={fileInputRef}
                 onChange={handleFileSelect}
               />
-              <div 
+              <div
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full max-w-md border-2 border-dashed border-indigo-200 bg-indigo-50/50 rounded-3xl p-10 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition-all group"
               >
@@ -266,9 +264,9 @@ export function ReceiptScannerModal() {
             <div className="p-12 flex flex-col items-center justify-center min-h-[300px]">
               <div className="relative w-32 h-32 mb-8">
                 {imagePreview && (
-                  <img 
-                    src={imagePreview} 
-                    alt="Receipt preview" 
+                  <img
+                    src={imagePreview}
+                    alt="Receipt preview"
                     className="w-full h-full object-cover rounded-2xl opacity-50 grayscale"
                   />
                 )}
@@ -298,18 +296,18 @@ export function ReceiptScannerModal() {
                 <div className="space-y-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Merchant</Label>
-                    <Input 
-                      value={merchant} 
-                      onChange={(e) => setMerchant(e.target.value)} 
+                    <Input
+                      value={merchant}
+                      onChange={(e) => setMerchant(e.target.value)}
                       className="h-9 text-sm font-semibold rounded-xl"
                     />
                   </div>
                   <div>
                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block">Date</Label>
-                    <Input 
-                      type="date" 
-                      value={date} 
-                      onChange={(e) => setDate(e.target.value)} 
+                    <Input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
                       className="h-9 text-sm font-semibold rounded-xl"
                     />
                   </div>
@@ -337,21 +335,21 @@ export function ReceiptScannerModal() {
                     <Plus className="w-3.5 h-3.5 mr-1" /> Add
                   </Button>
                 </div>
-                
+
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
                   {items.map((item) => (
                     <div key={item.id} className="group flex flex-col sm:flex-row gap-2 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors relative">
                       <div className="flex-1 space-y-2">
                         <div className="flex gap-2">
-                          <Input 
-                            value={item.name} 
+                          <Input
+                            value={item.name}
                             onChange={(e) => updateItem(item.id, "name", e.target.value)}
                             placeholder="Item name"
                             className="h-8 text-sm font-medium rounded-lg bg-white"
                           />
-                          <Input 
+                          <Input
                             type="number"
-                            value={item.price} 
+                            value={item.price}
                             onChange={(e) => updateItem(item.id, "price", e.target.value)}
                             className="h-8 text-sm font-bold w-[100px] tabular-nums rounded-lg bg-white"
                           />
@@ -367,9 +365,9 @@ export function ReceiptScannerModal() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => removeItem(item.id)}
                         className="h-8 w-8 text-slate-300 hover:text-rose-500 hover:bg-rose-50 absolute top-2 right-2 sm:relative sm:top-0 sm:right-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
@@ -389,14 +387,14 @@ export function ReceiptScannerModal() {
         </div>
 
         {step === "review" && (
-          <div className="p-4 border-t border-slate-100 bg-white flex justify-end gap-3 flex-shrink-0">
-            <Button variant="outline" onClick={() => setStep("upload")} className="h-10 rounded-xl">
+          <div className="p-4 border-t border-border/50 flex justify-end gap-3 flex-shrink-0">
+            <Button variant="outline" onClick={() => setStep("upload")} className="h-11 rounded-xl border-input bg-background hover:bg-accent">
               Scan Another
             </Button>
-            <Button 
-              onClick={handleSave} 
+            <Button
+              onClick={handleSave}
               disabled={createMutation.isPending}
-              className="h-10 px-8 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-md shadow-indigo-200 border-0 font-bold"
+              className="h-11 px-8 rounded-xl bg-violet-600 hover:bg-violet-700 text-white shadow-sm border-0 font-bold"
             >
               {createMutation.isPending ? "Saving..." : "Save Transaction"}
             </Button>

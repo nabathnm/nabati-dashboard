@@ -23,7 +23,7 @@ export function LanguageChart({ languages }: LanguageChartProps) {
   // Take top 8 and bundle the rest into 'Other'
   const topLanguages = languages.slice(0, 8);
   const otherValue = languages.slice(8).reduce((acc, curr) => acc + curr.value, 0);
-  
+
   if (otherValue > 0) {
     topLanguages.push({
       name: "Other",

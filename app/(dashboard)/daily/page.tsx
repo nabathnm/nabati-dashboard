@@ -34,6 +34,7 @@ import {
 } from "@/hooks/use-routines";
 import { useTasks } from "@/hooks/use-tasks";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import type { DailyRoutine } from "@/types/routine";
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -150,13 +151,14 @@ export default function RoutinePage() {
         title="My Routine"
         description="AI-powered daily routine planner"
       >
-        <button
+        <Button
+          variant="secondary"
+          size="icon"
           onClick={() => setShowProfileModal(true)}
-          className="p-2.5 hover:bg-white/50 rounded-xl transition-colors text-muted-foreground hover:text-foreground"
           title="Edit Profile & Goals"
         >
           <Settings className="w-4.5 h-4.5" />
-        </button>
+        </Button>
       </PageHeader>
 
       {/* Main two-column layout */}
@@ -168,12 +170,13 @@ export default function RoutinePage() {
           {/* Date Navigator Card */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
             <div className="flex items-center justify-between">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setSelectedDate((d) => subDays(d, 1))}
-                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 text-slate-500" />
-              </button>
+              </Button>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-0.5">
                   <CalendarDays className="w-3.5 h-3.5 text-primary" />
@@ -185,12 +188,13 @@ export default function RoutinePage() {
                   {format(selectedDate, "MMMM d, yyyy")}
                 </p>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setSelectedDate((d) => addDays(d, 1))}
-                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
               >
                 <ChevronRight className="w-4 h-4 text-slate-500" />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -240,15 +244,11 @@ export default function RoutinePage() {
 
           {/* Action Buttons */}
           <div className="space-y-2.5">
-            <button
+            <Button
+              variant="default"
               onClick={handleGenerate}
               disabled={isGenerating}
-              className={cn(
-                "w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all",
-                routines && routines.length > 0
-                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                  : "bg-slate-900 text-white hover:bg-slate-800 shadow-md"
-              )}
+              className="w-full flex items-center gap-2 h-11"
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -260,24 +260,28 @@ export default function RoutinePage() {
                 : routines && routines.length > 0
                   ? "Regenerate Routine"
                   : "Generate Today's Routine"}
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="secondary"
               onClick={() => setShowAddModal(true)}
-              className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+              className="w-full flex items-center gap-2 h-11"
             >
               <Plus className="w-4 h-4" />
               Add Manually
-            </button>
+            </Button>
 
             {routines && routines.length > 0 && isToday && (
-              <button
+              <Button
                 onClick={() => setShowReflectionModal(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 font-bold text-sm hover:bg-violet-100 transition-colors"
+                variant="secondary"
+                className="w-full flex items-center gap-2 h-11"
+
+
               >
                 <PenTool className="w-4 h-4" />
                 Daily Reflection
-              </button>
+              </Button>
             )}
           </div>
         </div>

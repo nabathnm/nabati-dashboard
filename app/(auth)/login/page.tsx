@@ -72,7 +72,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <Label htmlFor="email">
             Email
           </Label>
           <div className="relative">
@@ -91,7 +91,7 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <Label htmlFor="password">
             Password
           </Label>
           <div className="relative">

@@ -52,18 +52,18 @@ export default function AddTaskDialog({
 }: AddTaskDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="rounded-3xl border-none p-0 overflow-hidden sm:max-w-md">
-                <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/50 bg-muted/30">
+            <DialogContent>
+                <DialogHeader>
                     <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                         <CalendarDays className="h-3.5 w-3.5" />
                         {selectedDate ? format(selectedDate, "MMMM d, yyyy") : ""}
                     </div>
-                    <DialogTitle className="text-xl font-bold">Add Activity</DialogTitle>
+                    <DialogTitle>Add Activity</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-5 px-6 py-5">
                     <div className="space-y-2">
-                        <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Label>
                             <ListTodo className="h-3.5 w-3.5" /> Title
                         </Label>
                         <Input
@@ -76,7 +76,7 @@ export default function AddTaskDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Label>
                             <FileText className="h-3.5 w-3.5" /> Detail
                         </Label>
                         <Textarea
@@ -88,7 +88,7 @@ export default function AddTaskDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Label>
                             <Tag className="h-3.5 w-3.5" /> Category
                         </Label>
                         <Select value={category} onValueChange={(val) => onCategoryChange(val as TaskCategory)}>
@@ -106,18 +106,16 @@ export default function AddTaskDialog({
                     </div>
                 </div>
 
-                <DialogFooter className="px-6 pb-6 pt-2 gap-2">
+                <DialogFooter className="px-6 pb-6 pt-4 gap-2 border-t border-border/50 bg-muted/10">
                     <Button
                         variant="outline"
                         onClick={() => onOpenChange(false)}
-                        className="rounded-xl h-10 flex-1 sm:flex-none"
                     >
                         Cancel
                     </Button>
                     <Button
                         onClick={onSubmit}
                         disabled={!title.trim() || !category || isSubmitting}
-                        className="rounded-xl h-10 flex-1 sm:flex-none shadow-sm"
                     >
                         {isSubmitting ? "Adding..." : "Add Activity"}
                     </Button>

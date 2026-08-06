@@ -6,10 +6,11 @@ import { useSearchParams } from "next/navigation";
 import {
   Plus, Search, ArrowUpRight, ArrowDownLeft, ArrowLeftRight,
   Trash2, Mail, RefreshCw, SlidersHorizontal, ChevronLeft, ChevronRight,
-  Receipt
+  Receipt, DollarSign, CreditCard, Tag, CalendarDays, FileText
 } from "lucide-react";
 import { format } from "date-fns";
 import { PageHeader } from "@/components/layout/page-header";
+import { HeaderRow } from "@/components/layout/HeaderRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -150,7 +151,7 @@ function TransactionsContent() {
 
   return (
     <div>
-    <div className="space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <PageHeader
           title="Transactions"
@@ -159,15 +160,15 @@ function TransactionsContent() {
 
         <div className="flex gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={handleSyncGmail}
             disabled={isSyncing}
-            className="border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 rounded-xl h-10 shadow-sm"
+            className="flex items-center gap-1.5"
           >
             {isSyncing ? (
-              <RefreshCw className="h-4 w-4 animate-spin text-indigo-400 mr-1.5" />
+              <RefreshCw className="h-4 w-4 animate-spin text-indigo-400" />
             ) : (
-              <Mail className="h-4 w-4 text-indigo-400 mr-1.5" />
+              <Mail className="h-4 w-4 text-indigo-400" />
             )}
             {isSyncing ? "Syncing..." : "Sync Gmail"}
           </Button>
@@ -176,71 +177,91 @@ function TransactionsContent() {
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger render={
-              <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white border-0 shadow-lg shadow-blue-200 rounded-xl h-10 font-medium" />
-            }>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Add Transaction
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-white border-slate-200 rounded-2xl shadow-xl shadow-slate-200/60 p-0 overflow-hidden">
-              <div className="h-1 bg-gradient-to-r from-blue-400 via-sky-400 to-indigo-400" />
-              <div className="px-6 pt-5 pb-6">
-                <DialogHeader className="mb-5">
-                  <DialogTitle className="text-lg font-bold text-slate-800">
-                    New Transaction
-                  </DialogTitle>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Record an expense, income, or transfer
-                  </p>
-                </DialogHeader>
+              <Button className="flex items-center gap-1.5">
+                <Plus className="h-4 w-4" />
+                Add Transaction
+              </Button>
+            } />
+            <DialogContent>
+              <DialogHeader>
+                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                  Transaction
+                </div>
+                <DialogTitle className="text-xl font-bold">
+                  New Transaction
+                </DialogTitle>
+              </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  {/* Type selector */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["expense", "income", "transfer"] as const).map((t) => {
-                      const cfg = typeConfig[t];
-                      const isActive = watchType === t;
-                      return (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => setValue("type", t)}
-                          className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 text-xs font-semibold transition-all
+              <form id="transaction-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5 px-6 py-5 overflow-y-auto">
+                {/* Type selector */}
+                <div className="grid grid-cols-3 gap-2">
+                  {(["expense", "income", "transfer"] as const).map((t) => {
+                    const cfg = typeConfig[t];
+                    const isActive = watchType === t;
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setValue("type", t)}
+                        className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 text-xs font-semibold transition-all
                               ${isActive
-                              ? `${cfg.bg} ${cfg.color} shadow-sm`
-                              : "border-slate-200 text-slate-500 bg-slate-50 hover:bg-white hover:border-slate-300"
-                            }`}
-                        >
-                          <cfg.icon className={`h-4 w-4 ${isActive ? cfg.color : "text-slate-400"}`} />
-                          {cfg.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                            ? `${cfg.bg} ${cfg.color} shadow-sm`
+                            : "border-input bg-muted/40 text-muted-foreground hover:bg-muted/60"
+                          }`}
+                      >
+                        <cfg.icon className={`h-4 w-4 ${isActive ? cfg.color : "text-muted-foreground"}`} />
+                        {cfg.label}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                  {/* Amount */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                      Amount
-                    </Label>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      className="h-11 text-lg font-bold border-slate-200 bg-slate-50 rounded-xl focus:bg-white focus:border-blue-300 transition-colors"
-                      {...register("amount", { valueAsNumber: true })}
-                    />
-                    {errors.amount && (
-                      <p className="text-xs text-rose-500">{errors.amount.message}</p>
-                    )}
-                  </div>
+                {/* Amount */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <DollarSign className="h-3.5 w-3.5" /> Amount
+                  </Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    className="h-11 text-lg font-bold border-input bg-muted/40 rounded-xl focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors shadow-sm"
+                    {...register("amount", { valueAsNumber: true })}
+                  />
+                  {errors.amount && (
+                    <p className="text-xs text-rose-500">{errors.amount.message}</p>
+                  )}
+                </div>
 
-                  {/* Account */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                      Account
+                {/* Account */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5" /> Account
+                  </Label>
+                  <Select onValueChange={(v) => { if (v) setValue("account_id", v as string); }}>
+                    <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      {(accounts ?? []).map((a) => (
+                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.account_id && (
+                    <p className="text-xs text-rose-500">{errors.account_id.message}</p>
+                  )}
+                </div>
+
+                {/* Transfer destination */}
+                {watchType === "transfer" && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                      <CreditCard className="h-3.5 w-3.5" /> Transfer To
                     </Label>
-                    <Select onValueChange={(v) => { if (v) setValue("account_id", v as string); }}>
-                      <SelectTrigger className="h-9 text-sm border-slate-200 bg-slate-50 rounded-xl">
-                        <SelectValue placeholder="Select account" />
+                    <Select onValueChange={(v) => { if (v) setValue("destination_account_id", v as string); }}>
+                      <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
+                        <SelectValue placeholder="Select destination" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
                         {(accounts ?? []).map((a) => (
@@ -248,84 +269,64 @@ function TransactionsContent() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.account_id && (
-                      <p className="text-xs text-rose-500">{errors.account_id.message}</p>
-                    )}
                   </div>
+                )}
 
-                  {/* Transfer destination */}
-                  {watchType === "transfer" && (
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        Transfer To
-                      </Label>
-                      <Select onValueChange={(v) => { if (v) setValue("destination_account_id", v as string); }}>
-                        <SelectTrigger className="h-9 text-sm border-slate-200 bg-slate-50 rounded-xl">
-                          <SelectValue placeholder="Select destination" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          {(accounts ?? []).map((a) => (
-                            <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                {/* Category */}
+                {watchType !== "transfer" && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                      <Tag className="h-3.5 w-3.5" /> Category
+                    </Label>
+                    <Select onValueChange={(v) => { if (v) setValue("category_id", v as string); }}>
+                      <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {(categories ?? [])
+                          .filter((c) => c.type === watchType)
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                           ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Category */}
-                  {watchType !== "transfer" && (
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                        Category
-                      </Label>
-                      <Select onValueChange={(v) => { if (v) setValue("category_id", v as string); }}>
-                        <SelectTrigger className="h-9 text-sm border-slate-200 bg-slate-50 rounded-xl">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          {(categories ?? [])
-                            .filter((c) => c.type === watchType)
-                            .map((c) => (
-                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* Date */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                      Date
-                    </Label>
-                    <Input
-                      type="date"
-                      className="h-9 text-sm border-slate-200 bg-slate-50 rounded-xl focus:bg-white focus:border-blue-300 transition-colors"
-                      {...register("date")}
-                    />
+                      </SelectContent>
+                    </Select>
                   </div>
+                )}
 
-                  {/* Description */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                      Description
-                    </Label>
-                    <Textarea
-                      placeholder="Optional description..."
-                      rows={2}
-                      className="text-sm resize-none border-slate-200 bg-slate-50 rounded-xl focus:bg-white focus:border-blue-300 transition-colors"
-                      {...register("description")}
-                    />
-                  </div>
+                {/* Date */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <CalendarDays className="h-3.5 w-3.5" /> Date
+                  </Label>
+                  <Input
+                    type="date"
+                    className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
+                    {...register("date")}
+                  />
+                </div>
 
-                  <Button
-                    type="submit"
-                    disabled={createMutation.isPending}
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white border-0 rounded-xl shadow-md shadow-blue-200 h-10 font-medium"
-                  >
-                    {createMutation.isPending ? "Saving..." : "Save Transaction"}
-                  </Button>
-                </form>
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <FileText className="h-3.5 w-3.5" /> Description
+                  </Label>
+                  <Textarea
+                    placeholder="Optional description..."
+                    rows={2}
+                    className="resize-none min-h-[80px] border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
+                    {...register("description")}
+                  />
+                </div>
+              </form>
+              <div className="px-6 pb-6 pt-4 border-t border-border/50 bg-muted/10">
+                <Button
+                  type="submit"
+                  form="transaction-form"
+                  disabled={createMutation.isPending}
+                  className="w-full h-11"
+                >
+                  {createMutation.isPending ? "Adding..." : "Add Transaction"}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -409,115 +410,102 @@ function TransactionsContent() {
 
         {/* Table */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100">
-                  <th className="px-5 py-3.5 text-xs font-semibold text-slate-500 whitespace-nowrap">Date</th>
-                  <th className="px-5 py-3.5 text-xs font-semibold text-slate-500 whitespace-nowrap">Type</th>
-                  <th className="px-5 py-3.5 text-xs font-semibold text-slate-500 min-w-[200px]">Description</th>
-                  <th className="px-5 py-3.5 text-xs font-semibold text-slate-500 whitespace-nowrap">Account</th>
-                  <th className="px-5 py-3.5 text-xs font-semibold text-slate-500 whitespace-nowrap">Category</th>
-                  <th className="px-5 py-3.5 text-xs font-semibold text-slate-500 text-right whitespace-nowrap">Amount</th>
-                  <th className="px-5 py-3.5 w-[50px]" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i}>
-                      {Array.from({ length: 7 }).map((_, j) => (
-                        <td key={j} className="px-5 py-4">
-                          <Skeleton className="h-4 w-full" />
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                ) : !result?.data.length ? (
-                  <tr>
-                    <td colSpan={7} className="px-5 py-16 text-center">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                          <ArrowLeftRight className="h-5 w-5 text-slate-400" />
-                        </div>
-                        <p className="text-sm text-slate-500 font-medium">No transactions found</p>
-                        <p className="text-xs text-slate-400">Try adjusting your filters</p>
+          <div className="overflow-x-auto min-w-[800px]">
+            <HeaderRow labels={["Date", "Type", "Description", "Account", "Category", "Amount", "Action"]} />
+
+            <div className="divide-y divide-slate-50 bg-card/10 flex flex-col">
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex border-b border-border/50 last:border-0">
+                    {Array.from({ length: 7 }).map((_, j) => (
+                      <div key={j} className="flex-1 px-4 py-4">
+                        <Skeleton className="h-4 w-full" />
                       </div>
-                    </td>
-                  </tr>
-                ) : (
-                  result.data.map((tx) => {
-                    const cfg = typeConfig[tx.type];
-                    const Icon = cfg.icon;
-                    return (
-                      <tr key={tx.id} className="hover:bg-blue-50/30 transition-colors group">
-                        <td className="px-5 py-3.5 text-xs font-medium text-slate-500 whitespace-nowrap">
-                          {format(new Date(tx.transaction_date), "dd MMM yyyy")}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${cfg.bg} ${cfg.color}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                            {cfg.label}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 max-w-[200px]">
-                          <p className="text-sm font-medium text-slate-700 truncate flex items-center gap-1.5">
-                            {tx.merchant || tx.note || (
-                              <span className="text-slate-300">—</span>
-                            )}
-                            {(tx as any).items?.length > 0 && (
-                              <span title="Itemized receipt">
-                                <Receipt className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                              </span>
-                            )}
-                          </p>
-                        </td>
-                        <td className="px-5 py-3.5 text-xs text-slate-500 whitespace-nowrap">
-                          {tx.account?.name}
-                        </td>
-                        <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
-                          {tx.type === "transfer" ? (
-                            <span className="text-slate-300 text-xs">—</span>
-                          ) : (
-                            <Select
-                              value={tx.category_id || "unassigned"}
-                              onValueChange={(v) => handleUpdateCategory(tx, v)}
-                              disabled={updateMutation.isPending}
-                            >
-                              <SelectTrigger className="h-7 text-xs border-transparent hover:border-slate-200 bg-transparent hover:bg-slate-50 shadow-none px-2 focus:ring-0">
-                                <SelectValue placeholder="No Category">
-                                  {tx.category?.name || categories?.find((c) => c.id === tx.category_id)?.name || "No Category"}
-                                </SelectValue>
-                              </SelectTrigger>
-                              <SelectContent className="rounded-xl">
-                                <SelectItem value="unassigned" className="text-slate-400 italic">No Category</SelectItem>
-                                {(categories ?? [])
-                                  .filter((c) => c.type === tx.type)
-                                  .map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
+                    ))}
+                  </div>
+                ))
+              ) : !result?.data.length ? (
+                <div className="flex px-5 py-16 justify-center w-full">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                      <ArrowLeftRight className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <p className="text-sm text-slate-500 font-medium">No transactions found</p>
+                    <p className="text-xs text-slate-400">Try adjusting your filters</p>
+                  </div>
+                </div>
+              ) : (
+                result.data.map((tx) => {
+                  const cfg = typeConfig[tx.type];
+                  const Icon = cfg.icon;
+                  return (
+                    <div key={tx.id} className="flex items-center hover:bg-muted/50 transition-colors group cursor-pointer">
+                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs font-medium text-slate-500 whitespace-nowrap overflow-hidden">
+                        {format(new Date(tx.transaction_date), "dd MMM yyyy")}
+                      </div>
+                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
+                        <span className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${cfg.bg} ${cfg.color}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                          {cfg.label}
+                        </span>
+                      </div>
+                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
+                        <p className="text-sm font-medium text-slate-700 truncate flex items-center gap-1.5 text-center">
+                          {tx.merchant || tx.note || (
+                            <span className="text-slate-300">—</span>
                           )}
-                        </td>
-                        <td className={`px-5 py-3.5 text-sm font-bold tabular-nums text-right whitespace-nowrap ${cfg.amountColor}`}>
-                          {tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}
-                          {formatCurrency(tx.amount)}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <button
-                            onClick={() => setDeleteId(tx.id)}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-400 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                          {(tx as any).items?.length > 0 && (
+                            <span title="Itemized receipt">
+                              <Receipt className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs text-slate-500 whitespace-nowrap overflow-hidden">
+                        {tx.account?.name}
+                      </div>
+                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        {tx.type === "transfer" ? (
+                          <span className="text-slate-300 text-xs">—</span>
+                        ) : (
+                          <Select
+                            value={tx.category_id || "unassigned"}
+                            onValueChange={(v) => handleUpdateCategory(tx, v)}
+                            disabled={updateMutation.isPending}
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                            <SelectTrigger className="h-7 w-full max-w-[120px] text-xs border-transparent hover:border-slate-200 bg-transparent hover:bg-slate-50 shadow-none px-2 focus:ring-0">
+                              <SelectValue placeholder="No Category">
+                                {tx.category?.name || categories?.find((c) => c.id === tx.category_id)?.name || "No Category"}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              <SelectItem value="unassigned" className="text-slate-400 italic">No Category</SelectItem>
+                              {(categories ?? [])
+                                .filter((c) => c.type === tx.type)
+                                .map((c) => (
+                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                      <div className={`flex-1 px-4 py-3.5 flex items-center justify-center text-sm font-bold tabular-nums whitespace-nowrap overflow-hidden ${cfg.amountColor}`}>
+                        {tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}
+                        {formatCurrency(tx.amount)}
+                      </div>
+                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
+                        <button
+                          onClick={() => setDeleteId(tx.id)}
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-400 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
           {/* Pagination */}
@@ -529,20 +517,22 @@ function TransactionsContent() {
                 <span className="text-slate-400 ml-1">({result.count} total)</span>
               </p>
               <div className="flex gap-1.5">
-                <button
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
                   disabled={result.page <= 1}
                   onClick={() => setFilters((f) => ({ ...f, page: (f.page || 1) - 1 }))}
-                  className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon-sm"
                   disabled={result.page >= result.total_pages}
                   onClick={() => setFilters((f) => ({ ...f, page: (f.page || 1) + 1 }))}
-                  className="w-8 h-8 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -551,18 +541,18 @@ function TransactionsContent() {
 
       {/* Delete Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent className="rounded-2xl border-slate-200">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-slate-800">Delete Transaction</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-500">
+        <AlertDialogContent className="rounded-3xl border-none p-0 overflow-hidden bg-background">
+          <AlertDialogHeader className="px-6 py-5 border-b border-border/50 bg-muted/30">
+            <AlertDialogTitle className="text-xl font-bold">Delete Transaction</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               Are you sure? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl border-slate-200">Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="px-6 py-4 bg-muted/10">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-rose-500 hover:bg-rose-600 rounded-xl border-0"
+              className="bg-rose-500 hover:bg-rose-600 border-0"
             >
               Delete
             </AlertDialogAction>

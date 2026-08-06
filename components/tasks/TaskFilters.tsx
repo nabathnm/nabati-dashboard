@@ -25,7 +25,7 @@ export default function TaskFiltersBar({
   onSearchChange,
 }: TaskFiltersBarProps) {
   return (
-    <div className="bg-white rounded-md shadow-sm border border-slate-100 px-4 py-3">
+    <div className="bg-white shadow-sm border border-slate-100 px-4 py-3 rounded-xl">
       <div className="flex flex-wrap items-center gap-3">
         {/* Filter icon label */}
         <div className="flex items-center gap-1.5 text-slate-400 shrink-0">

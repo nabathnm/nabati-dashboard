@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ListTodo, FileText, Clock, Hourglass, Tag, Target, CalendarDays } from "lucide-react";
+import { format } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -72,48 +75,61 @@ export default function AddRoutineModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Manual Routine</DialogTitle>
-          <DialogDescription>
-            Add a specific activity to your daily routine for {dateStr}.
-          </DialogDescription>
+          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {dateStr ? format(new Date(dateStr), "MMMM d, yyyy") : ""}
+          </div>
+          <DialogTitle className="text-xl font-bold">Add Manual Routine</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+
+        <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
           <div className="space-y-2">
-            <Label htmlFor="title">Activity Title</Label>
+            <Label htmlFor="title" className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <ListTodo className="h-3.5 w-3.5" /> Activity Title
+            </Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Read a book"
+              className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Input
+            <Label htmlFor="description" className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <FileText className="h-3.5 w-3.5" /> Description (Optional)
+            </Label>
+            <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g., Read chapter 4-5"
+              className="min-h-[80px] resize-none rounded-xl border-input bg-muted/40 shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="scheduledTime">Time</Label>
+              <Label htmlFor="scheduledTime" className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" /> Time
+              </Label>
               <Input
                 id="scheduledTime"
                 type="time"
                 value={scheduledTime}
                 onChange={(e) => setScheduledTime(e.target.value)}
+                className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration (mins)</Label>
+              <Label htmlFor="duration" className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Hourglass className="h-3.5 w-3.5" /> Duration (mins)
+              </Label>
               <Input
                 id="duration"
                 type="number"
@@ -121,6 +137,7 @@ export default function AddRoutineModal({
                 step="5"
                 value={estimatedDuration}
                 onChange={(e) => setEstimatedDuration(e.target.value)}
+                className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40"
                 required
               />
             </div>
@@ -128,36 +145,40 @@ export default function AddRoutineModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category" className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Tag className="h-3.5 w-3.5" /> Category
+              </Label>
               <Select value={category} onValueChange={(val) => val && setCategory(val as RoutineCategory)}>
-                <SelectTrigger id="category">
+                <SelectTrigger id="category" className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus:ring-1 focus:ring-ring/40">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="productivity">Productivity</SelectItem>
-                  <SelectItem value="health">Health</SelectItem>
-                  <SelectItem value="nutrition">Nutrition</SelectItem>
-                  <SelectItem value="personal_growth">Personal Growth</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="productivity" className="rounded-lg">Productivity</SelectItem>
+                  <SelectItem value="health" className="rounded-lg">Health</SelectItem>
+                  <SelectItem value="nutrition" className="rounded-lg">Nutrition</SelectItem>
+                  <SelectItem value="personal_growth" className="rounded-lg">Personal Growth</SelectItem>
+                  <SelectItem value="custom" className="rounded-lg">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority" className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Target className="h-3.5 w-3.5" /> Priority
+              </Label>
               <Select value={priority} onValueChange={(val) => val && setPriority(val)}>
-                <SelectTrigger id="priority">
+                <SelectTrigger id="priority" className="h-11 rounded-xl border-input bg-muted/40 shadow-sm focus:ring-1 focus:ring-ring/40">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2">High</SelectItem>
-                  <SelectItem value="1">Medium</SelectItem>
-                  <SelectItem value="0">Low</SelectItem>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="2" className="rounded-lg">High</SelectItem>
+                  <SelectItem value="1" className="rounded-lg">Medium</SelectItem>
+                  <SelectItem value="0" className="rounded-lg">Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-2">
+          <div className="flex justify-end gap-2 px-6 pb-6 pt-4 border-t border-border/50 bg-muted/10">
             <Button
               type="button"
               variant="outline"
@@ -169,7 +190,6 @@ export default function AddRoutineModal({
             <Button
               type="submit"
               disabled={isPending || !title.trim()}
-              className="bg-violet-600 hover:bg-violet-700 text-white"
             >
               {isPending ? "Adding..." : "Add Routine"}
             </Button>
