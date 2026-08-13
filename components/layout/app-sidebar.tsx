@@ -36,7 +36,6 @@ const navigation = [
   { title: "GitHub", href: "/github", icon: Activity },
   { title: "Transactions", href: "/transactions", icon: ArrowLeftRight },
   { title: "Balance", href: "/balance", icon: Wallet },
-  { title: "Life RPG", href: "/rpg", icon: Gamepad2 },
   { title: "Analytics", href: "/analytics", icon: BarChart3 },
   { title: "AI Evaluation", href: "/ai-evaluation", icon: Brain },
 ];
@@ -61,7 +60,7 @@ export default function FlexibleSidebar({
   const router = useRouter();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
-  
+
   const { user } = useAppSelector((state) => state.auth);
   const supabase = createClient();
   const authLoading = false;
