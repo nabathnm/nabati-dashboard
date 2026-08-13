@@ -55,7 +55,7 @@ export default function DashboardPage() {
           {/* Expense Donut Chart */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Spending Breakdosasasasaswnasdasdsdaasdfdsfdfdfssa</CardTitle>
+              <CardTitle className="text-sm font-semibold">Spending Breakdosasasasaswnasdsdj;ioaerh;asdsdaasdfdsfdfdfssa</CardTitle>
             </CardHeader>
             <CardContent>
               <ExpenseDonutChart year={year} month={month} />
