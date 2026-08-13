@@ -36,6 +36,12 @@ export interface DailyRoutine {
   created_at: string;
 }
 
+export type RoutineDisplayItem = DailyRoutine & {
+  is_class?: boolean;
+  end_time?: string;
+  room?: string;
+};
+
 export interface RoutineUserProfile {
   id: string;
   user_id: string;

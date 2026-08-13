@@ -4,10 +4,6 @@ export type AccountType = "bank" | "ewallet" | "cash" | "savings";
 
 export type TransactionType = "expense" | "income" | "transfer";
 
-export type SharedExpenseStatus = "pending" | "partial" | "settled";
-
-export type ParticipantPaymentStatus = "unpaid" | "paid";
-
 // ─── Database Row Types ──────────────────────────────────────
 
 export interface Profile {
@@ -76,30 +72,6 @@ export interface TransactionItem {
   category?: TransactionCategory;
 }
 
-export interface SharedExpense {
-  id: string;
-  user_id: string;
-  title: string;
-  total_amount: number;
-  description: string | null;
-  date: string;
-  status: SharedExpenseStatus;
-  created_at: string;
-  updated_at: string;
-  // Joined
-  participants?: SharedExpenseParticipant[];
-}
-
-export interface SharedExpenseParticipant {
-  id: string;
-  shared_expense_id: string;
-  name: string;
-  amount_owed: number;
-  amount_paid: number;
-  payment_status: ParticipantPaymentStatus;
-  paid_at: string | null;
-  created_at: string;
-}
 
 export interface MonthlyFinancialSummary {
   id: string;
@@ -254,16 +226,6 @@ export interface UpdateTransactionDTO {
   date?: string;
 }
 
-export interface CreateSharedExpenseDTO {
-  title: string;
-  total_amount: number;
-  description?: string;
-  date: string;
-  participants: {
-    name: string;
-    amount_owed: number;
-  }[];
-}
 
 // ─── Filter / Query Types ────────────────────────────────────
 

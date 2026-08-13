@@ -41,7 +41,6 @@ export async function updateSession(request: NextRequest) {
     "/dashboard",
     "/transactions",
     "/accounts",
-    "/shared-expenses",
     "/analytics",
     "/ai-evaluation",
     "/settings",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
@@ -35,14 +35,14 @@ import {
 import { useTasks } from "@/hooks/use-tasks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import type { DailyRoutine } from "@/types/routine";
+import type { DailyRoutine, RoutineDisplayItem, CollegeClass } from "@/types/routine";
 
-// ─── Helpers ─────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function groupByTimeOfDay(routines: DailyRoutine[]) {
-  const morning: DailyRoutine[] = [];
-  const afternoon: DailyRoutine[] = [];
-  const evening: DailyRoutine[] = [];
+function groupByTimeOfDay(routines: RoutineDisplayItem[]) {
+  const morning: RoutineDisplayItem[] = [];
+  const afternoon: RoutineDisplayItem[] = [];
+  const evening: RoutineDisplayItem[] = [];
 
   routines.forEach((r) => {
     const hour = parseInt(r.scheduled_time.split(":")[0], 10);
@@ -54,7 +54,7 @@ function groupByTimeOfDay(routines: DailyRoutine[]) {
   return { morning, afternoon, evening };
 }
 
-// ─── Page Component ──────────────────────────────────────────
+// â”€â”€â”€ Page Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function RoutinePage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -98,9 +98,48 @@ export default function RoutinePage() {
 
   // Grouped routines
   const grouped = useMemo(() => {
-    if (!routines) return { morning: [], afternoon: [], evening: [] };
-    return groupByTimeOfDay(routines);
-  }, [routines]);
+    const merged: RoutineDisplayItem[] = [...(routines || [])];
+    
+    // Merge college schedule if profile exists
+    if (profile?.college_schedule) {
+      const dayOfWeek = format(selectedDate, "EEEE").toLowerCase();
+      const classesToday = profile.college_schedule[dayOfWeek] as CollegeClass[] | undefined;
+      
+      if (classesToday && classesToday.length > 0) {
+        const classRoutines: RoutineDisplayItem[] = classesToday.map((c) => {
+          // Calculate duration
+          const start = c.start_time.split(":").map(Number);
+          const end = c.end_time.split(":").map(Number);
+          const durationMin = (end[0] * 60 + end[1]) - (start[0] * 60 + start[1]);
+          
+          return {
+            id: c.id,
+            user_id: profile.user_id,
+            title: c.subject,
+            description: null,
+            category: "custom",
+            scheduled_time: c.start_time + ":00",
+            estimated_duration: durationMin > 0 ? durationMin : 0,
+            is_completed: false,
+            completed_at: null,
+            ai_generated: false,
+            priority: 1,
+            routine_date: dateStr,
+            created_at: new Date().toISOString(),
+            is_class: true,
+            end_time: c.end_time,
+            room: c.room,
+          };
+        });
+        merged.push(...classRoutines);
+      }
+    }
+    
+    // Sort by scheduled time
+    merged.sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
+    
+    return groupByTimeOfDay(merged);
+  }, [routines, profile, selectedDate, dateStr]);
 
   // Handler: Generate routine
   const handleGenerate = () => {
@@ -126,7 +165,7 @@ export default function RoutinePage() {
     });
   };
 
-  // ─── Render ────────────────────────────────────────────────
+  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (!isMounted) {
     return (
@@ -164,7 +203,7 @@ export default function RoutinePage() {
       {/* Main two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
 
-        {/* ─── Left Column: Summary Panel (sticky on desktop) ─── */}
+        {/* â”€â”€â”€ Left Column: Summary Panel (sticky on desktop) â”€â”€â”€ */}
         <div className="space-y-5 lg:sticky lg:top-6 lg:self-start">
 
           {/* Date Navigator Card */}
@@ -211,7 +250,7 @@ export default function RoutinePage() {
                   stats.total === 0
                     ? "Generate a routine to get started"
                     : stats.completionRate === 100
-                      ? "🎉 All done! Great job!"
+                      ? "ðŸŽ‰ All done! Great job!"
                       : undefined
                 }
               />
@@ -286,7 +325,7 @@ export default function RoutinePage() {
           </div>
         </div>
 
-        {/* ─── Right Column: Routine Checklist ─── */}
+        {/* â”€â”€â”€ Right Column: Routine Checklist â”€â”€â”€ */}
         <div className="min-w-0">
           {isLoading ? (
             <div className="space-y-3">
