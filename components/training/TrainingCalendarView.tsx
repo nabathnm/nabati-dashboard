@@ -1,7 +1,7 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { useTrainings } from "@/hooks/use-training";
-import { ChevronLeft, ChevronRight, Activity } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/page-header";
 import TrainingCalendarGrid from "./TrainingCalendarGrid";
@@ -41,7 +41,6 @@ export default function TrainingCalendarView() {
         <PageHeader
           title="Training Tracker"
           description="Log and track your sports and workouts."
-          icon={Activity}
         />
 
         <div className="flex items-center gap-4 bg-background p-1.5 rounded-xl shadow-sm border border-border/50">
