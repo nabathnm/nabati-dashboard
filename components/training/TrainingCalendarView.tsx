@@ -38,8 +38,8 @@ export default function TrainingCalendarView() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <PageHeader 
-          title="Training Tracker" 
+        <PageHeader
+          title="Training Tracker"
           description="Log and track your sports and workouts."
           icon={Activity}
         />
@@ -58,7 +58,7 @@ export default function TrainingCalendarView() {
       </div>
 
       {isLoading ? (
-        <div className="h-[600px] flex items-center justify-center border border-border/50 rounded-xl bg-muted/10">
+        <div className="h-150 flex items-center justify-center border border-border/50 rounded-xl bg-muted/10">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
