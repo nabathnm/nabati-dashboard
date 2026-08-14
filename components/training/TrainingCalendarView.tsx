@@ -16,7 +16,7 @@ export default function TrainingCalendarView() {
 
   // Fetch trainings for the current month
   const { data: trainings = [], isLoading } = useTrainings({
-    startDate: format(startOfMonth(currentDate), "yyyy-MM-dd"),
+    startDate: format(startOfMonth(currentDate), "yyyy-MM-dddddd"),
     endDate: format(endOfMonth(currentDate), "yyyy-MM-dd"),
   });
 
