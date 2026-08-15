@@ -163,7 +163,6 @@ export default function RoutinePage() {
     });
   };
 
-  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   if (!isMounted) {
     return (
@@ -201,7 +200,6 @@ export default function RoutinePage() {
       {/* Main two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
 
-        {/* â”€â”€â”€ Left Column: Summary Panel (sticky on desktop) â”€â”€â”€ */}
         <div className="space-y-5 lg:sticky lg:top-6 lg:self-start">
 
           {/* Date Navigator Card */}
@@ -323,7 +321,6 @@ export default function RoutinePage() {
           </div>
         </div>
 
-        {/* â”€â”€â”€ Right Column: Routine Checklist â”€â”€â”€ */}
         <div className="min-w-0">
           {isLoading ? (
             <div className="space-y-3">

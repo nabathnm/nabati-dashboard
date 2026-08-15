@@ -15,7 +15,7 @@ import { HeaderRow } from "@/components/layout/HeaderRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -167,9 +167,7 @@ function TransactionsContent() {
         <PageHeader
           title="Transactions"
           description="Manage your income and expenses"
-        />
-
-        <div className="flex gap-2">
+        >
           <Button
             variant="secondary"
             onClick={handleSyncGmail}
@@ -190,67 +188,89 @@ function TransactionsContent() {
             <Plus className="h-4 w-4" />
             Add Transaction
           </Button>
+        </PageHeader>
 
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                  <ArrowLeftRight className="h-3.5 w-3.5" />
-                  Transaction
-                </div>
-                <DialogTitle className="text-xl font-bold">
-                  New Transaction
-                </DialogTitle>
-              </DialogHeader>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                <ArrowLeftRight className="h-3.5 w-3.5" />
+                Transaction
+              </div>
+              <DialogTitle className="text-xl font-bold">
+                New Transaction
+              </DialogTitle>
+            </DialogHeader>
 
-              <form id="transaction-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5 px-6 py-5 overflow-y-auto">
-                {/* Type selector */}
-                <div className="grid grid-cols-3 gap-2">
-                  {(["expense", "income", "transfer"] as const).map((t) => {
-                    const cfg = typeConfig[t];
-                    const isActive = watchType === t;
-                    return (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setValue("type", t)}
-                        className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 text-xs font-semibold transition-all
+            <form id="transaction-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5 px-6 py-5 overflow-y-auto">
+              {/* Type selector */}
+              <div className="grid grid-cols-3 gap-2">
+                {(["expense", "income", "transfer"] as const).map((t) => {
+                  const cfg = typeConfig[t];
+                  const isActive = watchType === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setValue("type", t)}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 px-2 text-xs font-semibold transition-all
                               ${isActive
-                            ? `${cfg.bg} ${cfg.color} shadow-sm`
-                            : "border-input bg-muted/40 text-muted-foreground hover:bg-muted/60"
-                          }`}
-                      >
-                        <cfg.icon className={`h-4 w-4 ${isActive ? cfg.color : "text-muted-foreground"}`} />
-                        {cfg.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                          ? `${cfg.bg} ${cfg.color} shadow-sm`
+                          : "border-input bg-muted/40 text-muted-foreground hover:bg-muted/60"
+                        }`}
+                    >
+                      <cfg.icon className={`h-4 w-4 ${isActive ? cfg.color : "text-muted-foreground"}`} />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-                {/* Amount */}
+              {/* Amount */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <DollarSign className="h-3.5 w-3.5" /> Amount
+                </Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  className="h-11 text-lg font-bold border-input bg-muted/40 rounded-xl focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors shadow-sm"
+                  {...register("amount", { valueAsNumber: true })}
+                />
+                {errors.amount && (
+                  <p className="text-xs text-rose-500">{errors.amount.message}</p>
+                )}
+              </div>
+
+              {/* Account */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <CreditCard className="h-3.5 w-3.5" /> Account
+                </Label>
+                <Select onValueChange={(v) => { if (v) setValue("account_id", v as string); }}>
+                  <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {(accounts ?? []).map((a) => (
+                      <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.account_id && (
+                  <p className="text-xs text-rose-500">{errors.account_id.message}</p>
+                )}
+              </div>
+
+              {/* Transfer destination */}
+              {watchType === "transfer" && (
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5" /> Amount
+                    <CreditCard className="h-3.5 w-3.5" /> Transfer To
                   </Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    className="h-11 text-lg font-bold border-input bg-muted/40 rounded-xl focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors shadow-sm"
-                    {...register("amount", { valueAsNumber: true })}
-                  />
-                  {errors.amount && (
-                    <p className="text-xs text-rose-500">{errors.amount.message}</p>
-                  )}
-                </div>
-
-                {/* Account */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                    <CreditCard className="h-3.5 w-3.5" /> Account
-                  </Label>
-                  <Select onValueChange={(v) => { if (v) setValue("account_id", v as string); }}>
+                  <Select onValueChange={(v) => { if (v) setValue("destination_account_id", v as string); }}>
                     <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
-                      <SelectValue placeholder="Select account" />
+                      <SelectValue placeholder="Select destination" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       {(accounts ?? []).map((a) => (
@@ -258,91 +278,70 @@ function TransactionsContent() {
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.account_id && (
-                    <p className="text-xs text-rose-500">{errors.account_id.message}</p>
-                  )}
                 </div>
+              )}
 
-                {/* Transfer destination */}
-                {watchType === "transfer" && (
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                      <CreditCard className="h-3.5 w-3.5" /> Transfer To
-                    </Label>
-                    <Select onValueChange={(v) => { if (v) setValue("destination_account_id", v as string); }}>
-                      <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
-                        <SelectValue placeholder="Select destination" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        {(accounts ?? []).map((a) => (
-                          <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+              {/* Category */}
+              {watchType !== "transfer" && (
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                    <Tag className="h-3.5 w-3.5" /> Category
+                  </Label>
+                  <Select onValueChange={(v) => { if (v) setValue("category_id", v as string); }}>
+                    <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      {(categories ?? [])
+                        .filter((c) => c.type === watchType)
+                        .map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Category */}
-                {watchType !== "transfer" && (
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                      <Tag className="h-3.5 w-3.5" /> Category
-                    </Label>
-                    <Select onValueChange={(v) => { if (v) setValue("category_id", v as string); }}>
-                      <SelectTrigger className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus:ring-1 focus:ring-ring/40">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        {(categories ?? [])
-                          .filter((c) => c.type === watchType)
-                          .map((c) => (
-                            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Date */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                    <CalendarDays className="h-3.5 w-3.5" /> Date
-                  </Label>
-                  <Input
-                    type="date"
-                    className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
-                    {...register("date")}
-                  />
+                    </SelectContent>
+                  </Select>
                 </div>
+              )}
 
-                {/* Description */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5" /> Description
-                  </Label>
-                  <Textarea
-                    placeholder="Optional description..."
-                    rows={2}
-                    className="resize-none min-h-[80px] border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
-                    {...register("description")}
-                  />
-                </div>
-              </form>
-              <div className="px-6 pb-6 pt-4 border-t border-border/50 bg-muted/10">
-                <Button
-                  type="submit"
-                  form="transaction-form"
-                  disabled={createMutation.isPending}
-                  className="w-full h-11"
-                >
-                  {createMutation.isPending ? "Adding..." : "Add Transaction"}
-                </Button>
+              {/* Date */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <CalendarDays className="h-3.5 w-3.5" /> Date
+                </Label>
+                <Input
+                  type="date"
+                  className="h-11 border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
+                  {...register("date")}
+                />
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5" /> Description
+                </Label>
+                <Textarea
+                  placeholder="Optional description..."
+                  rows={2}
+                  className="resize-none min-h-[80px] border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
+                  {...register("description")}
+                />
+              </div>
+            </form>
+            <div className="px-6 pb-6 pt-4 border-t border-border/50 bg-muted/10">
+              <Button
+                type="submit"
+                form="transaction-form"
+                disabled={createMutation.isPending}
+                className="w-full h-11"
+              >
+                {createMutation.isPending ? "Adding..." : "Add Transaction"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Filters & View Toggle */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 space-y-3">
+        <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3 shadow-sm">
           {/* Top Row: View Toggle + Search */}
           <div className="flex items-center gap-3">
             <div className="flex items-center bg-muted/50 p-1 rounded-xl border border-border/30">
@@ -361,12 +360,12 @@ function TransactionsContent() {
                 Calendar
               </button>
             </div>
-            <div className="w-px h-6 bg-slate-200 shrink-0" />
+            <div className="w-px h-6 bg-border shrink-0" />
             <div className="relative flex-1 min-w-[180px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search transactions..."
-                className="pl-9 h-9 text-sm bg-slate-50 border-slate-200 rounded-xl focus:bg-white focus:border-blue-300 transition-colors"
+                className="pl-9 h-9 text-sm bg-muted/40 border-border rounded-xl focus:bg-background focus:border-primary/50 transition-colors"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -375,11 +374,11 @@ function TransactionsContent() {
 
           {/* Bottom Row: Filters */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
+            <div className="flex items-center gap-1.5 text-muted-foreground shrink-0">
               <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider hidden sm:block">Filters</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider hidden sm:block">Filters</span>
             </div>
-            <div className="w-px h-5 bg-slate-200 shrink-0" />
+            <div className="w-px h-5 bg-border shrink-0" />
             <Select
               onValueChange={(v) =>
                 setFilters((f) => ({
@@ -389,7 +388,7 @@ function TransactionsContent() {
                 }))
               }
             >
-              <SelectTrigger className="w-[130px] h-8 text-xs bg-slate-50 border-slate-200 rounded-lg hover:bg-white hover:border-blue-300 transition-colors">
+              <SelectTrigger className="w-[130px] h-8 text-xs bg-muted/40 border-border rounded-lg hover:bg-background hover:border-primary/50 transition-colors">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -408,7 +407,7 @@ function TransactionsContent() {
                 }))
               }
             >
-              <SelectTrigger className="w-[150px] h-8 text-xs bg-slate-50 border-slate-200 rounded-lg hover:bg-white hover:border-blue-300 transition-colors">
+              <SelectTrigger className="w-[150px] h-8 text-xs bg-muted/40 border-border rounded-lg hover:bg-background hover:border-primary/50 transition-colors">
                 <SelectValue placeholder="All accounts" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -427,7 +426,7 @@ function TransactionsContent() {
                 }))
               }
             >
-              <SelectTrigger className="w-[150px] h-8 text-xs bg-slate-50 border-slate-200 rounded-lg hover:bg-white hover:border-blue-300 transition-colors">
+              <SelectTrigger className="w-[150px] h-8 text-xs bg-muted/40 border-border rounded-lg hover:bg-background hover:border-primary/50 transition-colors">
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -442,7 +441,7 @@ function TransactionsContent() {
 
         {/* Table or Calendar View */}
         {viewMode === "list" ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
             <div className="overflow-x-auto min-w-[800px]">
               <HeaderRow labels={["Date", "Type", "Description", "Account", "Category", "Amount", "Action"]} />
 
@@ -543,11 +542,11 @@ function TransactionsContent() {
 
             {/* Pagination */}
             {result && result.total_pages > 1 && (
-              <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 bg-slate-50/50">
-                <p className="text-xs text-slate-500">
-                  Page <span className="font-semibold text-slate-700">{result.page}</span> of{" "}
-                  <span className="font-semibold text-slate-700">{result.total_pages}</span>
-                  <span className="text-slate-400 ml-1">({result.count} total)</span>
+              <div className="flex items-center justify-between border-t border-border/50 px-5 py-3 bg-muted/20">
+                <p className="text-xs text-muted-foreground">
+                  Page <span className="font-semibold text-foreground">{result.page}</span> of{" "}
+                  <span className="font-semibold text-foreground">{result.total_pages}</span>
+                  <span className="text-muted-foreground/70 ml-1">({result.count} total)</span>
                 </p>
                 <div className="flex gap-1.5">
                   <Button
