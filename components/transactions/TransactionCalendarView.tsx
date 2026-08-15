@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, addMonths, subMonths, parseISO } from "date-fns";
-import { ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight, Receipt } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight, Receipt, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useTransactions } from "@/hooks/use-transactions";
@@ -9,7 +9,7 @@ import { formatCurrency } from "@/hooks/use-currency";
 import { Transaction } from "@/types/database";
 import { GenericCalendarGrid } from "@/components/ui/generic-calendar-grid";
 
-export default function TransactionCalendarView() {
+export default function TransactionCalendarView({ onAddTransaction }: { onAddTransaction?: (date: Date) => void }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -91,19 +91,21 @@ export default function TransactionCalendarView() {
 
   return (
     <div className="space-y-0">
-      <div className="p-4 border border-border/50 rounded-t-xl flex items-center justify-between bg-muted/30">
-        <h2 className="text-lg font-bold">
-          {format(currentDate, "MMMM yyyy")}
-        </h2>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handlePreviousMonth} className="h-8 w-8 rounded-lg">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())}>
+      <div className="px-5 py-3.5 border border-border/50 rounded-t-xl flex items-center justify-between bg-background">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl border border-border/30">
+            <Button variant="ghost" size="icon" onClick={handlePreviousMonth} className="h-8 w-8 rounded-lg hover:bg-background">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm font-bold w-32 text-center select-none">
+              {format(currentDate, "MMMM yyyy")}
+            </span>
+            <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-8 w-8 rounded-lg hover:bg-background">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => setCurrentDate(new Date())} className="h-8 rounded-lg text-xs font-semibold">
             Today
-          </Button>
-          <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-8 w-8 rounded-lg">
-            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -122,10 +124,19 @@ export default function TransactionCalendarView() {
 
       <Dialog open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
         <DialogContent className="sm:max-w-[500px] overflow-hidden p-0 rounded-2xl border-none shadow-xl bg-slate-50">
-          <DialogHeader className="px-6 py-5 border-b border-slate-200 bg-white">
+          <DialogHeader className="px-6 py-5 border-b border-slate-200 bg-white flex flex-row items-center justify-between">
             <DialogTitle className="text-lg font-bold text-slate-800">
               Transactions on {selectedDate && format(selectedDate, "MMMM d, yyyy")}
             </DialogTitle>
+            {onAddTransaction && selectedDate && (
+              <Button size="sm" onClick={() => {
+                onAddTransaction(selectedDate);
+                setSelectedDate(null);
+              }} className="h-8 flex items-center gap-1 text-xs">
+                <Plus className="w-3.5 h-3.5" />
+                Add Expense
+              </Button>
+            )}
           </DialogHeader>
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-3">
             {selectedDayTransactions.length === 0 ? (

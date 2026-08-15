@@ -111,6 +111,15 @@ function TransactionsContent() {
     [createMutation, reset]
   );
 
+  const handleOpenAddModal = (date?: Date) => {
+    reset({
+      type: initialType || "expense",
+      date: date ? format(date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+      amount: 0,
+    });
+    setDialogOpen(true);
+  };
+
   const handleDelete = useCallback(async () => {
     if (deleteId) {
       await deleteMutation.mutateAsync(deleteId);
@@ -177,13 +186,12 @@ function TransactionsContent() {
 
           <ReceiptScannerModal />
 
+          <Button className="flex items-center gap-1.5" onClick={() => handleOpenAddModal()}>
+            <Plus className="h-4 w-4" />
+            Add Transaction
+          </Button>
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger render={
-              <Button className="flex items-center gap-1.5">
-                <Plus className="h-4 w-4" />
-                Add Transaction
-              </Button>
-            } />
             <DialogContent>
               <DialogHeader>
                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
@@ -333,14 +341,27 @@ function TransactionsContent() {
             </DialogContent>
           </Dialog>
         </div>
-        {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 py-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="text-xs font-medium text-slate-500 hidden sm:block">Filter</span>
+        {/* Filters & View Toggle */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 space-y-3">
+          {/* Top Row: View Toggle + Search */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-muted/50 p-1 rounded-xl border border-border/30">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${viewMode === "list" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                <List className="h-3.5 w-3.5" />
+                List
+              </button>
+              <button
+                onClick={() => setViewMode("calendar")}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all ${viewMode === "calendar" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+                Calendar
+              </button>
             </div>
-            <div className="w-px h-5 bg-slate-200 shrink-0" />
+            <div className="w-px h-6 bg-slate-200 shrink-0" />
             <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <Input
@@ -350,6 +371,15 @@ function TransactionsContent() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+          </div>
+
+          {/* Bottom Row: Filters */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider hidden sm:block">Filters</span>
+            </div>
+            <div className="w-px h-5 bg-slate-200 shrink-0" />
             <Select
               onValueChange={(v) =>
                 setFilters((f) => ({
@@ -359,7 +389,7 @@ function TransactionsContent() {
                 }))
               }
             >
-              <SelectTrigger className="w-[130px] h-9 text-sm bg-slate-50 border-slate-200 rounded-xl hover:bg-white hover:border-blue-300 transition-colors">
+              <SelectTrigger className="w-[130px] h-8 text-xs bg-slate-50 border-slate-200 rounded-lg hover:bg-white hover:border-blue-300 transition-colors">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -378,7 +408,7 @@ function TransactionsContent() {
                 }))
               }
             >
-              <SelectTrigger className="w-[150px] h-9 text-sm bg-slate-50 border-slate-200 rounded-xl hover:bg-white hover:border-blue-300 transition-colors">
+              <SelectTrigger className="w-[150px] h-8 text-xs bg-slate-50 border-slate-200 rounded-lg hover:bg-white hover:border-blue-300 transition-colors">
                 <SelectValue placeholder="All accounts" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -397,7 +427,7 @@ function TransactionsContent() {
                 }))
               }
             >
-              <SelectTrigger className="w-[150px] h-9 text-sm bg-slate-50 border-slate-200 rounded-xl hover:bg-white hover:border-blue-300 transition-colors">
+              <SelectTrigger className="w-[150px] h-8 text-xs bg-slate-50 border-slate-200 rounded-lg hover:bg-white hover:border-blue-300 transition-colors">
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
@@ -407,24 +437,6 @@ function TransactionsContent() {
                 ))}
               </SelectContent>
             </Select>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl ml-auto">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${viewMode === "list" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-              >
-                <List className="h-4 w-4" />
-                List
-              </button>
-              <button
-                onClick={() => setViewMode("calendar")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${viewMode === "calendar" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-              >
-                <CalendarDays className="h-4 w-4" />
-                Calendar
-              </button>
-            </div>
           </div>
         </div>
 
@@ -559,7 +571,7 @@ function TransactionsContent() {
             )}
           </div>
         ) : (
-          <TransactionCalendarView />
+          <TransactionCalendarView onAddTransaction={handleOpenAddModal} />
         )}
       </div>
 
