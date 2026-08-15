@@ -64,7 +64,7 @@ export default function TransactionCalendarView({ currentDate, onAddTransaction 
           )}
         </div>
 
-        <div className="space-y-1 mt-1 overflow-y-auto max-h-[100px] no-scrollbar">
+        <div className="space-y-1 mt-1 overflow-y-auto max-h-25 no-scrollbar">
           {dayIncome > 0 && (
             <div className="px-1.5 py-1 text-[11px] rounded bg-emerald-50 text-emerald-700 font-medium flex items-center gap-1">
               <ArrowUpRight className="w-3 h-3" />
