@@ -7,6 +7,7 @@ import { useTransactions } from "@/hooks/use-transactions";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/hooks/use-currency";
 import { Transaction } from "@/types/database";
+import { GenericCalendarGrid } from "@/components/ui/generic-calendar-grid";
 
 export default function TransactionCalendarView() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -28,119 +29,96 @@ export default function TransactionCalendarView() {
   const handlePreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
-  // Calendar setup
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(monthStart);
-  const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
-  const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
-  const rows = [];
-  let days = [];
-  let day = startDate;
-  let formattedDate = "";
-
   const getTransactionsForDay = (date: Date) => {
     return transactions.filter(t => format(new Date(t.transaction_date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd"));
   };
 
-  while (day <= endDate) {
-    for (let i = 0; i < 7; i++) {
-      formattedDate = format(day, "d");
-      const cloneDay = day;
-      const dayTxs = getTransactionsForDay(cloneDay);
+  const renderDay = (day: Date) => {
+    const dayTxs = getTransactionsForDay(day);
+    let dayIncome = 0;
+    let dayExpense = 0;
+    dayTxs.forEach(tx => {
+      if (tx.type === "income") dayIncome += tx.amount;
+      if (tx.type === "expense") dayExpense += tx.amount;
+    });
 
-      let dayIncome = 0;
-      let dayExpense = 0;
-      dayTxs.forEach(tx => {
-        if (tx.type === "income") dayIncome += tx.amount;
-        if (tx.type === "expense") dayExpense += tx.amount;
-      });
-
-      days.push(
-        <div
-          key={day.toString()}
-          onClick={() => dayTxs.length > 0 && setSelectedDate(cloneDay)}
-          className={cn(
-            "min-h-[120px] p-2 border-r border-b border-slate-200/60 relative transition-colors",
-            !isSameMonth(day, monthStart) ? "bg-slate-50/50 text-slate-400" : "bg-white hover:bg-slate-50",
-            isSameDay(day, new Date()) && "bg-blue-50/30",
-            dayTxs.length > 0 ? "cursor-pointer" : "cursor-default"
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <span className={cn(
-              "text-sm font-medium",
-              isSameDay(day, new Date()) ? "h-7 w-7 bg-blue-600 text-white rounded-full flex items-center justify-center" : "h-7 w-7 flex items-center justify-center"
-            )}>
-              {formattedDate}
+    return (
+      <div
+        onClick={() => dayTxs.length > 0 && setSelectedDate(day)}
+        className={cn(
+          "min-h-[130px] p-2 border-r border-b border-border/50 relative transition-colors h-full",
+          !isSameMonth(day, startOfMonth(currentDate))
+            ? "bg-muted/10 text-foreground/50"
+            : "bg-card/30 hover:bg-card/50",
+          isSameDay(day, new Date()) && "bg-accent/10",
+          dayTxs.length > 0 ? "cursor-pointer" : "cursor-default"
+        )}
+      >
+        <div className="flex justify-between items-start mb-2">
+          <span className={cn(
+            "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full",
+            isSameDay(day, new Date()) ? "bg-primary text-primary-foreground" : ""
+          )}>
+            {format(day, "d")}
+          </span>
+          {dayTxs.length > 0 && (
+            <span className="text-[10px] text-muted-foreground font-medium">
+              {dayTxs.length} tx
             </span>
-            {dayTxs.length > 0 && (
-              <span className="text-[10px] text-slate-400 font-medium">
-                {dayTxs.length} tx
-              </span>
-            )}
-          </div>
-
-          <div className="mt-2 space-y-1">
-            {dayIncome > 0 && (
-              <div className="px-1.5 py-1 text-[11px] rounded bg-emerald-50 text-emerald-700 font-medium flex items-center gap-1">
-                <ArrowUpRight className="w-3 h-3" />
-                {formatCurrency(dayIncome)}
-              </div>
-            )}
-            {dayExpense > 0 && (
-              <div className="px-1.5 py-1 text-[11px] rounded bg-rose-50 text-rose-700 font-medium flex items-center gap-1">
-                <ArrowDownRight className="w-3 h-3" />
-                {formatCurrency(dayExpense)}
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      );
-      day = addDays(day, 1);
-    }
-    rows.push(
-      <div className="grid grid-cols-7" key={day.toString()}>
-        {days}
+
+        <div className="space-y-1 mt-1 overflow-y-auto max-h-[100px] no-scrollbar">
+          {dayIncome > 0 && (
+            <div className="px-1.5 py-1 text-[11px] rounded bg-emerald-50 text-emerald-700 font-medium flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              {formatCurrency(dayIncome)}
+            </div>
+          )}
+          {dayExpense > 0 && (
+            <div className="px-1.5 py-1 text-[11px] rounded bg-rose-50 text-rose-700 font-medium flex items-center gap-1">
+              <ArrowDownRight className="w-3 h-3" />
+              {formatCurrency(dayExpense)}
+            </div>
+          )}
+        </div>
       </div>
     );
-    days = [];
-  }
+  };
 
   // Selected Day Transactions Modal
   const selectedDayTransactions = selectedDate ? getTransactionsForDay(selectedDate) : [];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
-        <h2 className="text-lg font-bold text-slate-800">
+    <div className="space-y-0">
+      <div className="p-4 border border-border/50 rounded-t-xl flex items-center justify-between bg-muted/30">
+        <h2 className="text-lg font-bold">
           {format(currentDate, "MMMM yyyy")}
         </h2>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
+          <Button variant="ghost" size="icon" onClick={handlePreviousMonth} className="h-8 w-8 rounded-lg">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
+          <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())}>
             Today
           </Button>
-          <Button variant="outline" size="icon" onClick={handleNextMonth}>
+          <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-8 w-8 rounded-lg">
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
-          <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-              <div key={day} className="py-3 text-center text-sm font-semibold text-slate-500 border-r border-slate-200 last:border-r-0">
-                {day}
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col">{rows}</div>
-        </div>
-      </div>
+      <GenericCalendarGrid
+        currentMonth={currentDate}
+        renderDay={renderDay}
+        weekStartsOn={1}
+        headers={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+        classNames={{
+          root: "border border-border/50 rounded-b-xl overflow-hidden bg-card/10",
+          headerRow: "border-b border-primary/20 bg-primary",
+          headerCell: "py-3 text-center text-xs font-bold text-primary-foreground uppercase tracking-wider border-r border-primary/20 last:border-0",
+        }}
+      />
 
       <Dialog open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
         <DialogContent className="sm:max-w-[500px] overflow-hidden p-0 rounded-2xl border-none shadow-xl bg-slate-50">

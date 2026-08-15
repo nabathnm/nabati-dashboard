@@ -1,18 +1,10 @@
 "use client";
 
-import {
-    startOfMonth,
-    endOfMonth,
-    startOfWeek,
-    endOfWeek,
-    isSameDay,
-    addDays,
-    format,
-} from "date-fns";
+import { format, startOfMonth } from "date-fns";
 import { useMemo } from "react";
 import { Task } from "@/types/task";
-import { HeaderRow } from "@/components/layout/HeaderRow";
 import CalendarDayCell from "./CalendarDayCell";
+import { GenericCalendarGrid } from "@/components/ui/generic-calendar-grid";
 
 interface CalendarGridProps {
     currentMonth: Date;
@@ -23,8 +15,6 @@ interface CalendarGridProps {
     onTaskDescriptionChange?: (taskId: string, newDescription: string) => void;
 }
 
-const LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
 export default function CalendarGrid({
     currentMonth,
     tasks,
@@ -34,9 +24,6 @@ export default function CalendarGrid({
     onTaskDescriptionChange,
 }: CalendarGridProps) {
     const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart);
-    const endDate = endOfWeek(monthEnd);
 
     const tasksByDate = useMemo(() => {
         const map = new Map<string, Task[]>();
@@ -49,42 +36,34 @@ export default function CalendarGrid({
         return map;
     }, [tasks]);
 
-    const rows = [];
-    let days = [];
-    let day = startDate;
+    const renderDay = (day: Date) => {
+        const dateStr = format(day, "yyyy-MM-dd");
+        const dayTasks = tasksByDate.get(dateStr) || [];
 
-    while (day <= endDate) {
-        for (let i = 0; i < 7; i++) {
-            const cloneDay = day;
-            const dateStr = format(cloneDay, "yyyy-MM-dd");
-            const dayTasks = tasksByDate.get(dateStr) || [];
-
-            days.push(
-                <CalendarDayCell
-                    key={day.toString()}
-                    day={cloneDay}
-                    monthStart={monthStart}
-                    dayTasks={dayTasks}
-                    onDateClick={onDateClick}
-                    onTaskDateChange={onTaskDateChange}
-                    onTaskStatusChange={onTaskStatusChange}
-                    onTaskDescriptionChange={onTaskDescriptionChange}
-                />
-            );
-            day = addDays(day, 1);
-        }
-        rows.push(
-            <div className="grid grid-cols-7" key={day.toString()}>
-                {days}
-            </div>
+        return (
+            <CalendarDayCell
+                day={day}
+                monthStart={monthStart}
+                dayTasks={dayTasks}
+                onDateClick={onDateClick}
+                onTaskDateChange={onTaskDateChange}
+                onTaskStatusChange={onTaskStatusChange}
+                onTaskDescriptionChange={onTaskDescriptionChange}
+            />
         );
-        days = [];
-    }
+    };
 
     return (
-        <div className="border border-border/50 rounded-xl overflow-hidden bg-card/10">
-            <HeaderRow labels={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]} />
-            <div className="flex flex-col">{rows}</div>
-        </div>
+        <GenericCalendarGrid
+            currentMonth={currentMonth}
+            renderDay={renderDay}
+            weekStartsOn={0}
+            headers={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}
+            classNames={{
+                root: "border border-border/50 rounded-xl overflow-hidden bg-card/10",
+                headerRow: "border-b border-primary/20 bg-primary",
+                headerCell: "py-3 text-center text-xs font-bold text-primary-foreground uppercase tracking-wider border-r border-primary/20 last:border-0",
+            }}
+        />
     );
 }

@@ -407,7 +407,7 @@ function TransactionsContent() {
                 ))}
               </SelectContent>
             </Select>
-            
+
             {/* View Mode Toggle */}
             <div className="flex items-center bg-slate-100 p-1 rounded-xl ml-auto">
               <button
@@ -430,134 +430,134 @@ function TransactionsContent() {
 
         {/* Table or Calendar View */}
         {viewMode === "list" ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="overflow-x-auto min-w-[800px]">
-            <HeaderRow labels={["Date", "Type", "Description", "Account", "Category", "Amount", "Action"]} />
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="overflow-x-auto min-w-[800px]">
+              <HeaderRow labels={["Date", "Type", "Description", "Account", "Category", "Amount", "Action"]} />
 
-            <div className="divide-y divide-slate-50 bg-card/10 flex flex-col">
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex border-b border-border/50 last:border-0">
-                    {Array.from({ length: 7 }).map((_, j) => (
-                      <div key={j} className="flex-1 px-4 py-4">
-                        <Skeleton className="h-4 w-full" />
-                      </div>
-                    ))}
-                  </div>
-                ))
-              ) : !result?.data.length ? (
-                <div className="flex px-5 py-16 justify-center w-full">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                      <ArrowLeftRight className="h-5 w-5 text-slate-400" />
+              <div className="divide-y divide-slate-50 bg-card/10 flex flex-col">
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex border-b border-border/50 last:border-0">
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <div key={j} className="flex-1 px-4 py-4">
+                          <Skeleton className="h-4 w-full" />
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-sm text-slate-500 font-medium">No transactions found</p>
-                    <p className="text-xs text-slate-400">Try adjusting your filters</p>
+                  ))
+                ) : !result?.data.length ? (
+                  <div className="flex px-5 py-16 justify-center w-full">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                        <ArrowLeftRight className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <p className="text-sm text-slate-500 font-medium">No transactions found</p>
+                      <p className="text-xs text-slate-400">Try adjusting your filters</p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                result.data.map((tx) => {
-                  const cfg = typeConfig[tx.type];
-                  const Icon = cfg.icon;
-                  return (
-                    <div key={tx.id} className="flex items-center hover:bg-muted/50 transition-colors group cursor-pointer">
-                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs font-medium text-slate-500 whitespace-nowrap overflow-hidden">
-                        {format(new Date(tx.transaction_date), "dd MMM yyyy")}
-                      </div>
-                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
-                        <span className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${cfg.bg} ${cfg.color}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                          {cfg.label}
-                        </span>
-                      </div>
-                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
-                        <p className="text-sm font-medium text-slate-700 truncate flex items-center gap-1.5 text-center">
-                          {tx.merchant || tx.note || (
-                            <span className="text-slate-300">—</span>
+                ) : (
+                  result.data.map((tx) => {
+                    const cfg = typeConfig[tx.type];
+                    const Icon = cfg.icon;
+                    return (
+                      <div key={tx.id} className="flex items-center hover:bg-muted/50 transition-colors group cursor-pointer">
+                        <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs font-medium text-slate-500 whitespace-nowrap overflow-hidden">
+                          {format(new Date(tx.transaction_date), "dd MMM yyyy")}
+                        </div>
+                        <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
+                          <span className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${cfg.bg} ${cfg.color}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                            {cfg.label}
+                          </span>
+                        </div>
+                        <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
+                          <p className="text-sm font-medium text-slate-700 truncate flex items-center gap-1.5 text-center">
+                            {tx.merchant || tx.note || (
+                              <span className="text-slate-300">—</span>
+                            )}
+                            {(tx as any).items?.length > 0 && (
+                              <span title="Itemized receipt">
+                                <Receipt className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs text-slate-500 whitespace-nowrap overflow-hidden">
+                          {tx.account?.name}
+                        </div>
+                        <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                          {tx.type === "transfer" ? (
+                            <span className="text-slate-300 text-xs">—</span>
+                          ) : (
+                            <Select
+                              value={tx.category_id || "unassigned"}
+                              onValueChange={(v) => handleUpdateCategory(tx, v)}
+                              disabled={updateMutation.isPending}
+                            >
+                              <SelectTrigger className="h-7 w-full max-w-[120px] text-xs border-transparent hover:border-slate-200 bg-transparent hover:bg-slate-50 shadow-none px-2 focus:ring-0">
+                                <SelectValue placeholder="No Category">
+                                  {tx.category?.name || categories?.find((c) => c.id === tx.category_id)?.name || "No Category"}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent className="rounded-xl">
+                                <SelectItem value="unassigned" className="text-slate-400 italic">No Category</SelectItem>
+                                {(categories ?? [])
+                                  .filter((c) => c.type === tx.type)
+                                  .map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
                           )}
-                          {(tx as any).items?.length > 0 && (
-                            <span title="Itemized receipt">
-                              <Receipt className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs text-slate-500 whitespace-nowrap overflow-hidden">
-                        {tx.account?.name}
-                      </div>
-                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        {tx.type === "transfer" ? (
-                          <span className="text-slate-300 text-xs">—</span>
-                        ) : (
-                          <Select
-                            value={tx.category_id || "unassigned"}
-                            onValueChange={(v) => handleUpdateCategory(tx, v)}
-                            disabled={updateMutation.isPending}
+                        </div>
+                        <div className={`flex-1 px-4 py-3.5 flex items-center justify-center text-sm font-bold tabular-nums whitespace-nowrap overflow-hidden ${cfg.amountColor}`}>
+                          {tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}
+                          {formatCurrency(tx.amount)}
+                        </div>
+                        <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
+                          <button
+                            onClick={() => setDeleteId(tx.id)}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-400 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
                           >
-                            <SelectTrigger className="h-7 w-full max-w-[120px] text-xs border-transparent hover:border-slate-200 bg-transparent hover:bg-slate-50 shadow-none px-2 focus:ring-0">
-                              <SelectValue placeholder="No Category">
-                                {tx.category?.name || categories?.find((c) => c.id === tx.category_id)?.name || "No Category"}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                              <SelectItem value="unassigned" className="text-slate-400 italic">No Category</SelectItem>
-                              {(categories ?? [])
-                                .filter((c) => c.type === tx.type)
-                                .map((c) => (
-                                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                        )}
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
-                      <div className={`flex-1 px-4 py-3.5 flex items-center justify-center text-sm font-bold tabular-nums whitespace-nowrap overflow-hidden ${cfg.amountColor}`}>
-                        {tx.type === "expense" ? "−" : tx.type === "income" ? "+" : ""}
-                        {formatCurrency(tx.amount)}
-                      </div>
-                      <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
-                        <button
-                          onClick={() => setDeleteId(tx.id)}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-400 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* Pagination */}
-          {result && result.total_pages > 1 && (
-            <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 bg-slate-50/50">
-              <p className="text-xs text-slate-500">
-                Page <span className="font-semibold text-slate-700">{result.page}</span> of{" "}
-                <span className="font-semibold text-slate-700">{result.total_pages}</span>
-                <span className="text-slate-400 ml-1">({result.count} total)</span>
-              </p>
-              <div className="flex gap-1.5">
-                <Button
-                  variant="secondary"
-                  size="icon-sm"
-                  disabled={result.page <= 1}
-                  onClick={() => setFilters((f) => ({ ...f, page: (f.page || 1) - 1 }))}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon-sm"
-                  disabled={result.page >= result.total_pages}
-                  onClick={() => setFilters((f) => ({ ...f, page: (f.page || 1) + 1 }))}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                    );
+                  })
+                )}
               </div>
             </div>
-          )}
-        </div>
+
+            {/* Pagination */}
+            {result && result.total_pages > 1 && (
+              <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 bg-slate-50/50">
+                <p className="text-xs text-slate-500">
+                  Page <span className="font-semibold text-slate-700">{result.page}</span> of{" "}
+                  <span className="font-semibold text-slate-700">{result.total_pages}</span>
+                  <span className="text-slate-400 ml-1">({result.count} total)</span>
+                </p>
+                <div className="flex gap-1.5">
+                  <Button
+                    variant="secondary"
+                    size="icon-sm"
+                    disabled={result.page <= 1}
+                    onClick={() => setFilters((f) => ({ ...f, page: (f.page || 1) - 1 }))}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon-sm"
+                    disabled={result.page >= result.total_pages}
+                    onClick={() => setFilters((f) => ({ ...f, page: (f.page || 1) + 1 }))}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <TransactionCalendarView />
         )}
