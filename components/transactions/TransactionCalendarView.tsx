@@ -9,8 +9,7 @@ import { formatCurrency } from "@/hooks/use-currency";
 import { Transaction } from "@/types/database";
 import { GenericCalendarGrid } from "@/components/ui/generic-calendar-grid";
 
-export default function TransactionCalendarView({ onAddTransaction }: { onAddTransaction?: (date: Date) => void }) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+export default function TransactionCalendarView({ currentDate, onAddTransaction }: { currentDate: Date, onAddTransaction?: (date: Date) => void }) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // Fetch transactions for the current month view
@@ -25,9 +24,6 @@ export default function TransactionCalendarView({ onAddTransaction }: { onAddTra
   });
 
   const transactions = result?.data || [];
-
-  const handlePreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   const getTransactionsForDay = (date: Date) => {
     return transactions.filter(t => format(new Date(t.transaction_date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd"));
@@ -91,32 +87,13 @@ export default function TransactionCalendarView({ onAddTransaction }: { onAddTra
 
   return (
     <div className="space-y-0">
-      <div className="px-5 py-3.5 border border-border/50 rounded-t-xl flex items-center justify-between bg-background">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl border border-border/30">
-            <Button variant="ghost" size="icon" onClick={handlePreviousMonth} className="h-8 w-8 rounded-lg hover:bg-background">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-bold w-32 text-center select-none">
-              {format(currentDate, "MMMM yyyy")}
-            </span>
-            <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-8 w-8 rounded-lg hover:bg-background">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <Button variant="secondary" size="sm" onClick={() => setCurrentDate(new Date())} className="h-8 rounded-lg text-xs font-semibold">
-            Today
-          </Button>
-        </div>
-      </div>
-
       <GenericCalendarGrid
         currentMonth={currentDate}
         renderDay={renderDay}
         weekStartsOn={1}
         headers={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
         classNames={{
-          root: "border border-border/50 rounded-b-xl overflow-hidden bg-card/10",
+          root: "border border-border/50 rounded-xl overflow-hidden bg-card/10",
           headerRow: "border-b border-primary/20 bg-primary",
           headerCell: "py-3 text-center text-xs font-bold text-primary-foreground uppercase tracking-wider border-r border-primary/20 last:border-0",
         }}
