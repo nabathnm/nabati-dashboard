@@ -1,6 +1,5 @@
-import React, { useState } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, addMonths, subMonths, parseISO } from "date-fns";
-import { ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight, Receipt, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownRight, Receipt, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useTransactions } from "@/hooks/use-transactions";
@@ -8,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/hooks/use-currency";
 import { Transaction } from "@/types/database";
 import { GenericCalendarGrid } from "@/components/ui/generic-calendar-grid";
+import { useState } from "react";
 
 export default function TransactionCalendarView({ currentDate, onAddTransaction }: { currentDate: Date, onAddTransaction?: (date: Date) => void }) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -100,50 +100,53 @@ export default function TransactionCalendarView({ currentDate, onAddTransaction 
       />
 
       <Dialog open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
-        <DialogContent className="sm:max-w-[500px] overflow-hidden p-0 rounded-2xl border-none shadow-xl bg-slate-50">
-          <DialogHeader className="px-6 py-5 border-b border-slate-200 bg-white flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-bold text-slate-800">
-              Transactions on {selectedDate && format(selectedDate, "MMMM d, yyyy")}
+        <DialogContent showCloseButton={false} className="sm:max-w-112.5 overflow-hidden border-none shadow-xl bg-white">
+          <DialogHeader className="bg-primary flex flex-row justify-between font-semibold">
+            <DialogTitle className="text-[18px] font-medium text-white tracking-wide">
+              Transaction on {selectedDate && format(selectedDate, "MMMM d, yyyy")}
             </DialogTitle>
-            {onAddTransaction && selectedDate && (
-              <Button size="sm" onClick={() => {
-                onAddTransaction(selectedDate);
-                setSelectedDate(null);
-              }} className="h-8 flex items-center gap-1 text-xs">
-                <Plus className="w-3.5 h-3.5" />
-                Add Expense
-              </Button>
-            )}
+            <button onClick={() => setSelectedDate(null)} className="text-white/90 hover:text-white transition-colors">
+              <X className="h-5 w-5" />
+            </button>
           </DialogHeader>
-          <div className="px-6 py-4 max-h-[60vh] overflow-y-auto space-y-3">
+          <div className="max-h-[60vh] pt-3 pb-5 px-3 py-2 flex flex-col gap-2">
             {selectedDayTransactions.length === 0 ? (
-              <p className="text-center text-slate-500 py-4">No transactions this day.</p>
+              <p className="text-center text-white py-4">No transactions this day.</p>
             ) : (
               selectedDayTransactions.map(tx => (
-                <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                  <div className="flex items-center gap-3">
+                <div key={tx.id} className={cn(
+                  "flex items-center justify-between px-3 py-2 rounded-md",
+                  tx.type === "income" ? "bg-[#ECFDF5]" :
+                    tx.type === "expense" ? "bg-[#FFF1F2]" :
+                      "bg-blue-50/80"
+                )}>
+                  {/* ICON */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center",
-                      tx.type === "income" ? "bg-emerald-100 text-emerald-600" :
-                        tx.type === "expense" ? "bg-rose-100 text-rose-600" :
-                          "bg-blue-100 text-blue-600"
+                      "flex items-center justify-center shrink-0",
+                      tx.type === "income" ? "text-[#007A55]" :
+                        tx.type === "expense" ? "text-[#C70036]" :
+                          "text-blue-600"
                     )}>
-                      {tx.type === "income" ? <ArrowUpRight className="w-5 h-5" /> :
-                        tx.type === "expense" ? <ArrowDownRight className="w-5 h-5" /> :
-                          <Receipt className="w-5 h-5" />}
+                      {tx.type === "income" ? <ArrowUpRight className="w-6.5 h-6.5  stroke-[2.5]" /> :
+                        tx.type === "expense" ? <ArrowDownRight className="w-6.5  h-6.5  stroke-[2.5]" /> :
+                          <Receipt className="w-6.5 h-6.5 stroke-[2.5]" />}
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">{tx.merchant || tx.note || "Unknown"}</p>
-                      <p className="text-xs text-slate-500">{tx.category?.name || "No Category"} • {tx.account?.name}</p>
+
+                    {/* TEXT */}
+                    <div className="flex flex-col min-w-0 gap-1">
+                      <p className="text-[14px] w-60 font-semibold text-slate-900 leading-none truncate">{tx.merchant || tx.note || "Unknown"}</p>
+                      <p className="text-[12px] text-slate-600 leading-none truncate">{tx.category?.name || "No Category"}</p>
                     </div>
                   </div>
+
+                  {/* HARGA */}
                   <div className={cn(
-                    "text-sm font-bold tabular-nums",
-                    tx.type === "income" ? "text-emerald-600" :
-                      tx.type === "expense" ? "text-rose-600" :
+                    "text-[14px] font-bold tabular-nums shrink-0",
+                    tx.type === "income" ? "text-[#007A55]" :
+                      tx.type === "expense" ? "text-[#C70036]" :
                         "text-blue-600"
                   )}>
-                    {tx.type === "income" ? "+" : tx.type === "expense" ? "-" : ""}
                     {formatCurrency(tx.amount)}
                   </div>
                 </div>

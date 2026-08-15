@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 
 interface TransactionHeaderProps {
@@ -28,7 +28,7 @@ export function TransactionHeader({
         {isSyncing ? (
           <RefreshCw className="h-4 w-4 animate-spin text-sky-400" />
         ) : (
-          <div className="w-4 h-4 rounded-full bg-sky-400" />
+          <RefreshCw className="h-4 w-4 text-sky-400" />
         )}
         <span className="font-medium text-sm">Sync Transaction</span>
       </Button>
@@ -37,7 +37,7 @@ export function TransactionHeader({
         className="flex items-center gap-2 rounded-full bg-[#42A5F5] hover:bg-[#2196F3] text-white border-0 shadow-sm transition-all"
         onClick={onAdd}
       >
-        <div className="w-4 h-4 rounded-full bg-white" />
+        <Plus className="w-4 h-4 text-white" />
         <span className="font-medium text-sm">Add Transaction</span>
       </Button>
     </PageHeader>
