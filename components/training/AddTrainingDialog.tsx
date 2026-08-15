@@ -77,7 +77,8 @@ export default function AddTrainingDialog({ isOpen, onOpenChange, selectedDate, 
     }
   }, [existingTraining, isOpen]);
 
-  const handleExerciseChange = (val: string) => {
+  const handleExerciseChange = (val: string | null) => {
+    if (!val) return;
     setExerciseName(val);
     if (EXERCISE_MUSCLE_MAP[val]) {
       setTargetMuscles(EXERCISE_MUSCLE_MAP[val]);
@@ -209,3 +210,4 @@ export default function AddTrainingDialog({ isOpen, onOpenChange, selectedDate, 
     </Dialog>
   );
 }
+

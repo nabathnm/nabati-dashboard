@@ -37,7 +37,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import type { DailyRoutine, RoutineDisplayItem, CollegeClass } from "@/types/routine";
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function groupByTimeOfDay(routines: RoutineDisplayItem[]) {
   const morning: RoutineDisplayItem[] = [];
@@ -54,7 +53,6 @@ function groupByTimeOfDay(routines: RoutineDisplayItem[]) {
   return { morning, afternoon, evening };
 }
 
-// â”€â”€â”€ Page Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function RoutinePage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -99,19 +97,19 @@ export default function RoutinePage() {
   // Grouped routines
   const grouped = useMemo(() => {
     const merged: RoutineDisplayItem[] = [...(routines || [])];
-    
+
     // Merge college schedule if profile exists
     if (profile?.college_schedule) {
       const dayOfWeek = format(selectedDate, "EEEE").toLowerCase();
       const classesToday = profile.college_schedule[dayOfWeek] as CollegeClass[] | undefined;
-      
+
       if (classesToday && classesToday.length > 0) {
         const classRoutines: RoutineDisplayItem[] = classesToday.map((c) => {
           // Calculate duration
           const start = c.start_time.split(":").map(Number);
           const end = c.end_time.split(":").map(Number);
           const durationMin = (end[0] * 60 + end[1]) - (start[0] * 60 + start[1]);
-          
+
           return {
             id: c.id,
             user_id: profile.user_id,
@@ -134,10 +132,10 @@ export default function RoutinePage() {
         merged.push(...classRoutines);
       }
     }
-    
+
     // Sort by scheduled time
     merged.sort((a, b) => a.scheduled_time.localeCompare(b.scheduled_time));
-    
+
     return groupByTimeOfDay(merged);
   }, [routines, profile, selectedDate, dateStr]);
 

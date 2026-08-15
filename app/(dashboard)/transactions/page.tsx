@@ -6,9 +6,10 @@ import { useSearchParams } from "next/navigation";
 import {
   Plus, Search, ArrowUpRight, ArrowDownLeft, ArrowLeftRight,
   Trash2, Mail, RefreshCw, SlidersHorizontal, ChevronLeft, ChevronRight,
-  Receipt, DollarSign, CreditCard, Tag, CalendarDays, FileText
+  Receipt, DollarSign, CreditCard, Tag, CalendarDays, FileText, List
 } from "lucide-react";
 import { format } from "date-fns";
+import TransactionCalendarView from "@/components/transactions/TransactionCalendarView";
 import { PageHeader } from "@/components/layout/page-header";
 import { HeaderRow } from "@/components/layout/HeaderRow";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,7 @@ function TransactionsContent() {
   const [dialogOpen, setDialogOpen] = useState(initialAction === "add");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   const queryClient = useQueryClient();
   const activeFilters = useMemo(
@@ -405,10 +407,29 @@ function TransactionsContent() {
                 ))}
               </SelectContent>
             </Select>
+            
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl ml-auto">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${viewMode === "list" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                <List className="h-4 w-4" />
+                List
+              </button>
+              <button
+                onClick={() => setViewMode("calendar")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors ${viewMode === "calendar" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                <CalendarDays className="h-4 w-4" />
+                Calendar
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table or Calendar View */}
+        {viewMode === "list" ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
           <div className="overflow-x-auto min-w-[800px]">
             <HeaderRow labels={["Date", "Type", "Description", "Account", "Category", "Amount", "Action"]} />
@@ -537,6 +558,9 @@ function TransactionsContent() {
             </div>
           )}
         </div>
+        ) : (
+          <TransactionCalendarView />
+        )}
       </div>
 
       {/* Delete Dialog */}
