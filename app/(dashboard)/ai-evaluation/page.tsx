@@ -113,7 +113,7 @@ export default function AIEvaluationPage() {
             <div className="h-20 w-20 rounded-full bg-violet-500/10 flex items-center justify-center mb-6">
               <Brain className="h-10 w-10 text-violet-400" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">No Insights Availableeeeeeeeeeeeeeeee</h2>
+            <h2 className="text-xl font-semibold mb-2">No Insights Availableeeeeeeeeeeeeeeeadsasde</h2>
             <p className="text-muted-foreground max-w-md mb-6">
               We don't have any AI evaluation generated for {format(selectedDate, "MMMM yyyy")} yet.
               Click the generate button above to analyze your financial data.
