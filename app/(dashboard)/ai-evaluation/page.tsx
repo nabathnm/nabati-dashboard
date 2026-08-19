@@ -49,7 +49,7 @@ export default function AIEvaluationPage() {
       toast.success("AI Insights generated successfully");
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to generate AI insights");
+      toast.error(error.message || "Failed to generate AI insightsassaaassa");
     },
   });
 
