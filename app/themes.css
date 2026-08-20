@@ -1,5 +1,5 @@
 :root {
-  /* Background: soft cool lavender-blue */
+  /* Light Theme — Soft cool lavender-blue */
   --background: #f8fbff;
   --foreground: #1e293b;
 
@@ -11,7 +11,7 @@
   --popover: oklch(0.985 0.005 260);
   --popover-foreground: oklch(0.2 0.02 260);
 
-  /* Primary: deep indigo/violet */
+  /* Primary: vibrant cyan-blue */
   --primary: #47b4f5;
   --primary-foreground: oklch(0.98 0.005 260);
 
@@ -19,7 +19,7 @@
   --secondary: #47b4f5;
   --secondary-foreground: oklch(0.25 0.03 265);
 
-  /* Muted: gentle gray-blue (foreground darkened for AA-safe contrast, was 4.59:1 → 6.48:1) */
+  /* Muted: gentle gray-blue */
   --muted: oklch(0.91 0.015 260);
   --muted-foreground: oklch(0.42 0.025 260);
 
@@ -29,13 +29,14 @@
 
   /* Destructive */
   --destructive: oklch(62.352% 0.21141 18.859);
+  --destructive-foreground: oklch(0.98 0.005 260);
 
   /* Borders: subtle cool gray */
   --border: oklch(0.88 0.015 260);
   --input: oklch(0.9 0.015 265);
   --ring: #47b4f5;
 
-  /* Chart colors — vibrant but harmonious */
+  /* Chart colors */
   --chart-1: oklch(0.6 0.2 265);
   --chart-2: oklch(0.65 0.18 160);
   --chart-3: oklch(0.7 0.15 80);
@@ -44,7 +45,7 @@
 
   --radius: 0.875rem;
 
-  /* Sidebar: transparent to show gradient, white text for blue bg */
+  /* Sidebar: transparent / gradient bg */
   --sidebar: transparent;
   --sidebar-foreground: oklch(0.98 0.005 260);
   --sidebar-primary: oklch(0.98 0.005 260);
@@ -53,4 +54,74 @@
   --sidebar-accent-foreground: oklch(0.98 0.005 260);
   --sidebar-border: oklch(1 0 0 / 0.15);
   --sidebar-ring: oklch(1 0 0 / 0.3);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NORD THEME (DARK MODE)
+   Official Palette: Polar Night, Snow Storm, Frost, Aurora
+   ══════════════════════════════════════════════════════════════════════════ */
+.dark {
+  /* Polar Night: nord0 (#2E3440) for main background */
+  --background: #2e3440;
+  /* Snow Storm: nord6 (#ECEFF4) for high-contrast foreground */
+  --foreground: #eceff4;
+
+  /* Polar Night: nord1 (#3B4252) for elevated cards & modals */
+  --card: #3b4252;
+  /* Snow Storm: nord5 (#E5E9F0) for card text */
+  --card-foreground: #e5e9f0;
+
+  /* Popover: nord1 (#3B4252) */
+  --popover: #3b4252;
+  --popover-foreground: #eceff4;
+
+  /* Frost: nord8 (#88C0D0) Ice Cyan as Primary brand accent */
+  --primary: #88c0d0;
+  /* Polar Night: nord0 (#2E3440) dark contrast text over primary */
+  --primary-foreground: #2e3440;
+
+  /* Polar Night: nord2 (#434C5E) for secondary interactive elements */
+  --secondary: #434c5e;
+  --secondary-foreground: #eceff4;
+
+  /* Polar Night: nord2 (#434C5E) for muted blocks */
+  --muted: #434c5e;
+  /* Snow Storm: nord4 (#D8DEE9) for muted subtexts */
+  --muted-foreground: #d8dee9;
+
+  /* Polar Night: nord3 (#4C566A) for subtle accents/hover */
+  --accent: #434c5e;
+  --accent-foreground: #eceff4;
+
+  /* Aurora: nord11 (#BF616A) Aurora Red for destructive actions */
+  --destructive: #bf616a;
+  --destructive-foreground: #eceff4;
+
+  /* Polar Night: nord2 (#434C5E) & nord3 (#4C566A) for borders and inputs */
+  --border: #434c5e;
+  --input: #434c5e;
+  /* Frost: nord8 (#88C0D0) focus ring */
+  --ring: #88c0d0;
+
+  /* Frost & Aurora Chart Palette */
+  --chart-1: #88c0d0;
+  /* nord8 - Frost Cyan */
+  --chart-2: #81a1c1;
+  /* nord9 - Frost Glacial Blue */
+  --chart-3: #a3be8c;
+  /* nord14 - Aurora Green */
+  --chart-4: #ebcb8b;
+  /* nord13 - Aurora Yellow */
+  --chart-5: #b48ead;
+  /* nord15 - Aurora Purple */
+
+  /* Nord Sidebar Palette */
+  --sidebar: #2e3440;
+  --sidebar-foreground: #e5e9f0;
+  --sidebar-primary: #88c0d0;
+  --sidebar-primary-foreground: #2e3440;
+  --sidebar-accent: #3b4252;
+  --sidebar-accent-foreground: #eceff4;
+  --sidebar-border: #434c5e;
+  --sidebar-ring: #88c0d0;
 }
