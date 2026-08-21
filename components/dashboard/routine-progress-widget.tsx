@@ -25,15 +25,15 @@ export default function RoutineProgressWidget() {
     <div className="glass-card rounded-3xl p-5 transition-all duration-300 hover:shadow-lg">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
-            <Sunrise className="w-3.5 h-3.5 text-amber-500" />
+          <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-[#ebcb8b]/20 flex items-center justify-center">
+            <Sunrise className="w-3.5 h-3.5 text-amber-500 dark:text-[#ebcb8b]" />
           </div>
-          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+          <h4 className="text-xs font-bold text-slate-800 dark:text-[#eceff4] uppercase tracking-wider">
             Today&apos;s Routine
           </h4>
         </div>
-        <Link href="/routine">
-          <span className="text-[9px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-wider">
+        <Link href="/daily">
+          <span className="text-[9px] font-bold text-indigo-600 dark:text-[#88c0d0] hover:text-indigo-700 dark:hover:text-[#81a1c1] uppercase tracking-wider">
             View
           </span>
         </Link>
@@ -42,21 +42,21 @@ export default function RoutineProgressWidget() {
       {total === 0 ? (
         <p className="text-[10px] text-muted-foreground font-semibold">
           No routine generated yet.{" "}
-          <Link href="/routine" className="text-indigo-600 hover:underline">
+          <Link href="/daily" className="text-indigo-600 dark:text-[#88c0d0] hover:underline">
             Get started →
           </Link>
         </p>
       ) : (
         <>
           {/* Progress Bar */}
-          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-2">
+          <div className="w-full h-2 bg-slate-100 dark:bg-[#434c5e] rounded-full overflow-hidden mb-2">
             <div
-              className="h-full rounded-full transition-all duration-500 ease-out bg-emerald-500"
+              className="h-full rounded-full transition-all duration-500 ease-out bg-emerald-500 dark:bg-[#a3be8c]"
               style={{ width: `${rate}%` }}
             />
           </div>
           <p className="text-[10px] font-semibold text-muted-foreground">
-            <span className="text-slate-800 font-bold">{completed}/{total}</span>{" "}
+            <span className="text-slate-800 dark:text-[#eceff4] font-bold">{completed}/{total}</span>{" "}
             completed ({rate}%)
           </p>
         </>
