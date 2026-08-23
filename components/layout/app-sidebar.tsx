@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -123,11 +123,11 @@ export default function FlexibleSidebar({
   return (
     <>
       {/* Mobile Header */}
-      <div className="sm:hidden fixed top-0 left-0 w-full h-16 bg-linear-to-r from-[#47b4f5] to-[#2d7ad6] z-50 flex items-center px-6 border-b border-white/10 shadow-md">
-        <button onClick={() => setIsMobileOpen(true)} className="text-white">
+      <div className="sm:hidden fixed top-0 left-0 w-full h-16 bg-linear-to-r from-[#47b4f5] to-[#2d7ad6] dark:from-[#3b4252] dark:to-[#2e3440] z-50 flex items-center px-6 border-b border-white/10 dark:border-[#4c566a] shadow-md">
+        <button onClick={() => setIsMobileOpen(true)} className="text-white dark:text-[#d8dee9]">
           <Menu size={28} />
         </button>
-        <div className="ml-4 font-bold text-lg text-white">
+        <div className="ml-4 font-bold text-lg text-white dark:text-[#eceff4]">
           GrowthMe
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function FlexibleSidebar({
       {/* Main Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-linear-to-b from-[#47b4f5] via-[#3a9de8] to-[#2d7ad6] shadow-2xl flex flex-col transition-all duration-300 ease-in-out font-sans",
+          "fixed inset-y-0 left-0 z-50 bg-linear-to-b from-[#47b4f5] via-[#3a9de8] to-[#2d7ad6] dark:from-[#3b4252] dark:via-[#2e3440] dark:to-[#2e3440] shadow-2xl flex flex-col transition-all duration-300 ease-in-out font-sans dark:border-r dark:border-[#4c566a]",
           isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full sm:translate-x-0",
           isExpanded ? "sm:w-72 rounded-r-[1.7rem]" : "sm:w-20 rounded-r-[1.7rem]",
         )}
@@ -159,7 +159,7 @@ export default function FlexibleSidebar({
         {/* Desktop Collapse Toggle */}
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="hidden sm:flex lg:hidden absolute -right-3 top-1/2 -translate-y-1/2 z-50 h-6 w-6 items-center justify-center rounded-full bg-white text-[#3a9de8] shadow-md hover:scale-110 transition-transform"
+          className="hidden sm:flex lg:hidden absolute -right-3 top-1/2 -translate-y-1/2 z-50 h-6 w-6 items-center justify-center rounded-full bg-white dark:bg-[#4c566a] text-[#3a9de8] dark:text-[#eceff4] shadow-md hover:scale-110 transition-transform"
         >
           {isExpanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
@@ -168,7 +168,7 @@ export default function FlexibleSidebar({
         <div className="relative h-24 flex items-center justify-center px-4 shrink-0 mx-4">
           <div
             className={cn(
-              "font-extrabold text-white transition-all duration-300 tracking-wider",
+              "font-extrabold text-white dark:text-[#eceff4] transition-all duration-300 tracking-wider",
               isWide ? "text-2xl" : "text-xl",
             )}
           >
@@ -194,8 +194,8 @@ export default function FlexibleSidebar({
                   className={cn(
                     "relative z-10 flex items-center h-12 transition-all duration-200 w-full font-medium text-[15px]",
                     isActive
-                      ? "bg-white text-[#3a9de8] shadow-sm"
-                      : "text-white hover:bg-white/10 hover:text-white",
+                      ? "bg-white text-[#3a9de8] shadow-sm dark:bg-[#88c0d0] dark:text-[#2e3440] dark:shadow-none"
+                      : "text-white hover:bg-white/10 hover:text-white dark:text-[#d8dee9] dark:hover:bg-[#4c566a] dark:hover:text-[#eceff4]",
                     isWide
                       ? "rounded-full justify-start px-5"
                       : "rounded-full justify-center",
@@ -206,7 +206,7 @@ export default function FlexibleSidebar({
                       size={20}
                       className={cn(
                         "transition-colors duration-200",
-                        isActive ? "text-[#3a9de8]" : "text-white group-hover:text-white",
+                        isActive ? "text-[#3a9de8] dark:text-[#2e3440]" : "text-white group-hover:text-white dark:text-[#d8dee9] dark:group-hover:text-[#eceff4]",
                       )}
                     />
                   </div>
@@ -233,12 +233,12 @@ export default function FlexibleSidebar({
               <button
                 onClick={() => setIsProfileOpen((prev) => !prev)}
                 className={cn(
-                  "flex items-center w-full transition-all duration-200 hover:bg-white/10 group rounded-full",
+                  "flex items-center w-full transition-all duration-200 hover:bg-white/10 dark:hover:bg-[#4c566a] group rounded-full",
                   isWide ? "gap-3 px-3 py-2" : "justify-center py-2",
                 )}
               >
-                <Avatar className="shrink-0 h-10 w-10 ring-2 ring-white/50 shadow-lg shadow-blue-700/20 group-hover:ring-white transition-colors duration-200">
-                  <AvatarFallback className="bg-white/25 text-white font-bold text-sm">
+                <Avatar className="shrink-0 h-10 w-10 ring-2 ring-white/50 shadow-lg shadow-blue-700/20 dark:shadow-none group-hover:ring-white dark:group-hover:ring-[#88c0d0] transition-colors duration-200">
+                  <AvatarFallback className="bg-white/25 dark:bg-[#434c5e] text-white dark:text-[#d8dee9] font-bold text-sm">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
@@ -251,10 +251,10 @@ export default function FlexibleSidebar({
                       : "opacity-0 w-0 absolute pointer-events-none overflow-hidden",
                   )}
                 >
-                  <p className="text-white text-[13px] font-bold truncate tracking-wide">
+                  <p className="text-white dark:text-[#eceff4] text-[13px] font-bold truncate tracking-wide">
                     {userName}
                   </p>
-                  <p className="text-white/70 text-[11px] font-medium mt-0.5">
+                  <p className="text-white/70 dark:text-[#d8dee9]/70 text-[11px] font-medium mt-0.5">
                     ID:{userId}
                   </p>
                 </div>
@@ -263,7 +263,7 @@ export default function FlexibleSidebar({
               {/* Dropdown — opens upward */}
               <div
                 className={cn(
-                  "absolute left-0 bottom-full mb-2 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100",
+                  "absolute left-0 bottom-full mb-2 bg-white dark:bg-[#3b4252] rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-[#4c566a]",
                   "transition-all duration-200 ease-in-out transform origin-bottom-left z-50",
                   isWide ? "w-56" : "w-48",
                   isProfileOpen
@@ -271,28 +271,28 @@ export default function FlexibleSidebar({
                     : "scale-95 opacity-0 invisible translate-y-1",
                 )}
               >
-                <div className="px-4 py-3 border-b border-slate-50 bg-slate-50/50">
-                  <p className="text-slate-800 text-sm font-bold truncate">
+                <div className="px-4 py-3 border-b border-slate-50 dark:border-[#4c566a] bg-slate-50/50 dark:bg-[#2e3440]">
+                  <p className="text-slate-800 dark:text-[#eceff4] text-sm font-bold truncate">
                     {userName}
                   </p>
-                  <p className="text-slate-500 text-xs mt-0.5 font-medium truncate">
+                  <p className="text-slate-500 dark:text-[#d8dee9] text-xs mt-0.5 font-medium truncate">
                     {user?.email}
                   </p>
                 </div>
-                <div className="py-1 border-b border-slate-50">
+                <div className="py-1 border-b border-slate-50 dark:border-[#4c566a]">
                   <Link
                     href="/settings"
                     onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors duration-200 font-medium"
+                    className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-slate-600 dark:text-[#d8dee9] hover:bg-slate-50 dark:hover:bg-[#434c5e] hover:text-slate-900 dark:hover:text-[#eceff4] transition-colors duration-200 font-medium"
                   >
-                    <ExternalLink size={16} className="text-slate-400" />
+                    <ExternalLink size={16} className="text-slate-400 dark:text-[#88c0d0]" />
                     <span>Settings</span>
                   </Link>
                 </div>
                 <div className="py-1">
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 transition-colors duration-200 font-medium"
+                    className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm text-rose-500 dark:text-[#bf616a] hover:bg-rose-50 dark:hover:bg-[#434c5e]/50 transition-colors duration-200 font-medium"
                   >
                     <LogOut size={16} />
                     <span>Logout</span>
