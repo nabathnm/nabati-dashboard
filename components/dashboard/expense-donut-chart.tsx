@@ -35,10 +35,10 @@ export default function ExpenseDonutChart({ year, month }: ExpenseDonutChartProp
   if (chartData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full w-full min-h-[300px] text-center text-muted-foreground p-6">
-        <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+        <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-[#434c5e]/40 flex items-center justify-center mb-3">
           <span className="text-2xl">📊</span>
         </div>
-        <p className="text-sm font-semibold text-slate-700">No expenses this month</p>
+        <p className="text-sm font-semibold text-slate-700 dark:text-[#eceff4]">No expenses this month</p>
         <p className="text-xs mt-1 max-w-[200px]">Start tracking your transactions to see your spending breakdown.</p>
       </div>
     );
@@ -48,7 +48,7 @@ export default function ExpenseDonutChart({ year, month }: ExpenseDonutChartProp
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xl border border-slate-700">
+        <div className="bg-slate-900 dark:bg-[#2e3440] text-white dark:text-[#eceff4] text-xs font-bold px-3 py-2 rounded-xl shadow-xl border border-slate-700 dark:border-[#434c5e]">
           {data.name}: {formatCurrency(data.value)} ({data.percentage.toFixed(1)}%)
         </div>
       );
@@ -81,7 +81,7 @@ export default function ExpenseDonutChart({ year, month }: ExpenseDonutChartProp
               align="right"
               layout="vertical"
               iconType="circle"
-              wrapperStyle={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}
+              wrapperStyle={{ fontSize: "12px", fontWeight: "600" }}
             />
           </PieChart>
         </ResponsiveContainer>

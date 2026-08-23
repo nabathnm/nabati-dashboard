@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import ReduxProvider from "@/redux/provider";
 import QueryProvider from "@/providers/query-provider";
 import AuthProvider from "@/providers/auth-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "sonner";
 
 const inter = Inter({
@@ -13,7 +14,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Nabath ",
+  title: "Nabath",
   description:
     "Your personal financial operating system. Track income, expenses, accounts, and get AI-powered insights.",
 };
@@ -24,25 +25,36 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", inter.variable, "font-sans")}>
-      <body className="min-h-full flex flex-col bg-orange text-foreground">
-        <ReduxProvider>
-          <QueryProvider>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-          </QueryProvider>
-        </ReduxProvider>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "var(--card)",
-              border: "1px solid var(--border)",
-              color: "var(--card-foreground)",
-            },
-          }}
-        />
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn("h-full antialiased", inter.variable, "font-sans")}
+    >
+      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ReduxProvider>
+            <QueryProvider>
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </QueryProvider>
+          </ReduxProvider>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: "var(--card)",
+                border: "1px solid var(--border)",
+                color: "var(--card-foreground)",
+              },
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

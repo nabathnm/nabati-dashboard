@@ -18,7 +18,7 @@
   --popover: oklch(0.985 0.005 260);
   --popover-foreground: oklch(0.2 0.02 260);
 
-  /* Primary: deep indigo/violet */
+  /* Primary: vibrant cyan-blue */
   --primary: #47b4f5;
   --primary-foreground: oklch(0.98 0.005 260);
 
@@ -26,7 +26,7 @@
   --secondary: #47b4f5;
   --secondary-foreground: oklch(0.25 0.03 265);
 
-  /* Muted: gentle gray-blue (foreground darkened for AA-safe contrast, was 4.59:1 → 6.48:1) */
+  /* Muted: gentle gray-blue */
   --muted: oklch(0.91 0.015 260);
   --muted-foreground: oklch(0.42 0.025 260);
 
@@ -36,13 +36,14 @@
 
   /* Destructive */
   --destructive: oklch(62.352% 0.21141 18.859);
+  --destructive-foreground: oklch(0.98 0.005 260);
 
   /* Borders: subtle cool gray */
   --border: oklch(0.88 0.015 260);
   --input: oklch(0.9 0.015 265);
   --ring: #47b4f5;
 
-  /* Chart colors — vibrant but harmonious */
+  /* Chart colors */
   --chart-1: oklch(0.6 0.2 265);
   --chart-2: oklch(0.65 0.18 160);
   --chart-3: oklch(0.7 0.15 80);
@@ -51,7 +52,7 @@
 
   --radius: 0.875rem;
 
-  /* Sidebar: transparent to show gradient, white text for blue bg */
+  /* Sidebar: transparent / gradient bg */
   --sidebar: transparent;
   --sidebar-foreground: oklch(0.98 0.005 260);
   --sidebar-primary: oklch(0.98 0.005 260);
