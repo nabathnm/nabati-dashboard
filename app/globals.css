@@ -55,7 +55,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    background: linear-gradient(135deg, #7cb8f8 0%, #5ba4f7 100%);
+    background: var(--body-bg);
     background-attachment: fixed;
     color: var(--foreground);
   }
@@ -85,15 +85,15 @@
 /* ─── Glassmorphism Utilities ─── */
 @layer utilities {
   .glass {
-    background: rgba(255, 255, 255, 0.35);
+    background: var(--glass-bg);
     backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--glass-border);
   }
   .glass-card {
-    background: rgba(255, 255, 255, 0.45);
+    background: var(--glass-card-bg);
     backdrop-filter: blur(24px) saturate(120%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.03);
+    border: 1px solid var(--glass-card-border);
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.05);
   }
   .gradient-border {
     position: relative;
@@ -104,12 +104,7 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(
-      135deg,
-      oklch(0.6 0.18 265 / 25%),
-      oklch(0.7 0.15 200 / 15%),
-      transparent
-    );
+    background: var(--gradient-border-bg);
     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     mask-composite: exclude;
     pointer-events: none;

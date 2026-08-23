@@ -1,4 +1,11 @@
 :root {
+  --body-bg: linear-gradient(135deg, #7cb8f8 0%, #5ba4f7 100%);
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-card-bg: rgba(255, 255, 255, 0.45);
+  --glass-card-border: rgba(255, 255, 255, 0.5);
+  --gradient-border-bg: linear-gradient(135deg, oklch(0.6 0.18 265 / 25%), oklch(0.7 0.15 200 / 15%), transparent);
+
   /* Background: soft cool lavender-blue */
   --background: #f8fbff;
   --foreground: #1e293b;
@@ -53,4 +60,66 @@
   --sidebar-accent-foreground: oklch(0.98 0.005 260);
   --sidebar-border: oklch(1 0 0 / 0.15);
   --sidebar-ring: oklch(1 0 0 / 0.3);
+}
+
+.dark {
+  --body-bg: linear-gradient(135deg, #2e3440 0%, #3b4252 100%);
+  --glass-bg: rgba(59, 66, 82, 0.5); /* Nord 1 with opacity */
+  --glass-border: rgba(76, 86, 106, 0.6); /* Nord 3 */
+  --glass-card-bg: rgba(59, 66, 82, 0.65);
+  --glass-card-border: rgba(76, 86, 106, 0.7);
+  --gradient-border-bg: linear-gradient(135deg, rgba(136, 192, 208, 0.25), rgba(129, 161, 193, 0.15), transparent);
+
+  /* Nord Dark Palette */
+  --background: #2e3440; /* Nord 0 */
+  --foreground: #d8dee9; /* Nord 4 */
+
+  /* Cards: Nord 1 */
+  --card: #3b4252;
+  --card-foreground: #d8dee9;
+
+  /* Popover: same as cards */
+  --popover: #3b4252;
+  --popover-foreground: #d8dee9;
+
+  /* Primary: Frost (Nord 8) */
+  --primary: #88c0d0;
+  --primary-foreground: #2e3440;
+
+  /* Secondary: Frost (Nord 9) */
+  --secondary: #81a1c1;
+  --secondary-foreground: #eceff4;
+
+  /* Muted: Nord 3 */
+  --muted: #4c566a;
+  --muted-foreground: #d8dee9;
+
+  /* Accent: Nord 2 */
+  --accent: #434c5e;
+  --accent-foreground: #eceff4;
+
+  /* Destructive: Aurora (Nord 11) */
+  --destructive: #bf616a;
+
+  /* Borders: Nord 3 */
+  --border: #4c566a;
+  --input: #4c566a;
+  --ring: #88c0d0;
+
+  /* Chart colors */
+  --chart-1: #88c0d0;
+  --chart-2: #81a1c1;
+  --chart-3: #5e81ac;
+  --chart-4: #8fbcbb;
+  --chart-5: #a3be8c;
+
+  /* Sidebar */
+  --sidebar: #2e3440;
+  --sidebar-foreground: #d8dee9;
+  --sidebar-primary: #88c0d0;
+  --sidebar-primary-foreground: #2e3440;
+  --sidebar-accent: #434c5e;
+  --sidebar-accent-foreground: #d8dee9;
+  --sidebar-border: #4c566a;
+  --sidebar-ring: #88c0d0;
 }
