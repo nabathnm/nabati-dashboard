@@ -40,12 +40,11 @@ export default function SchedulePage() {
                     onClick={() => setProfileModalOpen(true)}
                     title="Edit Goals & Preferences"
                 >
-                    <Settings className="w-4.5 h-4.5" />
+                    <Settings className="w-5 h-5" />
                 </Button>
                 <Button
                     onClick={classModal.openForNewClass}
                     disabled={isSaving}
-                    className="flex items-center gap-2"
                 >
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <BookOpen className="w-4 h-4" />}
                     Add Class

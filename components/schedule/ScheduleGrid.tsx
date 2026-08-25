@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -54,25 +54,31 @@ export default function ScheduleGrid({
         className={cn(
           "absolute left-1 right-1 rounded-sm overflow-hidden cursor-pointer transition-opacity hover:opacity-80 border-0 border-l-4",
           isPractical
-            ? "bg-yellow-500/10 border-yellow-500"
-            : "bg-emerald-500/10 border-emerald-500"
+            ? "bg-yellow-500/20 border-yellow-500"
+            : "bg-emerald-500/20 border-emerald-500"
         )}
         style={{ top: `${top}px`, height: `${height}px` }}
       >
         <div className="px-2 py-1.5 h-full flex flex-col justify-start overflow-hidden">
           <p className={cn(
             "text-[11px] font-semibold truncate leading-tight",
-            isPractical ? "text-yellow-700" : "text-emerald-700"
+            isPractical ? "text-yellow-900 dark:text-yellow-300" : "text-emerald-900 dark:text-emerald-300"
           )}>
             {cls.subject}
           </p>
           {height >= 40 && (
-            <p className="text-[9px] text-slate-400 font-medium mt-0.5 truncate">
-              {cls.start_time}–{cls.end_time}
+            <p className={cn(
+              "text-[9px] font-medium mt-0.5 truncate",
+              isPractical ? "text-yellow-800/80 dark:text-yellow-300/80" : "text-emerald-800/80 dark:text-emerald-300/80"
+            )}>
+              {cls.start_time}-{cls.end_time}
             </p>
           )}
           {height >= 56 && cls.room && (
-            <p className="text-[9px] text-slate-400 truncate mt-0.5">
+            <p className={cn(
+              "text-[9px] truncate mt-0.5",
+              isPractical ? "text-yellow-800/80 dark:text-yellow-300/80" : "text-emerald-800/80 dark:text-emerald-300/80"
+            )}>
               {cls.room}
             </p>
           )}
@@ -91,11 +97,11 @@ export default function ScheduleGrid({
       {/* Grid Body */}
       <div className="flex relative overflow-y-auto">
         {/* Time Labels */}
-        <div className="w-16 shrink-0 border-r border-border/50 bg-white/50 backdrop-blur-md z-10 sticky left-0">
+        <div className="w-16 shrink-0 border-r border-border/50 bg-white/5 dark:bg-black/5 backdrop-blur-md z-10 sticky left-0">
           <div className="h-[20px] w-full" /> {/* Top padding so first label isn't clipped */}
           {HOURS.map((hour) => (
             <div key={hour} className="h-[60px] relative">
-              <span className="absolute -top-2.5 left-0 right-3 text-right text-[10px] font-bold text-slate-400">
+              <span className="absolute -top-2.5 left-0 right-3 text-right text-[10px] font-bold text-slate-500 dark:text-slate-400">
                 {hour.toString().padStart(2, "0")}:00
               </span>
             </div>
@@ -134,3 +140,4 @@ export default function ScheduleGrid({
     </div>
   );
 }
+

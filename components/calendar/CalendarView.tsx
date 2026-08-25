@@ -71,7 +71,8 @@ export default function CalendarView() {
         description="View your tasks and deadlines across the month"
       >
         <div className="flex items-center gap-2">
-          <Button onClick={goToToday}>
+          <Button
+            onClick={goToToday}>
             Today
           </Button>
           <div className="flex items-center gap-1">
@@ -86,7 +87,6 @@ export default function CalendarView() {
             <Button
               variant="secondary"
               size="icon"
-              className="h-11 w-11"
               onClick={nextMonth}
               title="Next Month"
             >
@@ -94,7 +94,7 @@ export default function CalendarView() {
             </Button>
           </div>
         </div>
-      </PageHeader>
+      </PageHeader >
 
       <CalendarGrid
         currentMonth={currentMonth}
@@ -118,6 +118,6 @@ export default function CalendarView() {
         onSubmit={handleAddTask}
         isSubmitting={createTask.isPending}
       />
-    </div>
+    </div >
   );
 }

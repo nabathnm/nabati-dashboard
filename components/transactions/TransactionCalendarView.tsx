@@ -42,7 +42,7 @@ export default function TransactionCalendarView({ currentDate, onAddTransaction 
       <div
         onClick={() => dayTxs.length > 0 && setSelectedDate(day)}
         className={cn(
-          "min-h-[130px] p-2 border-r border-b border-border/50 relative transition-colors h-full",
+          "min-h-32.5 p-2 border-r border-b border-border/50 relative transition-colors h-full",
           !isSameMonth(day, startOfMonth(currentDate))
             ? "bg-muted/10 text-foreground/50"
             : "bg-card/30 hover:bg-card/50",
@@ -66,13 +66,13 @@ export default function TransactionCalendarView({ currentDate, onAddTransaction 
 
         <div className="space-y-1 mt-1 overflow-y-auto max-h-25 no-scrollbar">
           {dayIncome > 0 && (
-            <div className="px-1.5 py-1 text-[11px] rounded bg-emerald-50 text-emerald-700 font-medium flex items-center gap-1">
+            <div className="px-1.5 py-1 text-[11px] rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 font-medium flex items-center gap-1">
               <ArrowUpRight className="w-3 h-3" />
               {formatCurrency(dayIncome)}
             </div>
           )}
           {dayExpense > 0 && (
-            <div className="px-1.5 py-1 text-[11px] rounded bg-rose-50 text-rose-700 font-medium flex items-center gap-1">
+            <div className="px-1.5 py-1 text-[11px] rounded bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 font-medium flex items-center gap-1">
               <ArrowDownRight className="w-3 h-3" />
               {formatCurrency(dayExpense)}
             </div>
@@ -100,7 +100,7 @@ export default function TransactionCalendarView({ currentDate, onAddTransaction 
       />
 
       <Dialog open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
-        <DialogContent showCloseButton={false} className="sm:max-w-112.5 overflow-hidden border-none shadow-xl bg-white">
+        <DialogContent showCloseButton={false} className="sm:max-w-112.5 overflow-hidden border-none shadow-xl bg-background">
           <DialogHeader className="bg-primary flex flex-row justify-between font-semibold">
             <DialogTitle className="text-[18px] font-medium text-white tracking-wide">
               Transaction on {selectedDate && format(selectedDate, "MMMM d, yyyy")}
@@ -111,22 +111,22 @@ export default function TransactionCalendarView({ currentDate, onAddTransaction 
           </DialogHeader>
           <div className="max-h-[60vh] pt-3 pb-5 px-3 py-2 flex flex-col gap-2">
             {selectedDayTransactions.length === 0 ? (
-              <p className="text-center text-white py-4">No transactions this day.</p>
+              <p className="text-center text-muted-foreground py-4">No transactions this day.</p>
             ) : (
               selectedDayTransactions.map(tx => (
                 <div key={tx.id} className={cn(
                   "flex items-center justify-between px-3 py-2 rounded-md",
-                  tx.type === "income" ? "bg-[#ECFDF5]" :
-                    tx.type === "expense" ? "bg-[#FFF1F2]" :
-                      "bg-blue-50/80"
+                  tx.type === "income" ? "bg-emerald-50 dark:bg-emerald-500/10" :
+                    tx.type === "expense" ? "bg-rose-50 dark:bg-rose-500/10" :
+                      "bg-blue-50/80 dark:bg-blue-500/10"
                 )}>
                   {/* ICON */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className={cn(
                       "flex items-center justify-center shrink-0",
-                      tx.type === "income" ? "text-[#007A55]" :
-                        tx.type === "expense" ? "text-[#C70036]" :
-                          "text-blue-600"
+                      tx.type === "income" ? "text-emerald-700 dark:text-emerald-400" :
+                        tx.type === "expense" ? "text-rose-700 dark:text-rose-400" :
+                          "text-blue-600 dark:text-blue-400"
                     )}>
                       {tx.type === "income" ? <ArrowUpRight className="w-6.5 h-6.5  stroke-[2.5]" /> :
                         tx.type === "expense" ? <ArrowDownRight className="w-6.5  h-6.5  stroke-[2.5]" /> :
@@ -135,17 +135,17 @@ export default function TransactionCalendarView({ currentDate, onAddTransaction 
 
                     {/* TEXT */}
                     <div className="flex flex-col min-w-0 gap-1">
-                      <p className="text-[14px] w-60 font-semibold text-slate-900 leading-none truncate">{tx.merchant || tx.note || "Unknown"}</p>
-                      <p className="text-[12px] text-slate-600 leading-none truncate">{tx.category?.name || "No Category"}</p>
+                      <p className="text-[14px] w-60 font-semibold text-foreground leading-none truncate">{tx.merchant || tx.note || "Unknown"}</p>
+                      <p className="text-[12px] text-muted-foreground leading-none truncate">{tx.category?.name || "No Category"}</p>
                     </div>
                   </div>
 
                   {/* HARGA */}
                   <div className={cn(
                     "text-[14px] font-bold tabular-nums shrink-0",
-                    tx.type === "income" ? "text-[#007A55]" :
-                      tx.type === "expense" ? "text-[#C70036]" :
-                        "text-blue-600"
+                    tx.type === "income" ? "text-emerald-700 dark:text-emerald-400" :
+                      tx.type === "expense" ? "text-rose-700 dark:text-rose-400" :
+                        "text-blue-600 dark:text-blue-400"
                   )}>
                     {formatCurrency(tx.amount)}
                   </div>

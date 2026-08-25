@@ -26,6 +26,7 @@ import {
 import { useAppSelector } from "@/redux/hooks";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const navigation = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -127,9 +128,10 @@ export default function FlexibleSidebar({
         <button onClick={() => setIsMobileOpen(true)} className="text-white dark:text-[#d8dee9]">
           <Menu size={28} />
         </button>
-        <div className="ml-4 font-bold text-lg text-white dark:text-[#eceff4]">
+        <div className="ml-4 font-bold text-lg text-white dark:text-[#eceff4] flex-1">
           nabati
         </div>
+        <ThemeToggle />
       </div>
 
       {/* Mobile Overlay */}
@@ -165,7 +167,7 @@ export default function FlexibleSidebar({
         </button>
 
         {/* Logo / Brand Area */}
-        <div className="relative h-24 flex items-center justify-center px-4 shrink-0 mx-4">
+        <div className="relative h-24 flex items-center justify-between px-4 shrink-0 mx-4">
           <div
             className={cn(
               "font-extrabold text-white dark:text-[#eceff4] transition-all duration-300 tracking-wider",
@@ -174,6 +176,11 @@ export default function FlexibleSidebar({
           >
             {isWide ? "nabati" : "n"}
           </div>
+          {isWide && (
+            <div className="hidden sm:flex transition-opacity duration-300">
+              <ThemeToggle />
+            </div>
+          )}
         </div>
 
         {/* Navigation Items */}

@@ -26,6 +26,7 @@ export default function TaskPopover({ task, onDateChange, onStatusChange, onDesc
                         className={cn(
                             "text-xs px-2 py-1 rounded-sm border-0 border-l-4 truncate flex items-center cursor-pointer w-full text-left transition-opacity hover:opacity-80",
                             categoryStyles[task.category]?.bg,
+                            categoryStyles[task.category]?.color,
                             task.status === "done" ? "opacity-50" : ""
                         )}
                         title={task.title}

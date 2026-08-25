@@ -21,11 +21,11 @@ export function PageHeader({
   return (
     <div className={cn("flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10", className)}>
       <div>
-        <h1 className={cn("text-2xl font-bold text-slate-800 tracking-tight", titleClassName)}>
+        <h1 className={cn("text-2xl font-bold text-foreground tracking-tight", titleClassName)}>
           {title}
         </h1>
         {description && (
-          <p className={cn("text-sm text-slate-500 mt-0.5", descriptionClassName)}>
+          <p className={cn("text-sm text-muted-foreground mt-0.5", descriptionClassName)}>
             {description}
           </p>
         )}

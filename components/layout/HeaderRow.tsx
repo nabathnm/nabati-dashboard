@@ -15,8 +15,8 @@ export function HeaderRow({ labels, prefix }: HeaderRowProps) {
         </div>
       )}
       {labels.map((label, i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className="flex-1 py-3 text-center border-r border-primary/20 last:border-0"
         >
           <span className="text-xs font-bold text-primary-foreground uppercase tracking-wider">
