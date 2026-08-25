@@ -128,7 +128,7 @@ export default function FlexibleSidebar({
           <Menu size={28} />
         </button>
         <div className="ml-4 font-bold text-lg text-white dark:text-[#eceff4]">
-          GrowthMe
+          nabati
         </div>
       </div>
 
@@ -172,7 +172,7 @@ export default function FlexibleSidebar({
               isWide ? "text-2xl" : "text-xl",
             )}
           >
-            {isWide ? "GROWTHME" : "GM"}
+            {isWide ? "nabati" : "n"}
           </div>
         </div>
 
