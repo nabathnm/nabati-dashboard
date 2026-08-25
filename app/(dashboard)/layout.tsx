@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,7 +16,7 @@ export default function DashboardLayout({
 
   return (
     <TooltipProvider>
-      <div className="bg-background min-h-screen flex flex-col font-sans">
+      <div className="min-h-screen flex flex-col font-sans">
         <TaskReduxSync />
         <AppSidebar
           isExpanded={isExpanded}
@@ -24,8 +24,8 @@ export default function DashboardLayout({
           isMobileOpen={isMobileOpen}
           setIsMobileOpen={setIsMobileOpen}
         />
-        
-        {/* Main Content Area */}
+
+        {/* Main Content Area aaa*/}
         <main
           className={cn(
             "flex-1 transition-all duration-300 ease-in-out pt-16 sm:pt-0",

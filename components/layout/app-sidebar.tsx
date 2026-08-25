@@ -124,7 +124,7 @@ export default function FlexibleSidebar({
   return (
     <>
       {/* Mobile Header */}
-      <div className="sm:hidden fixed top-0 left-0 w-full h-16 bg-linear-to-r from-[#47b4f5] to-[#2d7ad6] dark:from-[#3b4252] dark:to-[#2e3440] z-50 flex items-center px-6 border-b border-white/10 dark:border-[#4c566a] shadow-md">
+      <div className="sm:hidden fixed top-0 left-0 w-full h-16 bg-[#47b4f5] dark:bg-[#2e3440] z-50 flex items-center px-6 border-b border-white/10 dark:border-[#4c566a] shadow-md transition-colors duration-500">
         <button onClick={() => setIsMobileOpen(true)} className="text-white dark:text-[#d8dee9]">
           <Menu size={28} />
         </button>
@@ -145,7 +145,7 @@ export default function FlexibleSidebar({
       {/* Main Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-linear-to-b from-[#47b4f5] via-[#3a9de8] to-[#2d7ad6] dark:from-[#3b4252] dark:via-[#2e3440] dark:to-[#2e3440] shadow-2xl flex flex-col transition-all duration-300 ease-in-out font-sans dark:border-r dark:border-[#4c566a]",
+          "fixed inset-y-0 left-0 z-50 bg-[#47b4f5] dark:bg-[#2e3440] shadow-2xl dark:shadow-none flex flex-col transition-all duration-500 ease-in-out font-sans border-r border-transparent dark:border-[#4c566a]",
           isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full sm:translate-x-0",
           isExpanded ? "sm:w-72 rounded-r-[1.7rem]" : "sm:w-20 rounded-r-[1.7rem]",
         )}

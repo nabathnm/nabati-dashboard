@@ -190,7 +190,7 @@ export function TransactionFormDialog({
             <Textarea
               placeholder="Optional description..."
               rows={2}
-              className="resize-none min-h-[80px] border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
+              className="resize-none min-h-20 border-input bg-muted/40 rounded-xl shadow-sm focus-visible:ring-1 focus-visible:ring-ring/40 transition-colors"
               {...register("description")}
             />
           </div>

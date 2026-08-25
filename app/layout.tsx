@@ -30,12 +30,11 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("h-full antialiased", inter.variable, "font-sans")}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
+      <body className="min-h-full flex flex-col bg-[#f8fbff] dark:bg-[#2e3440] text-[#1e293b] dark:text-[#d8dee9] transition-colors duration-500 ease-in-out">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
           <ReduxProvider>
             <QueryProvider>
