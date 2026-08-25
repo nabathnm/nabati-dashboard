@@ -25,7 +25,7 @@ export default function GithubGrowthPage() {
   const [tokenInput, setTokenInput] = useState("");
 
   const { data: creds, isLoading: isLoadingCreds } = useGithubCredentials();
-  
+
   const hasCreds = !!creds?.github_username;
   const username = creds?.github_username;
   const token = creds?.github_access_token;
@@ -159,7 +159,6 @@ export default function GithubGrowthPage() {
           <Button
             onClick={handleEvaluate}
             disabled={evaluating}
-            className="flex items-center gap-2"
           >
             {evaluating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
