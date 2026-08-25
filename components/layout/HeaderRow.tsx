@@ -1,26 +1,38 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-interface HeaderRowProps {
-  labels: string[];
-  prefix?: React.ReactNode;
+export interface HeaderColumn {
+  header: string;
+  className?: string;
 }
 
-export function HeaderRow({ labels, prefix }: HeaderRowProps) {
+interface HeaderRowProps {
+  labels?: string[];
+  columns?: HeaderColumn[];
+  prefix?: React.ReactNode;
+  className?: string;
+}
+
+export function HeaderRow({ labels, columns, prefix, className }: HeaderRowProps) {
+  const normalizedCols: HeaderColumn[] = columns || (labels?.map((l) => ({ header: l })) ?? []);
+
   return (
-    <div className="flex border-b border-primary/20 bg-primary">
+    <div className={cn("flex border-b border-primary/20 bg-primary", className)}>
       {prefix && (
-        <div className="shrink-0 border-r border-primary/20">
+        <div className="border-r border-primary/20">
           {prefix}
         </div>
       )}
-      {labels.map((label, i) => (
+      {normalizedCols.map((col, i) => (
         <div
           key={i}
-          className="flex-1 py-3 text-center border-r border-primary/20 last:border-0"
+          className={cn(
+            "flex-1 py-3 text-center border-r border-primary/20 last:border-0",
+            col.className
+          )}
         >
-          <span className="text-xs font-bold text-primary-foreground uppercase tracking-wider">
-            {label}
+          <span className="text-xs font-bold text-primary-foreground uppercase">
+            {col.header}
           </span>
         </div>
       ))}

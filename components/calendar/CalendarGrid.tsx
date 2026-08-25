@@ -58,7 +58,6 @@ export default function CalendarGrid({
             currentMonth={currentMonth}
             renderDay={renderDay}
             weekStartsOn={0}
-            headers={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}
             classNames={{
                 root: "border border-border/50 rounded-xl overflow-hidden bg-card/10",
                 headerRow: "border-b border-primary/20 bg-primary",

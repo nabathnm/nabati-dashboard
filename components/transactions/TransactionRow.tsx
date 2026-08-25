@@ -25,7 +25,7 @@ export function TransactionRow({
 
   return (
     <div className="flex items-center hover:bg-muted/50 transition-colors group cursor-pointer">
-      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs font-medium text-slate-500 whitespace-nowrap overflow-hidden">
+      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs font-medium text-muted-foreground whitespace-nowrap overflow-hidden">
         {format(new Date(tx.transaction_date), "dd MMM yyyy")}
       </div>
       <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
@@ -35,9 +35,9 @@ export function TransactionRow({
         </span>
       </div>
       <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
-        <p className="text-sm font-medium text-slate-700 truncate flex items-center gap-1.5 text-center">
+        <p className="text-sm font-medium text-foreground truncate flex items-center gap-1.5 text-center">
           {tx.merchant || tx.note || (
-            <span className="text-slate-300">—</span>
+            <span className="text-muted-foreground/50">—</span>
           )}
           {(tx as any).items?.length > 0 && (
             <span title="Itemized receipt">
@@ -46,25 +46,25 @@ export function TransactionRow({
           )}
         </p>
       </div>
-      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs text-slate-500 whitespace-nowrap overflow-hidden">
+      <div className="flex-1 px-4 py-3.5 flex items-center justify-center text-xs text-muted-foreground whitespace-nowrap overflow-hidden">
         {tx.account?.name}
       </div>
       <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {tx.type === "transfer" ? (
-          <span className="text-slate-300 text-xs">—</span>
+          <span className="text-muted-foreground/50 text-xs">—</span>
         ) : (
           <Select
             value={tx.category_id || "unassigned"}
             onValueChange={(v) => onUpdateCategory(tx, v)}
             disabled={isUpdatingCategory}
           >
-            <SelectTrigger className="h-7 w-full max-w-[120px] text-xs border-transparent hover:border-slate-200 bg-transparent hover:bg-slate-50 shadow-none px-2 focus:ring-0">
+            <SelectTrigger className="h-7 w-full max-w-30 text-xs border-transparent hover:border-border bg-transparent hover:bg-muted shadow-none px-2 focus:ring-0">
               <SelectValue placeholder="No Category">
                 {tx.category?.name || categories?.find((c) => c.id === tx.category_id)?.name || "No Category"}
               </SelectValue>
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="unassigned" className="text-slate-400 italic">No Category</SelectItem>
+              <SelectItem value="unassigned" className="text-muted-foreground italic">No Category</SelectItem>
               {(categories ?? [])
                 .filter((c) => c.type === tx.type)
                 .map((c) => (
@@ -81,7 +81,7 @@ export function TransactionRow({
       <div className="flex-1 px-4 py-3.5 flex items-center justify-center overflow-hidden">
         <button
           onClick={() => onDelete(tx.id)}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-400 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>

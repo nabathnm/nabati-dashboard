@@ -19,7 +19,7 @@ export function GenericCalendarGrid({
   currentMonth,
   renderDay,
   weekStartsOn = 1,
-  headers = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  headers = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   classNames,
 }: GenericCalendarGridProps) {
   const monthStart = startOfMonth(currentMonth);
@@ -53,9 +53,9 @@ export function GenericCalendarGrid({
     <div className={cn("rounded-xl border border-border/50 overflow-hidden bg-background shadow-sm", classNames?.root)}>
       <div className={cn("grid grid-cols-7 border-b border-border/50 bg-muted/20", classNames?.headerRow)}>
         {headers.map((dayLabel, idx) => (
-          <div 
-            key={idx} 
-            className={cn("py-3 text-center text-sm font-semibold text-muted-foreground border-r border-border/50 last:border-r-0", classNames?.headerCell)}
+          <div
+            key={idx}
+            className={cn("py-3 text-center text-sm text-muted-foreground border-r border-border/50 last:border-r-0", classNames?.headerCell)}
           >
             {dayLabel}
           </div>

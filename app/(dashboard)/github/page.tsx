@@ -109,7 +109,7 @@ export default function GithubGrowthPage() {
             </div>
 
             {error && (
-              <div className="bg-rose-50 text-rose-600 p-3 rounded-xl text-sm font-semibold flex items-center gap-2">
+              <div className="bg-rose-50 text-rose-600 p-3 rounded-xl text-sm font-bold flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" /> {error}
               </div>
             )}
