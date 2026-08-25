@@ -25,7 +25,7 @@ export default function DashboardLayout({
           setIsMobileOpen={setIsMobileOpen}
         />
 
-        {/* Main Content Area aaasadasdasdsadssasasa*/}
+        {/* Main Content Area aaaadsasddsasadsadsadasdasdsadssasasa*/}
         <main
           className={cn(
             "flex-1 transition-all duration-300 ease-in-out pt-16 sm:pt-0",
