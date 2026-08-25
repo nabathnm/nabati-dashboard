@@ -22,9 +22,9 @@
   --primary: #47b4f5;
   --primary-foreground: oklch(0.98 0.005 260);
 
-  /* Secondary: soft lavender wash */
-  --secondary: #47b4f5;
-  --secondary-foreground: oklch(0.25 0.03 265);
+  /* Secondary: clean white for light mode */
+  --secondary: #ffffff;
+  --secondary-foreground: #64748b;
 
   /* Muted: gentle gray-blue */
   --muted: oklch(0.91 0.015 260);
@@ -87,9 +87,9 @@
   --primary: #88c0d0;
   --primary-foreground: #2e3440;
 
-  /* Secondary: Frost (Nord 9) */
-  --secondary: #81a1c1;
-  --secondary-foreground: #eceff4;
+  /* Secondary: Matches dark mode bg */
+  --secondary: #2e3440;
+  --secondary-foreground: #d8dee9;
 
   /* Muted: Nord 3 */
   --muted: #4c566a;
