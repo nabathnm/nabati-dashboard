@@ -30,7 +30,7 @@ export function GenericCalendarGrid({
 }: GenericCalendarGridProps) {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
-  
+
   // Define start and end of the grid
   const startDate = startOfWeek(monthStart, { weekStartsOn });
   const endDate = endOfWeek(monthEnd, { weekStartsOn });
@@ -48,7 +48,12 @@ export function GenericCalendarGrid({
   return (
     <div className={cn("flex flex-col w-full", classNames?.root)}>
       {/* Header Row */}
-      <div className={cn("grid grid-cols-7 w-full bg-card-foreground", classNames?.headerRow)}>
+      <div
+        className={cn(
+          "grid grid-cols-7 w-full bg-card-foreground",
+          classNames?.headerRow
+        )}
+      >
         {weekDays.map((dayName, idx) => (
           <div key={idx} className={classNames?.headerCell}>
             {dayName}
@@ -65,4 +70,3 @@ export function GenericCalendarGrid({
     </div>
   );
 }
-

@@ -1,10 +1,6 @@
-
 "use client";
 
-import {
-    CalendarDays,
-    LayoutList,
-} from "lucide-react";
+import { CalendarDays, LayoutList } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { TaskView } from "../TaskToolbar";
@@ -20,14 +16,11 @@ export default function TaskViewToggle({
   onViewChange,
   onBeforeChange,
 }: TaskViewToggleProps) {
-  const nextView: TaskView =
-    view === "list" ? "calendar" : "list";
+  const nextView: TaskView = view === "list" ? "calendar" : "list";
 
-  const NextViewIcon =
-    nextView === "list" ? LayoutList : CalendarDays;
+  const NextViewIcon = nextView === "list" ? LayoutList : CalendarDays;
 
-  const nextViewLabel =
-    nextView === "list" ? "List" : "Calendar";
+  const nextViewLabel = nextView === "list" ? "List" : "Calendar";
 
   const handleViewChange = () => {
     onBeforeChange?.();

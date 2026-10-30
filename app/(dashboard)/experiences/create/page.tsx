@@ -7,21 +7,12 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 type ExperienceType =
-  | "internship"
-  | "organization"
-  | "freelance"
-  | "full-time"
-  | "part-time";
+  "internship" | "organization" | "freelance" | "full-time" | "part-time";
 
 const experienceTypes: {
   value: ExperienceType;
@@ -101,9 +92,7 @@ export default function CreateExperiencePage() {
       router.refresh();
     } catch (err) {
       alert(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat membuat experience"
+        err instanceof Error ? err.message : "Terjadi kesalahan saat membuat experience"
       );
     } finally {
       setLoading(false);
@@ -113,18 +102,12 @@ export default function CreateExperiencePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push("/experiences")}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.push("/experiences")}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Tambah Experience
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">Tambah Experience</h1>
           <p className="text-muted-foreground">
             Tambahkan pengalaman kerja atau organisasi baru.
           </p>
@@ -145,7 +128,7 @@ export default function CreateExperiencePage() {
                   id="title"
                   placeholder="Frontend Developer"
                   value={form.title}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       title: event.target.value,
@@ -161,7 +144,7 @@ export default function CreateExperiencePage() {
                   id="company"
                   placeholder="Raion Community"
                   value={form.company}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       company: event.target.value,
@@ -177,7 +160,7 @@ export default function CreateExperiencePage() {
                 <select
                   id="type"
                   value={form.type}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       type: event.target.value as ExperienceType,
@@ -188,7 +171,7 @@ export default function CreateExperiencePage() {
                 >
                   <option value="">Pilih type</option>
 
-                  {experienceTypes.map((item) => (
+                  {experienceTypes.map(item => (
                     <option key={item.value} value={item.value}>
                       {item.label}
                     </option>
@@ -202,7 +185,7 @@ export default function CreateExperiencePage() {
                   id="year"
                   placeholder="2025 - 2026"
                   value={form.year}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       year: event.target.value,
@@ -217,7 +200,7 @@ export default function CreateExperiencePage() {
                   id="location"
                   placeholder="Malang, Indonesia"
                   value={form.location}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       location: event.target.value,
@@ -232,7 +215,7 @@ export default function CreateExperiencePage() {
                   id="image_url"
                   placeholder="https://..."
                   value={form.image_url}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       image_url: event.target.value,
@@ -252,7 +235,7 @@ export default function CreateExperiencePage() {
 
               <Switch
                 checked={form.is_current}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setForm({
                     ...form,
                     is_current: checked,
@@ -268,7 +251,7 @@ export default function CreateExperiencePage() {
                 placeholder="Deskripsi singkat mengenai pengalaman..."
                 rows={4}
                 value={form.description}
-                onChange={(event) =>
+                onChange={event =>
                   setForm({
                     ...form,
                     description: event.target.value,
@@ -284,7 +267,7 @@ export default function CreateExperiencePage() {
                 placeholder="Tugas dan tanggung jawab..."
                 rows={6}
                 value={form.task}
-                onChange={(event) =>
+                onChange={event =>
                   setForm({
                     ...form,
                     task: event.target.value,
@@ -303,9 +286,7 @@ export default function CreateExperiencePage() {
               </Button>
 
               <Button type="submit" disabled={loading}>
-                {loading && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Simpan Experience
               </Button>
             </div>

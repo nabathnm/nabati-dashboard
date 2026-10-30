@@ -7,21 +7,12 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 type ExperienceType =
-  | "internship"
-  | "organization"
-  | "freelance"
-  | "full-time"
-  | "part-time";
+  "internship" | "organization" | "freelance" | "full-time" | "part-time";
 
 interface Experience {
   id: number;
@@ -92,14 +83,11 @@ export default function EditExperiencePage() {
 
         const token = localStorage.getItem("token");
 
-        const response = await fetch(
-          `/api/experiences/${experienceId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`/api/experiences/${experienceId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Gagal mengambil data experience");
@@ -120,9 +108,7 @@ export default function EditExperiencePage() {
         });
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Terjadi kesalahan saat mengambil data"
+          err instanceof Error ? err.message : "Terjadi kesalahan saat mengambil data"
         );
       } finally {
         setLoading(false);
@@ -142,27 +128,24 @@ export default function EditExperiencePage() {
 
       const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `/api/experiences/${experienceId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            title: form.title || null,
-            company: form.company || null,
-            description: form.description || null,
-            task: form.task || null,
-            year: form.year || null,
-            is_current: form.is_current,
-            location: form.location || null,
-            type: form.type || null,
-            image_url: form.image_url || null,
-          }),
-        }
-      );
+      const response = await fetch(`/api/experiences/${experienceId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: form.title || null,
+          company: form.company || null,
+          description: form.description || null,
+          task: form.task || null,
+          year: form.year || null,
+          is_current: form.is_current,
+          location: form.location || null,
+          type: form.type || null,
+          image_url: form.image_url || null,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Gagal memperbarui experience");
@@ -192,10 +175,7 @@ export default function EditExperiencePage() {
   if (error) {
     return (
       <div className="space-y-4">
-        <Button
-          variant="ghost"
-          onClick={() => router.push("/experiences")}
-        >
+        <Button variant="ghost" onClick={() => router.push("/experiences")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Kembali
         </Button>
@@ -208,21 +188,13 @@ export default function EditExperiencePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push("/experiences")}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.push("/experiences")}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Edit Experience
-          </h1>
-          <p className="text-muted-foreground">
-            Perbarui informasi experience.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Edit Experience</h1>
+          <p className="text-muted-foreground">Perbarui informasi experience.</p>
         </div>
       </div>
 
@@ -239,7 +211,7 @@ export default function EditExperiencePage() {
                 <Input
                   id="title"
                   value={form.title}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       title: event.target.value,
@@ -250,13 +222,11 @@ export default function EditExperiencePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="company">
-                  Company / Organization
-                </Label>
+                <Label htmlFor="company">Company / Organization</Label>
                 <Input
                   id="company"
                   value={form.company}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       company: event.target.value,
@@ -272,7 +242,7 @@ export default function EditExperiencePage() {
                 <select
                   id="type"
                   value={form.type}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       type: event.target.value as ExperienceType,
@@ -283,7 +253,7 @@ export default function EditExperiencePage() {
                 >
                   <option value="">Pilih type</option>
 
-                  {experienceTypes.map((item) => (
+                  {experienceTypes.map(item => (
                     <option key={item.value} value={item.value}>
                       {item.label}
                     </option>
@@ -297,7 +267,7 @@ export default function EditExperiencePage() {
                   id="year"
                   placeholder="2025 - 2026"
                   value={form.year}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       year: event.target.value,
@@ -312,7 +282,7 @@ export default function EditExperiencePage() {
                   id="location"
                   placeholder="Malang, Indonesia"
                   value={form.location}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       location: event.target.value,
@@ -327,7 +297,7 @@ export default function EditExperiencePage() {
                   id="image_url"
                   placeholder="https://..."
                   value={form.image_url}
-                  onChange={(event) =>
+                  onChange={event =>
                     setForm({
                       ...form,
                       image_url: event.target.value,
@@ -347,7 +317,7 @@ export default function EditExperiencePage() {
 
               <Switch
                 checked={form.is_current}
-                onCheckedChange={(checked) =>
+                onCheckedChange={checked =>
                   setForm({
                     ...form,
                     is_current: checked,
@@ -362,7 +332,7 @@ export default function EditExperiencePage() {
                 id="description"
                 rows={4}
                 value={form.description}
-                onChange={(event) =>
+                onChange={event =>
                   setForm({
                     ...form,
                     description: event.target.value,
@@ -377,7 +347,7 @@ export default function EditExperiencePage() {
                 id="task"
                 rows={6}
                 value={form.task}
-                onChange={(event) =>
+                onChange={event =>
                   setForm({
                     ...form,
                     task: event.target.value,
@@ -396,9 +366,7 @@ export default function EditExperiencePage() {
               </Button>
 
               <Button type="submit" disabled={saving}>
-                {saving && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Simpan Perubahan
               </Button>
             </div>

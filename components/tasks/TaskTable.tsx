@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  CalendarDays,
-  Check,
-  CheckCircle2,
-  Pencil,
-  Pin,
-  Trash2,
-} from "lucide-react";
+import { CalendarDays, Check, CheckCircle2, Pencil, Pin, Trash2 } from "lucide-react";
 import { format, parseISO, isBefore, startOfDay } from "date-fns";
 
 import type { Task } from "@/types/task";
@@ -79,18 +72,13 @@ export default function TaskTable({
       <div className="overflow-x-auto">
         <div className="min-w-[760px]">
           {/* Header */}
-          <div
-            className={cn(
-              GRID,
-              "py-4 bg-card-foreground text-xs ",
-            )}
-          >
-            {COLUMNS.map((col) => (
+          <div className={cn(GRID, "py-4 bg-card-foreground text-xs ")}>
+            {COLUMNS.map(col => (
               <div
                 key={col.label}
                 className={cn(
                   "flex text-xs font-semibold uppercase tracking-wide text-background",
-                  col.align,
+                  col.align
                 )}
               >
                 {col.label}
@@ -100,17 +88,14 @@ export default function TaskTable({
 
           {/* Rows */}
           <div className="divide-y divide-border/50">
-            {tasks.map((task) => {
-              const cat =
-                CATEGORY_CONFIG[task.category] ?? CATEGORY_CONFIG.Lainnya;
+            {tasks.map(task => {
+              const cat = CATEGORY_CONFIG[task.category] ?? CATEGORY_CONFIG.Lainnya;
 
               const isDone = task.is_completed;
               const dueDate = task.due_date ? parseISO(task.due_date) : null;
 
               const isOverdue =
-                !!dueDate &&
-                !isDone &&
-                isBefore(dueDate, startOfDay(new Date()));
+                !!dueDate && !isDone && isBefore(dueDate, startOfDay(new Date()));
 
               const isPinned = isTaskPinned?.(task) ?? false;
               const progress = Math.min(100, Math.max(0, task.progress));
@@ -122,7 +107,7 @@ export default function TaskTable({
                     GRID,
                     "group cursor-pointer py-3.5 transition-colors",
                     "hover:bg-muted/10",
-                    isDone && "bg-muted/10",
+                    isDone && "bg-muted/10"
                   )}
                   onClick={() => onEditTask(task)}
                 >
@@ -131,9 +116,7 @@ export default function TaskTable({
                     <span
                       className={cn(
                         "truncate text-sm font-medium",
-                        isDone
-                          ? "text-muted-foreground line-through"
-                          : "text-foreground",
+                        isDone ? "text-muted-foreground line-through" : "text-foreground"
                       )}
                       title={task.title}
                     >
@@ -148,14 +131,11 @@ export default function TaskTable({
                         "inline-flex max-w-full items-center gap-1.5",
                         "rounded-lg border px-2.5 py-1 text-xs font-medium",
                         cat.bg,
-                        cat.color,
+                        cat.color
                       )}
                     >
                       <span
-                        className={cn(
-                          "h-1.5 w-1.5 shrink-0 rounded-full",
-                          cat.dot,
-                        )}
+                        className={cn("h-1.5 w-1.5 shrink-0 rounded-full", cat.dot)}
                       />
                       <span className="truncate">{cat.label}</span>
                     </span>
@@ -185,41 +165,35 @@ export default function TaskTable({
                             ? "border-[#BF616A]/30 bg-[#BF616A]/10 text-[#BF616A]"
                             : isDone
                               ? "border-[#A3BE8C]/30 bg-[#A3BE8C]/10 text-[#A3BE8C]"
-                              : "border-border/60 bg-muted/40 text-muted-foreground",
+                              : "border-border/60 bg-muted/40 text-muted-foreground"
                         )}
                       >
                         <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">
-                          {format(dueDate, "MMM d, yyyy")}
-                        </span>
+                        <span className="truncate">{format(dueDate, "MMM d, yyyy")}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground/60">
-                        —
-                      </span>
+                      <span className="text-sm text-muted-foreground/60">—</span>
                     )}
                   </div>
 
                   {/* Quick Actions */}
                   <div
                     className="flex items-center justify-center gap-1"
-                    onClick={(event) => event.stopPropagation()}
+                    onClick={event => event.stopPropagation()}
                   >
                     {/* Complete */}
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      aria-label={
-                        isDone ? "Mark as incomplete" : "Mark as complete"
-                      }
+                      aria-label={isDone ? "Mark as incomplete" : "Mark as complete"}
                       title={isDone ? "Mark as incomplete" : "Mark as complete"}
                       onClick={() => onToggleComplete(task)}
                       className={cn(
                         "h-8 w-8 shrink-0 rounded-lg",
                         "text-muted-foreground transition-colors",
                         "hover:bg-[#A3BE8C]/15 hover:text-[#A3BE8C]",
-                        isDone && "bg-[#A3BE8C]/10 text-[#A3BE8C]",
+                        isDone && "bg-[#A3BE8C]/10 text-[#A3BE8C]"
                       )}
                     >
                       {isDone ? (
@@ -249,12 +223,10 @@ export default function TaskTable({
                         "text-muted-foreground transition-colors",
                         "hover:bg-[#EBCB8B]/15 hover:text-[#EBCB8B]",
                         isPinned && "bg-[#EBCB8B]/10 text-[#EBCB8B]",
-                        !onTogglePin && "opacity-40",
+                        !onTogglePin && "opacity-40"
                       )}
                     >
-                      <Pin
-                        className={cn("h-4 w-4", isPinned && "fill-current")}
-                      />
+                      <Pin className={cn("h-4 w-4", isPinned && "fill-current")} />
                     </Button>
 
                     {/* Edit */}
@@ -268,7 +240,7 @@ export default function TaskTable({
                       className={cn(
                         "h-8 w-8 shrink-0 rounded-lg",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-[#88C0D0]/15 hover:text-[#88C0D0]",
+                        "hover:bg-[#88C0D0]/15 hover:text-[#88C0D0]"
                       )}
                     >
                       <Pencil className="h-4 w-4" />
@@ -282,16 +254,14 @@ export default function TaskTable({
                       disabled={!onDeleteTask}
                       aria-label="Delete task"
                       title={
-                        onDeleteTask
-                          ? "Delete task"
-                          : "Delete feature not connected"
+                        onDeleteTask ? "Delete task" : "Delete feature not connected"
                       }
                       onClick={() => onDeleteTask?.(task)}
                       className={cn(
                         "h-8 w-8 shrink-0 rounded-lg",
                         "text-muted-foreground transition-colors",
                         "hover:bg-[#BF616A]/15 hover:text-[#BF616A]",
-                        !onDeleteTask && "opacity-40",
+                        !onDeleteTask && "opacity-40"
                       )}
                     >
                       <Trash2 className="h-4 w-4" />

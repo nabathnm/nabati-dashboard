@@ -12,7 +12,7 @@ export default function TasksPage() {
           <TaskViewSwitcher />
         </div>
 
-        <PinnedTasks className="h-90 lg:col-span-1" />
+        <PinnedTasks className="h-full lg:col-span-1" />
       </div>
     </div>
   );

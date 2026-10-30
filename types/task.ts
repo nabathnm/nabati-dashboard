@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 
-
 export type Task = {
   id: string;
   user_id: string;
@@ -15,12 +14,7 @@ export type Task = {
   is_pinned: boolean;
 };
 
-export type TaskCategory =
-  | "Kuliah"
-  | "Organisasi"
-  | "Praktikum"
-  | "Personal"
-  | "Lainnya";
+export type TaskCategory = "Kuliah" | "Organisasi" | "Praktikum" | "Personal" | "Lainnya";
 
 export type CreateTaskInput = {
   title: string;
@@ -49,14 +43,7 @@ export type TaskStats = {
 };
 
 export type TaskSortBy =
-  | "deadline"
-  | "newest"
-  | "oldest"
-  | "category"
-  | "progress"
-  | "title";
-
-  
+  "deadline" | "newest" | "oldest" | "category" | "progress" | "title";
 
 export interface TaskStatStyle {
   label: string;

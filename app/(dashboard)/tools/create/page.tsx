@@ -4,18 +4,10 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  ArrowLeft,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 type ToolCategory =
-  | "frontend"
-  | "backend"
-  | "mobile"
-  | "database"
-  | "cloud"
-  | "infrastructure";
+  "frontend" | "backend" | "mobile" | "database" | "cloud" | "infrastructure";
 
 const categories: {
   value: ToolCategory;
@@ -51,15 +43,12 @@ export default function CreateToolPage() {
   const router = useRouter();
 
   const [name, setName] = useState("");
-  const [category, setCategory] =
-    useState<ToolCategory>("frontend");
+  const [category, setCategory] = useState<ToolCategory>("frontend");
   const [svg, setSvg] = useState("");
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const authHeaders = (): HeadersInit => {
     const token = localStorage.getItem("token");
@@ -71,9 +60,7 @@ export default function CreateToolPage() {
       : {};
   };
 
-  const handleSubmit = async (
-    e: FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setSubmitting(true);
@@ -96,17 +83,13 @@ export default function CreateToolPage() {
       });
 
       if (!response.ok) {
-        throw new Error(
-          "Gagal membuat tool"
-        );
+        throw new Error("Gagal membuat tool");
       }
 
       router.push("/tools");
     } catch (err: unknown) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat membuat tool"
+        err instanceof Error ? err.message : "Terjadi kesalahan saat membuat tool"
       );
     } finally {
       setSubmitting(false);
@@ -115,7 +98,6 @@ export default function CreateToolPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-
       {/* Header */}
       <div>
         <Button
@@ -127,13 +109,9 @@ export default function CreateToolPage() {
           Kembali ke Tools
         </Button>
 
-        <h1 className="text-2xl font-bold tracking-tight">
-          Tambah Tool
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight">Tambah Tool</h1>
 
-        <p className="text-muted-foreground">
-          Tambahkan tool baru ke dalam daftar.
-        </p>
+        <p className="text-muted-foreground">Tambahkan tool baru ke dalam daftar.</p>
       </div>
 
       {error && (
@@ -142,18 +120,11 @@ export default function CreateToolPage() {
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6"
-      >
-
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Information */}
         <section className="rounded-lg border bg-card p-6">
-
           <div className="mb-6">
-            <h2 className="font-semibold">
-              Tool Information
-            </h2>
+            <h2 className="font-semibold">Tool Information</h2>
 
             <p className="mt-1 text-sm text-muted-foreground">
               Informasi dasar mengenai tool.
@@ -161,21 +132,16 @@ export default function CreateToolPage() {
           </div>
 
           <div className="space-y-5">
-
             {/* Name */}
             <div className="space-y-2">
               <label className="text-sm font-medium">
                 Nama Tool
-                <span className="ml-1 text-destructive">
-                  *
-                </span>
+                <span className="ml-1 text-destructive">*</span>
               </label>
 
               <Input
                 value={name}
-                onChange={(e) =>
-                  setName(e.target.value)
-                }
+                onChange={e => setName(e.target.value)}
                 placeholder="Contoh: Next.js"
                 required
               />
@@ -185,43 +151,29 @@ export default function CreateToolPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">
                 Category
-                <span className="ml-1 text-destructive">
-                  *
-                </span>
+                <span className="ml-1 text-destructive">*</span>
               </label>
 
               <select
                 value={category}
-                onChange={(e) =>
-                  setCategory(
-                    e.target.value as ToolCategory
-                  )
-                }
+                onChange={e => setCategory(e.target.value as ToolCategory)}
                 className="h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring"
                 required
               >
-                {categories.map((item) => (
-                  <option
-                    key={item.value}
-                    value={item.value}
-                  >
+                {categories.map(item => (
+                  <option key={item.value} value={item.value}>
                     {item.label}
                   </option>
                 ))}
               </select>
             </div>
-
           </div>
-
         </section>
 
         {/* SVG */}
         <section className="rounded-lg border bg-card p-6">
-
           <div className="mb-6">
-            <h2 className="font-semibold">
-              SVG Icon
-            </h2>
+            <h2 className="font-semibold">SVG Icon</h2>
 
             <p className="mt-1 text-sm text-muted-foreground">
               Masukkan kode SVG untuk icon tool.
@@ -229,12 +181,9 @@ export default function CreateToolPage() {
           </div>
 
           <div className="space-y-4">
-
             <textarea
               value={svg}
-              onChange={(e) =>
-                setSvg(e.target.value)
-              }
+              onChange={e => setSvg(e.target.value)}
               placeholder={`<svg
   viewBox="0 0 24 24"
   xmlns="http://www.w3.org/2000/svg"
@@ -248,9 +197,7 @@ export default function CreateToolPage() {
             {/* Preview */}
             {svg.trim() && (
               <div>
-                <p className="mb-2 text-sm font-medium">
-                  Preview
-                </p>
+                <p className="mb-2 text-sm font-medium">Preview</p>
 
                 <div className="flex min-h-24 items-center justify-center rounded-lg border bg-muted/20 p-6">
                   <div
@@ -262,41 +209,26 @@ export default function CreateToolPage() {
                 </div>
               </div>
             )}
-
           </div>
-
         </section>
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pb-8">
-
           <Button
             type="button"
             variant="outline"
-            onClick={() =>
-              router.push("/tools")
-            }
+            onClick={() => router.push("/tools")}
             disabled={submitting}
           >
             Batal
           </Button>
 
-          <Button
-            type="submit"
-            disabled={submitting}
-            className="gap-2"
-          >
-            {submitting && (
-              <Loader2 className="size-4 animate-spin" />
-            )}
+          <Button type="submit" disabled={submitting} className="gap-2">
+            {submitting && <Loader2 className="size-4 animate-spin" />}
 
-            {submitting
-              ? "Menyimpan..."
-              : "Tambah Tool"}
+            {submitting ? "Menyimpan..." : "Tambah Tool"}
           </Button>
-
         </div>
-
       </form>
     </div>
   );

@@ -31,8 +31,7 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
           key={item.label}
           className={`rounded-xl shadow-sm border border-card-border duration-200 `}
           style={{
-            background:
-              "linear-gradient(145deg, #394352 6.17%, #343C49 93.83%)",
+            background: "linear-gradient(145deg, #394352 6.17%, #343C49 93.83%)",
           }}
         >
           <div className="flex items-center justify-between mb-3 pt-3 pb-2 bg-card-foreground rounded-t-xl">

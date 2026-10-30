@@ -19,12 +19,10 @@ export default function EmptyState({ onCreateTask }: EmptyStateProps) {
         </div>
       </div>
 
-      <h3 className="text-lg font-semibold tracking-tight mb-1">
-        No tasks yet
-      </h3>
+      <h3 className="text-lg font-semibold tracking-tight mb-1">No tasks yet</h3>
       <p className="text-sm text-muted-foreground text-center max-w-sm mb-6">
-        Start organizing your work by creating your first task. Drag and drop
-        between columns to track progress.
+        Start organizing your work by creating your first task. Drag and drop between
+        columns to track progress.
       </p>
 
       <Button

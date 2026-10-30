@@ -72,7 +72,7 @@ export function useTasks(filters: TaskFilters = {}) {
         if (requestId === requestIdRef.current) setIsLoading(false);
       }
     },
-    [filtersKey],
+    [filtersKey]
   );
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export function useTasks(filters: TaskFilters = {}) {
 
   /** Jalankan mutasi, lalu muat ulang data tanpa menampilkan loading penuh. */
   const mutate = useCallback(
-    async <T,>(action: () => Promise<T>): Promise<T> => {
+    async <T>(action: () => Promise<T>): Promise<T> => {
       setIsMutating(true);
       try {
         const result = await action();
@@ -97,41 +97,38 @@ export function useTasks(filters: TaskFilters = {}) {
         setIsMutating(false);
       }
     },
-    [refresh],
+    [refresh]
   );
 
   const createTask = useCallback(
     (input: CreateTaskInput) => mutate(() => createTaskService(input)),
-    [mutate],
+    [mutate]
   );
 
   const updateTask = useCallback(
-    (id: string, input: UpdateTaskInput) =>
-      mutate(() => updateTaskService(id, input)),
-    [mutate],
+    (id: string, input: UpdateTaskInput) => mutate(() => updateTaskService(id, input)),
+    [mutate]
   );
 
   const updateProgress = useCallback(
-    (id: string, progress: number) =>
-      mutate(() => updateProgressService(id, progress)),
-    [mutate],
+    (id: string, progress: number) => mutate(() => updateProgressService(id, progress)),
+    [mutate]
   );
 
   const toggleComplete = useCallback(
     (id: string, isCompleted: boolean) =>
       mutate(() => toggleCompleteService(id, isCompleted)),
-    [mutate],
+    [mutate]
   );
 
   const setPinned = useCallback(
-    (id: string, isPinned: boolean) =>
-      mutate(() => setTaskPinnedService(id, isPinned)),
-    [mutate],
+    (id: string, isPinned: boolean) => mutate(() => setTaskPinnedService(id, isPinned)),
+    [mutate]
   );
 
   const deleteTask = useCallback(
     (id: string) => mutate(() => deleteTaskService(id)),
-    [mutate],
+    [mutate]
   );
 
   return {
@@ -281,15 +278,11 @@ export function usePinnedTasks() {
   }, [refresh]);
 
   // Aksi melempar error; daftar dimuat ulang otomatis lewat langganan di atas
-  const unpin = useCallback(
-    (id: string) => setTaskPinnedService(id, false),
-    [],
-  );
+  const unpin = useCallback((id: string) => setTaskPinnedService(id, false), []);
 
   const toggleComplete = useCallback(
-    (id: string, isCompleted: boolean) =>
-      toggleCompleteService(id, isCompleted),
-    [],
+    (id: string, isCompleted: boolean) => toggleCompleteService(id, isCompleted),
+    []
   );
 
   return { tasks, isLoading, error, refresh, unpin, toggleComplete };

@@ -14,23 +14,14 @@ interface HeaderRowProps {
 }
 
 export function HeaderRow({ labels, columns, prefix, className }: HeaderRowProps) {
-  const normalizedCols: HeaderColumn[] = columns || (labels?.map((l) => ({ header: l })) ?? []);
+  const normalizedCols: HeaderColumn[] =
+    columns || (labels?.map(l => ({ header: l })) ?? []);
 
   return (
     <div className={cn("flex bg-card-foreground", className)}>
-      {prefix && (
-        <div className="">
-          {prefix}
-        </div>
-      )}
+      {prefix && <div className="">{prefix}</div>}
       {normalizedCols.map((col, i) => (
-        <div
-          key={i}
-          className={cn(
-            "flex-1 py-3 text-center",
-            col.className
-          )}
-        >
+        <div key={i} className={cn("flex-1 py-3 text-center", col.className)}>
           <span className="text-xs font-bold text-primary-foreground uppercase">
             {col.header}
           </span>

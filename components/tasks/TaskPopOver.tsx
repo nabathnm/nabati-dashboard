@@ -1,18 +1,9 @@
 "use client";
 
 import { format, isValid, parseISO } from "date-fns";
-import {
-  CheckCircle2,
-  Circle,
-  Calendar as CalendarIcon,
-  FileText,
-} from "lucide-react";
+import { CheckCircle2, Circle, Calendar as CalendarIcon, FileText } from "lucide-react";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import type { Task } from "@/types/task";
 import { cn } from "@/lib/utils";
@@ -22,14 +13,8 @@ interface TaskPopoverProps {
   task: Task;
   /** newDate berformat "yyyy-MM-dd" */
   onDateChange: (taskId: string, newDate: string) => void;
-  onCompleteChange: (
-    taskId: string,
-    isCompleted: boolean
-  ) => void;
-  onDescriptionChange?: (
-    taskId: string,
-    newDescription: string
-  ) => void;
+  onCompleteChange: (taskId: string, isCompleted: boolean) => void;
+  onDescriptionChange?: (taskId: string, newDescription: string) => void;
 }
 
 export default function TaskPopover({
@@ -40,14 +25,9 @@ export default function TaskPopover({
 }: TaskPopoverProps) {
   const isDone = task.is_completed;
 
-  const parsedDue = task.due_date
-    ? parseISO(task.due_date)
-    : null;
+  const parsedDue = task.due_date ? parseISO(task.due_date) : null;
 
-  const dueValue =
-    parsedDue && isValid(parsedDue)
-      ? format(parsedDue, "yyyy-MM-dd")
-      : "";
+  const dueValue = parsedDue && isValid(parsedDue) ? format(parsedDue, "yyyy-MM-dd") : "";
 
   const category = categoryStyles[task.category];
 
@@ -57,7 +37,7 @@ export default function TaskPopover({
         render={
           <button
             type="button"
-            onClick={(event) => event.stopPropagation()}
+            onClick={event => event.stopPropagation()}
             className={cn(
               "flex w-full min-w-0 items-center gap-2 rounded-md",
               "border border-transparent border-l-[3px]",
@@ -78,14 +58,7 @@ export default function TaskPopover({
               <Circle className="h-3.5 w-3.5 shrink-0" />
             )}
 
-            <span
-              className={cn(
-                "truncate",
-                isDone && "line-through"
-              )}
-            >
-              {task.title}
-            </span>
+            <span className={cn("truncate", isDone && "line-through")}>{task.title}</span>
           </button>
         }
       />
@@ -99,7 +72,7 @@ export default function TaskPopover({
           "border border-border/70 bg-popover text-popover-foreground",
           "shadow-xl shadow-black/20"
         )}
-        onClick={(event) => event.stopPropagation()}
+        onClick={event => event.stopPropagation()}
       >
         {/* Header */}
         <div className="border-b border-border/60 bg-muted/30 p-4">
@@ -168,7 +141,7 @@ export default function TaskPopover({
             <Input
               type="date"
               value={dueValue}
-              onChange={(event) => {
+              onChange={event => {
                 // Kalender memerlukan tanggal; jangan kirim nilai kosong.
                 if (event.target.value) {
                   onDateChange(task.id, event.target.value);
@@ -202,9 +175,7 @@ export default function TaskPopover({
               <input
                 type="checkbox"
                 checked={isDone}
-                onChange={(event) =>
-                  onCompleteChange(task.id, event.target.checked)
-                }
+                onChange={event => onCompleteChange(task.id, event.target.checked)}
                 className={cn(
                   "h-4 w-4 cursor-pointer rounded",
                   "accent-[#A3BE8C]",
@@ -216,9 +187,7 @@ export default function TaskPopover({
               <span
                 className={cn(
                   "text-xs font-medium",
-                  isDone
-                    ? "text-[#A3BE8C]"
-                    : "text-foreground"
+                  isDone ? "text-[#A3BE8C]" : "text-foreground"
                 )}
               >
                 {isDone ? "Completed" : "Mark as completed"}
@@ -245,19 +214,12 @@ export default function TaskPopover({
                   )}
                 >
                   <span
-                    className={cn(
-                      "h-1.5 w-1.5 shrink-0 rounded-full",
-                      category.dot
-                    )}
+                    className={cn("h-1.5 w-1.5 shrink-0 rounded-full", category.dot)}
                   />
-                  <span className="truncate">
-                    {category.label}
-                  </span>
+                  <span className="truncate">{category.label}</span>
                 </span>
               ) : (
-                <span className="text-xs text-muted-foreground">
-                  {task.category}
-                </span>
+                <span className="text-xs text-muted-foreground">{task.category}</span>
               )}
             </div>
           </div>
@@ -283,13 +245,10 @@ export default function TaskPopover({
               )}
               placeholder="Add task details..."
               defaultValue={task.description ?? ""}
-              onBlur={(event) => {
+              onBlur={event => {
                 const newDescription = event.target.value;
 
-                if (
-                  newDescription !== (task.description ?? "") &&
-                  onDescriptionChange
-                ) {
+                if (newDescription !== (task.description ?? "") && onDescriptionChange) {
                   onDescriptionChange(task.id, newDescription);
                 }
               }}

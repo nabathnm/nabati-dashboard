@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Plus } from "lucide-react";
@@ -41,8 +40,7 @@ export default function TaskToolbar({
   onNextMonth,
   onToday,
 }: TaskToolbarProps) {
-  const { searchRef, prepareAnimation } =
-    useSearchWidthAnimation(view);
+  const { searchRef, prepareAnimation } = useSearchWidthAnimation(view);
 
   return (
     <div className="flex items-center gap-x-2.5 overflow-hidden rounded-full border bg-card p-3">
@@ -52,23 +50,15 @@ export default function TaskToolbar({
         onBeforeChange={prepareAnimation}
       />
 
-
-<TaskSearch
-  searchTerm={searchTerm}
-  onSearchChange={onSearchChange}
-  searchRef={searchRef}
-  className={
-    view === "list"
-      ? "flex-[2_1_0%]"
-      : "flex-[1_1_0%]"
-  }
-/>
+      <TaskSearch
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
+        searchRef={searchRef}
+        className={view === "list" ? "flex-[2_1_0%]" : "flex-[1_1_0%]"}
+      />
       {view === "list" ? (
         <>
-          <TaskFiltersComponent
-            filters={filters}
-            onFiltersChange={onFiltersChange}
-          />
+          <TaskFiltersComponent filters={filters} onFiltersChange={onFiltersChange} />
 
           <Button
             type="button"

@@ -4,14 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  ExternalLink,
-  GitBranch,
-  Loader2,
-} from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, GitBranch, Loader2 } from "lucide-react";
 
 interface Project {
   id: number;
@@ -64,11 +57,7 @@ export default function ProjectsPage() {
       const data = await getProjects();
       setProjects(data);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan"
-      );
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
@@ -78,18 +67,14 @@ export default function ProjectsPage() {
     let active = true;
 
     getProjects()
-      .then((data) => {
+      .then(data => {
         if (active) {
           setProjects(data);
         }
       })
       .catch((err: unknown) => {
         if (active) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Terjadi kesalahan"
-          );
+          setError(err instanceof Error ? err.message : "Terjadi kesalahan");
         }
       })
       .finally(() => {
@@ -104,9 +89,7 @@ export default function ProjectsPage() {
   }, [getProjects]);
 
   const handleDelete = async (id: number) => {
-    const confirmed = confirm(
-      "Apakah Anda yakin ingin menghapus project ini?"
-    );
+    const confirmed = confirm("Apakah Anda yakin ingin menghapus project ini?");
 
     if (!confirmed) return;
 
@@ -122,35 +105,24 @@ export default function ProjectsPage() {
 
       fetchProjects();
     } catch (err: unknown) {
-      alert(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat menghapus"
-      );
+      alert(err instanceof Error ? err.message : "Terjadi kesalahan saat menghapus");
     }
   };
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Manajemen Project
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">Manajemen Project</h1>
 
           <p className="text-muted-foreground">
-            Kelola daftar project, teknologi, dan tautan aplikasi Anda
-            di sini.
+            Kelola daftar project, teknologi, dan tautan aplikasi Anda di sini.
           </p>
         </div>
 
         {/* Redirect ke halaman Create */}
-        <Button
-          onClick={() => router.push("/projects/create")}
-          className="gap-2"
-        >
+        <Button onClick={() => router.push("/projects/create")} className="gap-2">
           <Plus className="size-4" />
           Tambah Project
         </Button>
@@ -173,9 +145,7 @@ export default function ProjectsPage() {
       {/* Empty */}
       {!loading && !error && projects.length === 0 && (
         <div className="rounded-lg border bg-card p-12 text-center">
-          <p className="text-muted-foreground">
-            Belum ada project yang tersimpan.
-          </p>
+          <p className="text-muted-foreground">Belum ada project yang tersimpan.</p>
 
           <Button
             variant="outline"
@@ -191,51 +161,32 @@ export default function ProjectsPage() {
       {/* Table */}
       {!loading && !error && projects.length > 0 && (
         <div className="overflow-hidden rounded-lg border bg-card">
-
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-
               <thead className="border-b bg-muted/40">
                 <tr>
-                  <th className="px-6 py-4 text-left font-medium">
-                    Project
-                  </th>
+                  <th className="px-6 py-4 text-left font-medium">Project</th>
 
-                  <th className="px-6 py-4 text-left font-medium">
-                    Category
-                  </th>
+                  <th className="px-6 py-4 text-left font-medium">Category</th>
 
-                  <th className="px-6 py-4 text-left font-medium">
-                    Tech Stack
-                  </th>
+                  <th className="px-6 py-4 text-left font-medium">Tech Stack</th>
 
-                  <th className="px-6 py-4 text-left font-medium">
-                    Links
-                  </th>
+                  <th className="px-6 py-4 text-left font-medium">Links</th>
 
-                  <th className="px-6 py-4 text-right font-medium">
-                    Actions
-                  </th>
+                  <th className="px-6 py-4 text-right font-medium">Actions</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y">
-                {projects.map((project) => (
-                  <tr
-                    key={project.id}
-                    className="transition-colors hover:bg-muted/30"
-                  >
-
+                {projects.map(project => (
+                  <tr key={project.id} className="transition-colors hover:bg-muted/30">
                     {/* Project */}
                     <td className="px-6 py-4">
                       <div className="min-w-[220px]">
-                        <p className="font-medium">
-                          {project.name || "Tanpa Judul"}
-                        </p>
+                        <p className="font-medium">{project.name || "Tanpa Judul"}</p>
 
                         <p className="mt-1 max-w-md truncate text-xs text-muted-foreground">
-                          {project.description ||
-                            "Tidak ada deskripsi."}
+                          {project.description || "Tidak ada deskripsi."}
                         </p>
                       </div>
                     </td>
@@ -243,46 +194,29 @@ export default function ProjectsPage() {
                     {/* Category */}
                     <td className="px-6 py-4">
                       {project.category ? (
-                        <Badge variant="outline">
-                          {project.category}
-                        </Badge>
+                        <Badge variant="outline">{project.category}</Badge>
                       ) : (
-                        <span className="text-muted-foreground">
-                          -
-                        </span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </td>
 
                     {/* Tech Stack */}
                     <td className="px-6 py-4">
                       <div className="flex max-w-[280px] flex-wrap gap-1.5">
-                        {project.tech_stacks
-                          ?.slice(0, 3)
-                          .map((tech, index) => (
-                            <Badge
-                              key={index}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {tech}
-                            </Badge>
-                          ))}
+                        {project.tech_stacks?.slice(0, 3).map((tech, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tech}
+                          </Badge>
+                        ))}
 
-                        {project.tech_stacks &&
-                          project.tech_stacks.length > 3 && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              +{project.tech_stacks.length - 3}
-                            </Badge>
-                          )}
+                        {project.tech_stacks && project.tech_stacks.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{project.tech_stacks.length - 3}
+                          </Badge>
+                        )}
 
-                        {(!project.tech_stacks ||
-                          project.tech_stacks.length === 0) && (
-                          <span className="text-muted-foreground">
-                            -
-                          </span>
+                        {(!project.tech_stacks || project.tech_stacks.length === 0) && (
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </div>
                     </td>
@@ -290,7 +224,6 @@ export default function ProjectsPage() {
                     {/* Links */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-
                         {project.github_url && (
                           <a
                             href={project.github_url}
@@ -315,29 +248,21 @@ export default function ProjectsPage() {
                           </a>
                         )}
 
-                        {!project.github_url &&
-                          !project.project_url && (
-                            <span className="text-muted-foreground">
-                              -
-                            </span>
-                          )}
+                        {!project.github_url && !project.project_url && (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </div>
                     </td>
 
                     {/* Actions */}
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
-
                         {/* Edit */}
                         <Button
                           variant="ghost"
                           size="icon"
                           title="Edit Project"
-                          onClick={() =>
-                            router.push(
-                              `/projects/${project.id}/edit`
-                            )
-                          }
+                          onClick={() => router.push(`/projects/${project.id}/edit`)}
                         >
                           <Pencil className="size-4" />
                         </Button>
@@ -348,23 +273,17 @@ export default function ProjectsPage() {
                           size="icon"
                           title="Hapus Project"
                           className="text-destructive hover:text-destructive"
-                          onClick={() =>
-                            handleDelete(project.id)
-                          }
+                          onClick={() => handleDelete(project.id)}
                         >
                           <Trash2 className="size-4" />
                         </Button>
-
                       </div>
                     </td>
-
                   </tr>
                 ))}
               </tbody>
-
             </table>
           </div>
-
         </div>
       )}
     </div>

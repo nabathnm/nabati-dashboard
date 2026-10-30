@@ -33,7 +33,7 @@ export default function PinnedTasks({ className }: PinnedTasksProps) {
     <aside
       className={cn(
         "flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm",
-        className,
+        className
       )}
     >
       {/* Header */}
@@ -43,8 +43,8 @@ export default function PinnedTasks({ className }: PinnedTasksProps) {
         </div>
         {!isLoading && (
           <span className="flex h-6 w-6 text-primary items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums">
-          {tasks.length}
-        </span>
+            {tasks.length}
+          </span>
         )}
       </div>
 
@@ -74,7 +74,7 @@ export default function PinnedTasks({ className }: PinnedTasksProps) {
           </div>
         ) : (
           <ul className="space-y-1">
-            {tasks.map((task) => (
+            {tasks.map(task => (
               <PinnedItem
                 key={task.id}
                 task={task}
@@ -101,7 +101,11 @@ interface PinnedItemProps {
   onUnpin: () => void;
 }
 
-function PinnedItem({ task, onToggleComplete, onUnpin }: PinnedItemProps) {
+function PinnedItem({
+  task,
+  onToggleComplete,
+  onUnpin,
+}: PinnedItemProps) {
   const cat = CATEGORY_CONFIG[task.category] ?? CATEGORY_CONFIG.Lainnya;
   const isDone = task.is_completed;
   const dueDate = task.due_date ? parseISO(task.due_date) : null;
@@ -110,29 +114,42 @@ function PinnedItem({ task, onToggleComplete, onUnpin }: PinnedItemProps) {
   const progress = Math.min(100, Math.max(0, task.progress));
 
   return (
-    <li className="group flex items-start gap-2 rounded-lg p-2 transition-colors hover:bg-muted/40">
-      {/* Complete */}
-      {/* Info */}
-      <div className="min-w-0 flex-1 space-y-1.5">
+    <li className="group rounded-lg p-2 transition-colors hover:bg-muted/40">
+      {/* Title & Actions */}
+      <div className="flex min-w-0 items-center justify-between gap-2 pb-2">
         <p
-          className={cn("truncate text-base font-medium")}
+          className={cn(
+            "min-w-0 flex-1 truncate text-sm font-medium",
+            isDone && "text-muted-foreground line-through",
+          )}
           title={task.title}
         >
           {task.title}
         </p>
-        <button
-        type="button"
-        onClick={onUnpin}
-        aria-label="Unpin task"
-        title="Unpin task"
-        className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-[#EBCB8B]/15 hover:text-[#EBCB8B] focus-visible:opacity-100 group-hover:opacity-100"
-      >
-        <PinOff className="h-3.5 w-3.5" />
-      </button>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="flex min-w-0 items-center gap-1">
-            <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", cat.dot)} />
+        <button
+          type="button"
+          onClick={onUnpin}
+          aria-label="Unpin task"
+          title="Unpin task"
+          className={cn(
+            "shrink-0 rounded-md p-1",
+            "text-muted-foreground transition-colors",
+            "hover:bg-[#EBCB8B]/15 hover:text-[#EBCB8B]",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          )}
+        >
+          <PinOff className="size-3.5" />
+        </button>
+      </div>
+
+      {/* Category & Deadline */}
+      <div className="min-w-0 space-y-2">
+        <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+          <span className="flex min-w-0 flex-1 items-center gap-1">
+            <span
+              className={cn("size-1.5 shrink-0 rounded-full", cat.dot)}
+            />
             <span className="truncate">{cat.label}</span>
           </span>
 
@@ -143,27 +160,26 @@ function PinnedItem({ task, onToggleComplete, onUnpin }: PinnedItemProps) {
                 isOverdue && "text-[#BF616A]",
               )}
             >
-              <CalendarDays className="h-3 w-3" />
-              {format(dueDate, "d MMM")}
+              <CalendarDays className="size-3" />
+              <span>{format(dueDate, "d MMM")}</span>
             </span>
           )}
         </div>
 
+        {/* Progress */}
         <div className="flex items-center gap-2">
           <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-[#88C0D0] transition-all duration-300"
+              className="h-full rounded-full bg-[#88C0D0] transition-[width] duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
+
           <span className="w-8 shrink-0 text-right text-[10px] tabular-nums text-muted-foreground">
             {progress}%
           </span>
         </div>
       </div>
-
-      {/* Unpin */}
-      
     </li>
   );
 }

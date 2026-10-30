@@ -69,7 +69,7 @@ export default function TaskViewSwitcher() {
       ...filters,
       search: debouncedSearch || undefined,
     }),
-    [filters, debouncedSearch],
+    [filters, debouncedSearch]
   );
 
   const {
@@ -85,15 +85,9 @@ export default function TaskViewSwitcher() {
 
   /* ---------- Navigasi bulan ---------- */
 
-  const handlePrevMonth = useCallback(
-    () => setCurrentMonth((m) => subMonths(m, 1)),
-    [],
-  );
+  const handlePrevMonth = useCallback(() => setCurrentMonth(m => subMonths(m, 1)), []);
 
-  const handleNextMonth = useCallback(
-    () => setCurrentMonth((m) => addMonths(m, 1)),
-    [],
-  );
+  const handleNextMonth = useCallback(() => setCurrentMonth(m => addMonths(m, 1)), []);
 
   const handleToday = useCallback(() => setCurrentMonth(new Date()), []);
 
@@ -111,18 +105,18 @@ export default function TaskViewSwitcher() {
   const handleTaskCompleteChange = useCallback(
     (taskId: string, isCompleted: boolean) =>
       runAction(() => toggleComplete(taskId, isCompleted)),
-    [runAction, toggleComplete],
+    [runAction, toggleComplete]
   );
 
   const handleToggleComplete = useCallback(
     (task: Task) => handleTaskCompleteChange(task.id, !task.is_completed),
-    [handleTaskCompleteChange],
+    [handleTaskCompleteChange]
   );
 
   // Sematkan / lepas sematan tugas
   const handleTogglePin = useCallback(
     (task: Task) => runAction(() => setPinned(task.id, !task.is_pinned)),
-    [runAction, setPinned],
+    [runAction, setPinned]
   );
 
   // Hapus tugas setelah dikonfirmasi lewat dialog
@@ -137,13 +131,13 @@ export default function TaskViewSwitcher() {
   const handleTaskDateChange = useCallback(
     (taskId: string, newDate: string) =>
       runAction(() => updateTask(taskId, { due_date: newDate })),
-    [runAction, updateTask],
+    [runAction, updateTask]
   );
 
   const handleTaskDescriptionChange = useCallback(
     (taskId: string, newDescription: string) =>
       runAction(() => updateTask(taskId, { description: newDescription })),
-    [runAction, updateTask],
+    [runAction, updateTask]
   );
 
   /* ---------- Modal ---------- */
@@ -175,10 +169,7 @@ export default function TaskViewSwitcher() {
     }
   }, []);
 
-  const handleModalSuccess = useCallback(
-    () => refresh({ silent: true }),
-    [refresh],
-  );
+  const handleModalSuccess = useCallback(() => refresh({ silent: true }), [refresh]);
 
   const errorMessage = error ?? actionError;
 
@@ -243,7 +234,7 @@ export default function TaskViewSwitcher() {
       {/* Konfirmasi hapus */}
       <AlertDialog
         open={!!taskToDelete}
-        onOpenChange={(open) => {
+        onOpenChange={open => {
           if (!open && !isDeleting) setTaskToDelete(null);
         }}
       >
@@ -251,15 +242,15 @@ export default function TaskViewSwitcher() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Task</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{taskToDelete?.title}&quot;?
-              This action cannot be undone.
+              Are you sure you want to delete &quot;{taskToDelete?.title}&quot;? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault(); // tahan dialog sampai proses hapus selesai
                 handleConfirmDelete();
               }}

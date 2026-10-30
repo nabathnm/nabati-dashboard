@@ -1,10 +1,4 @@
-import {
-  ListTodo,
-  Clock,
-  CheckCircle2,
-  AlertTriangle,
-  TrendingUp,
-} from "lucide-react";
+import { ListTodo, Clock, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
 
 import type { TaskStatStyle } from "@/types/task";
 

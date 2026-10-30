@@ -16,11 +16,17 @@ import {
   DialogBody,
   DialogContent,
   DialogFooter,
-  DialogHeader
+  DialogHeader,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { TASK_CATEGORY_OPTIONS } from "@/constants/tasks/task-category";
 import { getErrorMessage } from "@/hooks/use-task";
@@ -147,7 +153,6 @@ export default function TaskModal({
 
   const isPending = isSubmitting || isDeleting;
 
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -158,149 +163,136 @@ export default function TaskModal({
             </div>
           </DialogHeader>
 
-<DialogBody>
-<form
-  onSubmit={handleSubmit(onSubmit)}
-  className="gap-6 flex flex-col"
->
-  {/* Title */}
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-base font-medium text-primary">
-      <ListTodo className="h-4 w-4 text-foreground" />
-      Title
-    </Label>
+          <DialogBody>
+            <form onSubmit={handleSubmit(onSubmit)} className="gap-6 flex flex-col">
+              {/* Title */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-base font-medium text-primary">
+                  <ListTodo className="h-4 w-4 text-foreground" />
+                  Title
+                </Label>
 
-    <Input
-      placeholder="Apa yang perlu dikerjakan?"
-      className="h-11 rounded-xl bg-muted/30 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input"
-      {...register("title")}
-    />
-
-    {errors.title && (
-      <p className="text-xs text-destructive">
-        {errors.title.message}
-      </p>
-    )}
-  </div>
-
-  {/* Description */}
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-base font-medium text-primary">
-      <FileText className="h-4 w-4 text-foreground" />
-      Description
-    </Label>
-
-    <Textarea
-      placeholder="Tambahkan detail atau catatan tugas..."
-      rows={3}
-      className="min-h-24 resize-none rounded-xl bg-muted/30 h-11 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input"
-      {...register("description")}
-    />
-  </div>
-
-  {/* Category & Due date */}
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-    <div className="space-y-2">
-      <Label className="flex items-center gap-2 text-base font-medium text-primary">
-        <CalendarDays className="h-4 w-4 text-foreground" />
-        Date
-      </Label>
-
-      <Input
-        type="date"
-        className="h-11 rounded-xl bg-muted/30 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input"
-        {...register("due_date")}
-      />
-    </div>
-    <div className="space-y-2">
-      <Label className="flex items-center gap-2 text-base font-medium text-primary">
-        <Tag className="h-4 w-4 text-foreground" />
-        Category
-      </Label>
-
-      <Select
-        value={watchCategory}
-        onValueChange={(value) =>
-          setValue("category", value as TaskCategory, {
-            shouldDirty: true,
-            shouldValidate: true,
-          })
-        }
-      >
-        <SelectTrigger className="h-11 rounded-xl w-full">
-          <SelectValue placeholder="Pilih kategori" />
-        </SelectTrigger>
-
-        <SelectContent>
-          {TASK_CATEGORY_OPTIONS.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-            >
-              <div className="flex items-center gap-2">
-                <span
-                  className={`h-2 w-2 rounded-full ${option.dotColor}`}
+                <Input
+                  placeholder="Apa yang perlu dikerjakan?"
+                  className="h-11 rounded-xl bg-muted/30 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input"
+                  {...register("title")}
                 />
-                {option.label}
+
+                {errors.title && (
+                  <p className="text-xs text-destructive">{errors.title.message}</p>
+                )}
               </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
 
-    
-  </div>
+              {/* Description */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-base font-medium text-primary">
+                  <FileText className="h-4 w-4 text-foreground" />
+                  Description
+                </Label>
 
-  {/* Server error */}
-  {submitError && (
-    <p role="alert" className="text-sm text-destructive">
-      {submitError}
-    </p>
-  )}
+                <Textarea
+                  placeholder="Tambahkan detail atau catatan tugas..."
+                  rows={3}
+                  className="min-h-24 resize-none rounded-xl bg-muted/30 h-11 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input"
+                  {...register("description")}
+                />
+              </div>
 
-  {/* Footer */}
-  <DialogFooter>
-    {isEditing && (
-      <Button
-        type="button"
-        variant="ghost"
-        disabled={isPending}
-        onClick={() => setDeleteDialogOpen(true)}
-        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-      >
-        <Trash2 className="mr-2 h-4 w-4" />
-        Hapus tugas
-      </Button>
-    )}
+              {/* Category & Due date */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-base font-medium text-primary">
+                    <CalendarDays className="h-4 w-4 text-foreground" />
+                    Date
+                  </Label>
 
-    <div className="flex gap-2 sm:ml-auto">
-      <Button
-        type="button"
-        variant="outline"
-        disabled={isPending}
-        onClick={() => onOpenChange(false)}
-        className="rounded-full py-3 px-3 text-base"
-      >
-        Batal
-      </Button>
+                  <Input
+                    type="date"
+                    className="h-11 rounded-xl bg-muted/30 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-input"
+                    {...register("due_date")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-base font-medium text-primary">
+                    <Tag className="h-4 w-4 text-foreground" />
+                    Category
+                  </Label>
 
-      <Button
-        type="submit"
-        disabled={isPending}
-        className="rounded-full py-3 px-3 text-base"
-      >
-        {isSubmitting
-          ? "Menyimpan..."
-          : isEditing
-            ? "Simpan perubahan"
-            : "Buat tugas"}
-      </Button>
-    </div>
-  </DialogFooter>
-</form>
-</DialogBody>
+                  <Select
+                    value={watchCategory}
+                    onValueChange={value =>
+                      setValue("category", value as TaskCategory, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="h-11 rounded-xl w-full">
+                      <SelectValue placeholder="Pilih kategori" />
+                    </SelectTrigger>
 
+                    <SelectContent>
+                      {TASK_CATEGORY_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center gap-2">
+                            <span className={`h-2 w-2 rounded-full ${option.dotColor}`} />
+                            {option.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Server error */}
+              {submitError && (
+                <p role="alert" className="text-sm text-destructive">
+                  {submitError}
+                </p>
+              )}
+
+              {/* Footer */}
+              <DialogFooter>
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isPending}
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Hapus tugas
+                  </Button>
+                )}
+
+                <div className="flex gap-2 sm:ml-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={() => onOpenChange(false)}
+                    className="rounded-full py-3 px-3 text-base"
+                  >
+                    Batal
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    disabled={isPending}
+                    className="rounded-full py-3 px-3 text-base"
+                  >
+                    {isSubmitting
+                      ? "Menyimpan..."
+                      : isEditing
+                        ? "Simpan perubahan"
+                        : "Buat tugas"}
+                  </Button>
+                </div>
+              </DialogFooter>
+            </form>
+          </DialogBody>
         </DialogContent>
       </Dialog>
 
@@ -310,14 +302,15 @@ export default function TaskModal({
           <AlertDialogHeader className="px-6 py-5 border-b border-border/50 bg-muted/30">
             <AlertDialogTitle className="text-xl font-bold">Delete Task</AlertDialogTitle>
             <AlertDialogDescription className="text-foreground">
-              Are you sure you want to delete &quot;{task?.title}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;{task?.title}&quot;? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="px-6 py-4 bg-muted/10">
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault(); // tahan dialog tetap terbuka sampai proses hapus selesai
                 handleDelete();
               }}

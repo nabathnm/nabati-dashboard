@@ -1,12 +1,11 @@
-
 "use client";
 
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 import { categoryOptions } from "@/constants/tasks/category-style";
@@ -19,9 +18,7 @@ interface TaskFiltersProps {
 
 type StatusValue = "All" | "todo" | "done";
 
-function getStatusValue(
-  isCompleted: boolean | undefined,
-): StatusValue {
+function getStatusValue(isCompleted: boolean | undefined): StatusValue {
   if (isCompleted === undefined) return "All";
   return isCompleted ? "done" : "todo";
 }
@@ -37,12 +34,7 @@ export default function TaskFiltersComponent({
         onValueChange={(value: string | null) =>
           onFiltersChange({
             ...filters,
-            is_completed:
-              value === "done"
-                ? true
-                : value === "todo"
-                  ? false
-                  : undefined,
+            is_completed: value === "done" ? true : value === "todo" ? false : undefined,
           })
         }
       >
@@ -58,18 +50,11 @@ export default function TaskFiltersComponent({
       </Select>
 
       <Select
-        value={
-          filters.category && filters.category !== "all"
-            ? filters.category
-            : "all"
-        }
+        value={filters.category && filters.category !== "all" ? filters.category : "all"}
         onValueChange={(value: string | null) =>
           onFiltersChange({
             ...filters,
-            category:
-              !value || value === "all"
-                ? undefined
-                : (value as TaskCategory),
+            category: !value || value === "all" ? undefined : (value as TaskCategory),
           })
         }
       >
@@ -80,11 +65,8 @@ export default function TaskFiltersComponent({
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
 
-          {categoryOptions.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-            >
+          {categoryOptions.map(option => (
+            <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>
           ))}

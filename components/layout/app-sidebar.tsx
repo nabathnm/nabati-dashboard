@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, FolderKanban, Settings, LogOut, Wrench, BriefcaseBusiness } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +14,17 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { supabase } from "@/lib/supabase";
+import {
+  BriefcaseBusiness,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Wrench,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 const mainItem = [
   {
@@ -28,6 +35,11 @@ const mainItem = [
   {
     title: "Task",
     url: "/tasks",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Transaction",
+    url: "/transactions",
     icon: LayoutDashboard,
   },
 ];
@@ -71,7 +83,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItem.map((item) => {
+              {mainItem.map(item => {
                 const isActive = pathname === item.url;
                 const Icon = item.icon;
                 return (
@@ -94,7 +106,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>About Me</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
+              {navItems.map(item => {
                 const isActive = pathname === item.url;
                 const Icon = item.icon;
                 return (
@@ -130,10 +142,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={handleLogout}
-                  tooltip="Keluar"
-                >
+                <SidebarMenuButton onClick={handleLogout} tooltip="Keluar">
                   <LogOut className="size-4" />
                   <span>Keluar</span>
                 </SidebarMenuButton>

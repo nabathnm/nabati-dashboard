@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -27,7 +26,7 @@ export default function TaskSearch({
 
       <Input
         value={searchTerm}
-        onChange={(event) => onSearchChange(event.target.value)}
+        onChange={event => onSearchChange(event.target.value)}
         placeholder="Search tasks..."
         className="h-9 w-full rounded-full pl-9 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
       />

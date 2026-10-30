@@ -41,7 +41,7 @@ export function subscribeToTaskChanges(listener: TaskChangeListener): () => void
 }
 
 function notifyTasksChanged(): void {
-  changeListeners.forEach((listener) => listener());
+  changeListeners.forEach(listener => listener());
 }
 
 /* -------------------------------------------------------------------------- */
@@ -52,27 +52,20 @@ export class TaskServiceError extends Error {
   constructor(
     message: string,
     public readonly code: string = "UNKNOWN",
-    public readonly details?: unknown,
+    public readonly details?: unknown
   ) {
     super(message);
     this.name = "TaskServiceError";
   }
 }
 
-function fail(
-  error: { code?: string; message?: string },
-  fallback: string,
-): never {
+function fail(error: { code?: string; message?: string }, fallback: string): never {
   // 23514 = check_violation, 23503 = foreign_key_violation
   if (error.code === "23514") {
     throw new TaskServiceError("Data tugas tidak valid.", error.code, error);
   }
   if (error.code === "23503") {
-    throw new TaskServiceError(
-      "Profil pengguna tidak ditemukan.",
-      error.code,
-      error,
-    );
+    throw new TaskServiceError("Profil pengguna tidak ditemukan.", error.code, error);
   }
   throw new TaskServiceError(fallback, error.code ?? "UNKNOWN", error);
 }
@@ -91,10 +84,7 @@ function validateTitle(title: string): string {
 
 function validateProgress(progress: number): number {
   if (!Number.isInteger(progress) || progress < 0 || progress > 100) {
-    throw new TaskServiceError(
-      "Progress harus berupa angka bulat 0-100.",
-      "VALIDATION",
-    );
+    throw new TaskServiceError("Progress harus berupa angka bulat 0-100.", "VALIDATION");
   }
   return progress;
 }
@@ -106,9 +96,7 @@ function validateCategory(category: TaskCategory): TaskCategory {
   return category;
 }
 
-function normalizeDescription(
-  description: string | null | undefined,
-): string | null {
+function normalizeDescription(description: string | null | undefined): string | null {
   const trimmed = description?.trim();
   return trimmed ? trimmed : null;
 }
@@ -121,10 +109,7 @@ function normalizeDueDate(dueDate: string | null | undefined): string | null {
     : dueDate;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    throw new TaskServiceError(
-      "Format tanggal tenggat tidak valid.",
-      "VALIDATION",
-    );
+    throw new TaskServiceError("Format tanggal tenggat tidak valid.", "VALIDATION");
   }
   return date.toISOString();
 }
@@ -133,10 +118,7 @@ function normalizeDueDate(dueDate: string | null | undefined): string | null {
 function dayRange(dateStr: string): { start: string; end: string } {
   const day = dateStr.slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
-    throw new TaskServiceError(
-      "Format filter tanggal harus YYYY-MM-DD.",
-      "VALIDATION",
-    );
+    throw new TaskServiceError("Format filter tanggal harus YYYY-MM-DD.", "VALIDATION");
   }
   const start = new Date(`${day}T00:00:00${TZ_OFFSET}`);
   const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
@@ -321,11 +303,7 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
     ...resolveCompletionForCreate(input),
   };
 
-  const { data, error } = await supabase
-    .from(TABLE)
-    .insert(payload)
-    .select()
-    .single();
+  const { data, error } = await supabase.from(TABLE).insert(payload).select().single();
 
   if (error) fail(error, "Gagal membuat tugas.");
   notifyTasksChanged();
@@ -356,10 +334,7 @@ async function resolveCompletionForUpdate(id: string, input: UpdateTaskInput) {
   };
 }
 
-export async function updateTask(
-  id: string,
-  input: UpdateTaskInput,
-): Promise<Task> {
+export async function updateTask(id: string, input: UpdateTaskInput): Promise<Task> {
   const userId = await requireUserId();
   const patch: Record<string, unknown> = {};
 
@@ -407,18 +382,12 @@ export function updateProgress(id: string, progress: number): Promise<Task> {
   return updateTask(id, { progress });
 }
 
-export function toggleComplete(
-  id: string,
-  isCompleted: boolean,
-): Promise<Task> {
+export function toggleComplete(id: string, isCompleted: boolean): Promise<Task> {
   return updateTask(id, { is_completed: isCompleted });
 }
 
 /** Sematkan (pin) atau lepas sematan tugas. */
-export async function setTaskPinned(
-  id: string,
-  isPinned: boolean,
-): Promise<Task> {
+export async function setTaskPinned(id: string, isPinned: boolean): Promise<Task> {
   const userId = await requireUserId();
   const now = new Date().toISOString();
 

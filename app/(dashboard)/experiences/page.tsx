@@ -2,22 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  ExternalLink,
-  Loader2,
-} from "lucide-react";
+import { Plus, Pencil, Trash2, ExternalLink, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Experience {
   id: number;
@@ -28,13 +17,7 @@ interface Experience {
   year: string | null;
   is_current: boolean;
   location: string | null;
-  type:
-    | "internship"
-    | "organization"
-    | "freelance"
-    | "full-time"
-    | "part-time"
-    | null;
+  type: "internship" | "organization" | "freelance" | "full-time" | "part-time" | null;
   image_url: string | null;
 }
 
@@ -73,14 +56,10 @@ export default function ExperiencesPage() {
 
       const data = await response.json();
 
-      setExperiences(
-        Array.isArray(data) ? data : data.experiences ?? []
-      );
+      setExperiences(Array.isArray(data) ? data : (data.experiences ?? []));
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat mengambil data"
+        err instanceof Error ? err.message : "Terjadi kesalahan saat mengambil data"
       );
     } finally {
       setLoading(false);
@@ -92,9 +71,7 @@ export default function ExperiencesPage() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    const confirmed = window.confirm(
-      "Apakah Anda yakin ingin menghapus experience ini?"
-    );
+    const confirmed = window.confirm("Apakah Anda yakin ingin menghapus experience ini?");
 
     if (!confirmed) return;
 
@@ -114,14 +91,10 @@ export default function ExperiencesPage() {
         throw new Error("Gagal menghapus experience");
       }
 
-      setExperiences((prev) =>
-        prev.filter((experience) => experience.id !== id)
-      );
+      setExperiences(prev => prev.filter(experience => experience.id !== id));
     } catch (err) {
       alert(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat menghapus experience"
+        err instanceof Error ? err.message : "Terjadi kesalahan saat menghapus experience"
       );
     } finally {
       setDeletingId(null);
@@ -132,9 +105,7 @@ export default function ExperiencesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Experiences
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">Experiences</h1>
           <p className="text-muted-foreground">
             Kelola pengalaman kerja, organisasi, internship, dan freelance.
           </p>
@@ -157,9 +128,7 @@ export default function ExperiencesPage() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : error ? (
-            <div className="py-12 text-center text-sm text-destructive">
-              {error}
-            </div>
+            <div className="py-12 text-center text-sm text-destructive">{error}</div>
           ) : experiences.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               Belum ada experience.
@@ -169,33 +138,18 @@ export default function ExperiencesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="px-4 py-3 text-left font-medium">
-                      Experience
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      Type
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      Year
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      Location
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-right font-medium">
-                      Actions
-                    </th>
+                    <th className="px-4 py-3 text-left font-medium">Experience</th>
+                    <th className="px-4 py-3 text-left font-medium">Type</th>
+                    <th className="px-4 py-3 text-left font-medium">Year</th>
+                    <th className="px-4 py-3 text-left font-medium">Location</th>
+                    <th className="px-4 py-3 text-left font-medium">Status</th>
+                    <th className="px-4 py-3 text-right font-medium">Actions</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {experiences.map((experience) => (
-                    <tr
-                      key={experience.id}
-                      className="border-b last:border-0"
-                    >
+                  {experiences.map(experience => (
+                    <tr key={experience.id} className="border-b last:border-0">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           {experience.image_url ? (
@@ -206,16 +160,12 @@ export default function ExperiencesPage() {
                             />
                           ) : (
                             <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted text-xs">
-                              {experience.company
-                                ?.charAt(0)
-                                .toUpperCase() ?? "?"}
+                              {experience.company?.charAt(0).toUpperCase() ?? "?"}
                             </div>
                           )}
 
                           <div className="min-w-0">
-                            <p className="font-medium">
-                              {experience.title || "-"}
-                            </p>
+                            <p className="font-medium">{experience.title || "-"}</p>
                             <p className="text-muted-foreground">
                               {experience.company || "-"}
                             </p>
@@ -225,21 +175,15 @@ export default function ExperiencesPage() {
 
                       <td className="px-4 py-4">
                         {experience.type ? (
-                          <Badge variant="secondary">
-                            {typeLabels[experience.type]}
-                          </Badge>
+                          <Badge variant="secondary">{typeLabels[experience.type]}</Badge>
                         ) : (
                           "-"
                         )}
                       </td>
 
-                      <td className="px-4 py-4">
-                        {experience.year || "-"}
-                      </td>
+                      <td className="px-4 py-4">{experience.year || "-"}</td>
 
-                      <td className="px-4 py-4">
-                        {experience.location || "-"}
-                      </td>
+                      <td className="px-4 py-4">{experience.location || "-"}</td>
 
                       <td className="px-4 py-4">
                         {experience.is_current ? (
@@ -255,9 +199,7 @@ export default function ExperiencesPage() {
                             variant="outline"
                             size="icon"
                             onClick={() =>
-                              router.push(
-                                `/experiences/${experience.id}/edit`
-                              )
+                              router.push(`/experiences/${experience.id}/edit`)
                             }
                           >
                             <Pencil className="h-4 w-4" />
@@ -267,9 +209,7 @@ export default function ExperiencesPage() {
                             variant="destructive"
                             size="icon"
                             disabled={deletingId === experience.id}
-                            onClick={() =>
-                              handleDelete(experience.id)
-                            }
+                            onClick={() => handleDelete(experience.id)}
                           >
                             {deletingId === experience.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />

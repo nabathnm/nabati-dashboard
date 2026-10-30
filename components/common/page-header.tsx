@@ -19,9 +19,19 @@ export function PageHeader({
   descriptionClassName,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10", className)}>
+    <div
+      className={cn(
+        "flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10",
+        className
+      )}
+    >
       <div>
-        <h1 className={cn("text-2xl font-bold text-foreground tracking-tight", titleClassName)}>
+        <h1
+          className={cn(
+            "text-2xl font-bold text-foreground tracking-tight",
+            titleClassName
+          )}
+        >
           {title}
         </h1>
         {description && (
@@ -31,11 +41,7 @@ export function PageHeader({
         )}
       </div>
 
-      {children && (
-        <div className="flex flex-wrap items-center gap-2">
-          {children}
-        </div>
-      )}
+      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
   );
 }

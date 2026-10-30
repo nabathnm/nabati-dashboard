@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { RefObject } from "react";
@@ -10,16 +9,13 @@ interface UseSearchWidthAnimationReturn {
   prepareAnimation: () => void;
 }
 
-export function useSearchWidthAnimation(
-  view: TaskView,
-): UseSearchWidthAnimationReturn {
+export function useSearchWidthAnimation(view: TaskView): UseSearchWidthAnimationReturn {
   const searchRef = useRef<HTMLDivElement>(null);
   const widthBeforeToggle = useRef<number | null>(null);
   const animationRef = useRef<Animation | null>(null);
 
   const prepareAnimation = useCallback(() => {
-    widthBeforeToggle.current =
-      searchRef.current?.getBoundingClientRect().width ?? null;
+    widthBeforeToggle.current = searchRef.current?.getBoundingClientRect().width ?? null;
   }, []);
 
   useLayoutEffect(() => {
@@ -39,13 +35,10 @@ export function useSearchWidthAnimation(
     element.style.flexShrink = "0";
     element.style.flexGrow = "0";
 
-    const animation = element.animate(
-      [{ width: `${from}px` }, { width: `${to}px` }],
-      {
-        duration: 300,
-        easing: "ease-in-out",
-      },
-    );
+    const animation = element.animate([{ width: `${from}px` }, { width: `${to}px` }], {
+      duration: 300,
+      easing: "ease-in-out",
+    });
 
     animationRef.current = animation;
 
