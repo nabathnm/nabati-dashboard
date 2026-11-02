@@ -1,7 +1,15 @@
 // lib/services/task-service.ts
 import { supabase } from "@/lib/supabase";
+import {
+  createCalendarEvent,
+  updateCalendarEvent,
+  deleteCalendarEvent,
+  syncAllTasksToGoogleCalendar as syncAllTasksGcal,
+} from "@/lib/services/google-calendar-service";
 import type {
   CreateTaskInput,
+  GoogleCalendarSyncResult,
+  GoogleCalendarSyncSummary,
   Task,
   TaskCategory,
   TaskFilters,
@@ -306,8 +314,22 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
   const { data, error } = await supabase.from(TABLE).insert(payload).select().single();
 
   if (error) fail(error, "Gagal membuat tugas.");
+  const created = data as Task;
   notifyTasksChanged();
-  return data as Task;
+
+  // Integrasi Google Calendar: Jika due_date ada dan sync diaktifkan
+  if (input.sync_to_calendar !== false && created.due_date) {
+    try {
+      const gcal = await createCalendarEvent(created);
+      if (gcal.success && gcal.eventId) {
+        created.google_event_id = gcal.eventId;
+      }
+    } catch {
+      // Kesalahan sinkronisasi kalender tidak menggagalkan penyimpanan task
+    }
+  }
+
+  return created;
 }
 
 async function resolveCompletionForUpdate(id: string, input: UpdateTaskInput) {
@@ -374,8 +396,21 @@ export async function updateTask(id: string, input: UpdateTaskInput): Promise<Ta
 
   if (error) fail(error, "Gagal memperbarui tugas.");
   if (!data) throw new TaskServiceError("Tugas tidak ditemukan.", "NOT_FOUND");
+  const updated = data as Task;
   notifyTasksChanged();
-  return data as Task;
+
+  // Integrasi Google Calendar: perbarui event kalender jika sync diaktifkan
+  if (input.sync_to_calendar !== false) {
+    try {
+      if (updated.due_date) {
+        await updateCalendarEvent(updated, updated.google_event_id || id);
+      }
+    } catch {
+      // Kesalahan sinkronisasi kalender tidak menggagalkan update database
+    }
+  }
+
+  return updated;
 }
 
 export function updateProgress(id: string, progress: number): Promise<Task> {
@@ -412,6 +447,9 @@ export async function setTaskPinned(id: string, isPinned: boolean): Promise<Task
 export async function deleteTask(id: string): Promise<void> {
   const userId = await requireUserId();
 
+  // Simpan data task sementara untuk menghapus event Google Calendar
+  const existing = await getTaskById(id).catch(() => null);
+
   const { error } = await supabase
     .from(TABLE)
     .delete()
@@ -420,6 +458,76 @@ export async function deleteTask(id: string): Promise<void> {
 
   if (error) fail(error, "Gagal menghapus tugas.");
   notifyTasksChanged();
+
+  // Integrasi Google Calendar: hapus event dari kalender jika ada
+  try {
+    const eventIdToDelete = existing?.google_event_id || id;
+    if (eventIdToDelete) {
+      await deleteCalendarEvent(eventIdToDelete);
+    }
+  } catch {
+    // Abaikan jika kalender belum terhubung
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Integrasi Google Calendar Khusus Task                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Menyinkronkan satu tugas secara eksplisit ke Google Calendar.
+ */
+export async function syncTaskToGoogleCalendar(
+  task: Task
+): Promise<GoogleCalendarSyncResult> {
+  return task.google_event_id
+    ? updateCalendarEvent(task, task.google_event_id)
+    : createCalendarEvent(task);
+}
+
+/**
+ * Menyinkronkan semua tugas yang memiliki tenggat (due_date) ke Google Calendar.
+ */
+export async function syncAllTasksToGoogleCalendar(): Promise<GoogleCalendarSyncSummary> {
+  const tasks = await getTasks();
+  return syncAllTasksGcal(tasks);
+}
+
+/**
+ * Menghapus event tugas dari Google Calendar secara manual.
+ */
+export async function removeTaskFromGoogleCalendar(
+  eventId: string
+): Promise<GoogleCalendarSyncResult> {
+  return deleteCalendarEvent(eventId);
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Integrasi Google Calendar Khusus Task                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Menyinkronkan satu tugas secara eksplisit ke Google Calendar.
+ */
+export async function syncTaskToGoogleCalendar(task: Task): Promise<GoogleCalendarSyncResult> {
+  return task.google_event_id
+    ? updateCalendarEvent(task, task.google_event_id)
+    : createCalendarEvent(task);
+}
+
+/**
+ * Menyinkronkan semua tugas yang memiliki tenggat (due_date) ke Google Calendar.
+ */
+export async function syncAllTasksToGoogleCalendar(): Promise<GoogleCalendarSyncSummary> {
+  const tasks = await getTasks();
+  return syncAllTasksGcal(tasks);
+}
+
+/**
+ * Menghapus event tugas dari Google Calendar secara manual.
+ */
+export async function removeTaskFromGoogleCalendar(eventId: string): Promise<GoogleCalendarSyncResult> {
+  return deleteCalendarEvent(eventId);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -437,4 +545,7 @@ export const taskService = {
   toggleComplete,
   setTaskPinned,
   deleteTask,
+  syncTaskToGoogleCalendar,
+  syncAllTasksToGoogleCalendar,
+  removeTaskFromGoogleCalendar,
 };

@@ -15,9 +15,14 @@ import {
   toggleComplete as toggleCompleteService,
   updateProgress as updateProgressService,
   updateTask as updateTaskService,
+  syncTaskToGoogleCalendar as syncTaskGcalService,
+  syncAllTasksToGoogleCalendar as syncAllTasksGcalService,
+  removeTaskFromGoogleCalendar as removeTaskGcalService,
 } from "@/lib/services/task-service";
 import type {
   CreateTaskInput,
+  GoogleCalendarSyncResult,
+  GoogleCalendarSyncSummary,
   Task,
   TaskFilters,
   TaskStats,
@@ -45,6 +50,7 @@ export function useTasks(filters: TaskFilters = {}) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
+  const [isSyncingCalendar, setIsSyncingCalendar] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Untuk mengabaikan respons lama (race condition) dan update setelah unmount
@@ -53,37 +59,40 @@ export function useTasks(filters: TaskFilters = {}) {
   // Key string agar objek filter baru dengan isi sama tidak memicu fetch ulang
   const filtersKey = JSON.stringify(filters);
 
+  const fetchData = useCallback(async (currentFilters: TaskFilters, reqId: number) => {
+    try {
+      const list = await getTasks(currentFilters);
+      if (reqId !== requestIdRef.current) return;
+      setTasks(list);
+      setError(null);
+    } catch (err) {
+      if (reqId !== requestIdRef.current) return;
+      setError(getErrorMessage(err));
+    } finally {
+      if (reqId === requestIdRef.current) setIsLoading(false);
+    }
+  }, []);
+
   const refresh = useCallback(
     async (options: { silent?: boolean } = {}) => {
       const currentFilters: TaskFilters = JSON.parse(filtersKey);
       const requestId = ++requestIdRef.current;
-
       if (!options.silent) setIsLoading(true);
-
-      try {
-        const list = await getTasks(currentFilters);
-        if (requestId !== requestIdRef.current) return;
-        setTasks(list);
-        setError(null);
-      } catch (err) {
-        if (requestId !== requestIdRef.current) return;
-        setError(getErrorMessage(err));
-      } finally {
-        if (requestId === requestIdRef.current) setIsLoading(false);
-      }
+      return fetchData(currentFilters, requestId);
     },
-    [filtersKey]
+    [fetchData, filtersKey]
   );
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    const currentFilters: TaskFilters = JSON.parse(filtersKey);
+    const reqIdRef = requestIdRef;
+    const requestId = ++reqIdRef.current;
+    void fetchData(currentFilters, requestId);
 
-  useEffect(() => {
     return () => {
-      requestIdRef.current++;
+      reqIdRef.current++;
     };
-  }, []);
+  }, [fetchData, filtersKey]);
 
   /** Jalankan mutasi, lalu muat ulang data tanpa menampilkan loading penuh. */
   const mutate = useCallback(
@@ -131,12 +140,45 @@ export function useTasks(filters: TaskFilters = {}) {
     [mutate]
   );
 
+  const syncTaskToCalendar = useCallback(
+    async (task: Task): Promise<GoogleCalendarSyncResult> => {
+      setIsSyncingCalendar(true);
+      try {
+        const result = await syncTaskGcalService(task);
+        await refresh({ silent: true });
+        return result;
+      } finally {
+        setIsSyncingCalendar(false);
+      }
+    },
+    [refresh]
+  );
+
+  const syncAllToCalendar = useCallback(async (): Promise<GoogleCalendarSyncSummary> => {
+    setIsSyncingCalendar(true);
+    try {
+      const summary = await syncAllTasksGcalService();
+      await refresh({ silent: true });
+      return summary;
+    } finally {
+      setIsSyncingCalendar(false);
+    }
+  }, [refresh]);
+
+  const removeFromCalendar = useCallback(
+    async (eventId: string): Promise<GoogleCalendarSyncResult> => {
+      return removeTaskGcalService(eventId);
+    },
+    []
+  );
+
   return {
     // data
     tasks,
     // status
     isLoading,
     isMutating,
+    isSyncingCalendar,
     error,
     // aksi (melempar error agar bisa ditangkap form/toast di komponen)
     refresh,
@@ -146,6 +188,10 @@ export function useTasks(filters: TaskFilters = {}) {
     toggleComplete,
     setPinned,
     deleteTask,
+    // Google Calendar
+    syncTaskToCalendar,
+    syncAllToCalendar,
+    removeFromCalendar,
   };
 }
 
@@ -159,35 +205,43 @@ export function useTask(id: string | null | undefined) {
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
+  const fetchTask = useCallback(
+    async (taskId: string | null | undefined, reqId: number) => {
+      if (!taskId) {
+        setTask(null);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getTaskById(taskId);
+        if (reqId !== requestIdRef.current) return;
+        setTask(data);
+        setError(data ? null : "Tugas tidak ditemukan.");
+      } catch (err) {
+        if (reqId !== requestIdRef.current) return;
+        setError(getErrorMessage(err));
+      } finally {
+        if (reqId === requestIdRef.current) setIsLoading(false);
+      }
+    },
+    []
+  );
+
   const refresh = useCallback(async () => {
-    if (!id) {
-      setTask(null);
-      setIsLoading(false);
-      return;
-    }
-
-    const requestId = ++requestIdRef.current;
-    setIsLoading(true);
-
-    try {
-      const data = await getTaskById(id);
-      if (requestId !== requestIdRef.current) return;
-      setTask(data);
-      setError(data ? null : "Tugas tidak ditemukan.");
-    } catch (err) {
-      if (requestId !== requestIdRef.current) return;
-      setError(getErrorMessage(err));
-    } finally {
-      if (requestId === requestIdRef.current) setIsLoading(false);
-    }
-  }, [id]);
+    const reqId = ++requestIdRef.current;
+    if (id) setIsLoading(true);
+    return fetchTask(id, reqId);
+  }, [fetchTask, id]);
 
   useEffect(() => {
-    refresh();
+    const reqIdRef = requestIdRef;
+    const reqId = ++reqIdRef.current;
+    void fetchTask(id, reqId);
     return () => {
-      requestIdRef.current++;
+      reqIdRef.current++;
     };
-  }, [refresh]);
+  }, [fetchTask, id]);
 
   return { task, isLoading, error, refresh };
 }
@@ -202,36 +256,45 @@ export function useTaskStats() {
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
-  const refresh = useCallback(async (options: { silent?: boolean } = {}) => {
-    const requestId = ++requestIdRef.current;
-    if (!options.silent) setIsLoading(true);
-
+  const fetchStats = useCallback(async (reqId: number) => {
     try {
       const data = await getTaskStats();
-      if (requestId !== requestIdRef.current) return;
+      if (reqId !== requestIdRef.current) return;
       setStats(data);
       setError(null);
     } catch (err) {
-      if (requestId !== requestIdRef.current) return;
+      if (reqId !== requestIdRef.current) return;
       setError(getErrorMessage(err));
     } finally {
-      if (requestId === requestIdRef.current) setIsLoading(false);
+      if (reqId === requestIdRef.current) setIsLoading(false);
     }
   }, []);
 
+  const refresh = useCallback(
+    async (options: { silent?: boolean } = {}) => {
+      const reqId = ++requestIdRef.current;
+      if (!options.silent) setIsLoading(true);
+      return fetchStats(reqId);
+    },
+    [fetchStats]
+  );
+
   useEffect(() => {
-    refresh();
+    const reqIdRef = requestIdRef;
+    const reqId = ++reqIdRef.current;
+    void fetchStats(reqId);
 
     // Muat ulang otomatis setiap kali ada tugas dibuat/diubah/dihapus di mana pun
     const unsubscribe = subscribeToTaskChanges(() => {
-      refresh({ silent: true });
+      const subReqId = ++reqIdRef.current;
+      void fetchStats(subReqId);
     });
 
     return () => {
       unsubscribe();
-      requestIdRef.current++;
+      reqIdRef.current++;
     };
-  }, [refresh]);
+  }, [fetchStats]);
 
   return { stats, isLoading, error, refresh };
 }
@@ -246,36 +309,45 @@ export function usePinnedTasks() {
   const [error, setError] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
-  const refresh = useCallback(async (options: { silent?: boolean } = {}) => {
-    const requestId = ++requestIdRef.current;
-    if (!options.silent) setIsLoading(true);
-
+  const fetchPinned = useCallback(async (reqId: number) => {
     try {
       const data = await getPinnedTasks();
-      if (requestId !== requestIdRef.current) return;
+      if (reqId !== requestIdRef.current) return;
       setTasks(data);
       setError(null);
     } catch (err) {
-      if (requestId !== requestIdRef.current) return;
+      if (reqId !== requestIdRef.current) return;
       setError(getErrorMessage(err));
     } finally {
-      if (requestId === requestIdRef.current) setIsLoading(false);
+      if (reqId === requestIdRef.current) setIsLoading(false);
     }
   }, []);
 
+  const refresh = useCallback(
+    async (options: { silent?: boolean } = {}) => {
+      const reqId = ++requestIdRef.current;
+      if (!options.silent) setIsLoading(true);
+      return fetchPinned(reqId);
+    },
+    [fetchPinned]
+  );
+
   useEffect(() => {
-    refresh();
+    const reqIdRef = requestIdRef;
+    const reqId = ++reqIdRef.current;
+    void fetchPinned(reqId);
 
     // Muat ulang otomatis saat tugas disematkan/diubah/dihapus di mana pun
     const unsubscribe = subscribeToTaskChanges(() => {
-      refresh({ silent: true });
+      const subReqId = ++reqIdRef.current;
+      void fetchPinned(subReqId);
     });
 
     return () => {
       unsubscribe();
-      requestIdRef.current++;
+      reqIdRef.current++;
     };
-  }, [refresh]);
+  }, [fetchPinned]);
 
   // Aksi melempar error; daftar dimuat ulang otomatis lewat langganan di atas
   const unpin = useCallback((id: string) => setTaskPinnedService(id, false), []);
@@ -286,4 +358,70 @@ export function usePinnedTasks() {
   );
 
   return { tasks, isLoading, error, refresh, unpin, toggleComplete };
+}
+
+/* -------------------------------------------------------------------------- */
+/*  useGoogleCalendarSync: sinkronisasi tugas khusus dengan Google Calendar   */
+/* -------------------------------------------------------------------------- */
+
+export function useGoogleCalendarSync() {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSynced, setLastSynced] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const syncTask = useCallback(async (task: Task): Promise<GoogleCalendarSyncResult> => {
+    setIsSyncing(true);
+    try {
+      const result = await syncTaskGcalService(task);
+      if (!result.success && result.error) {
+        setError(result.error);
+      } else {
+        setError(null);
+      }
+      setLastSynced(new Date().toISOString());
+      return result;
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setError(message);
+      throw err;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  const syncAll = useCallback(async (): Promise<GoogleCalendarSyncSummary> => {
+    setIsSyncing(true);
+    try {
+      const summary = await syncAllTasksGcalService();
+      setLastSynced(new Date().toISOString());
+      if (summary.errors.length > 0) {
+        setError(summary.errors[0]);
+      } else {
+        setError(null);
+      }
+      return summary;
+    } catch (err) {
+      const message = getErrorMessage(err);
+      setError(message);
+      throw err;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  const removeEvent = useCallback(
+    async (eventId: string): Promise<GoogleCalendarSyncResult> => {
+      return removeTaskGcalService(eventId);
+    },
+    []
+  );
+
+  return {
+    isSyncing,
+    lastSynced,
+    error,
+    syncTask,
+    syncAll,
+    removeEvent,
+  };
 }

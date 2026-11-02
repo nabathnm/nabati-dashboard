@@ -1,16 +1,17 @@
 "use client";
 
 import {
-    AlertCircle,
-    ArrowLeft,
-    CheckCircle2,
-    ExternalLink,
-    Mail,
-    RefreshCw,
-    ShieldCheck,
-    Unplug,
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  ExternalLink,
+  Mail,
+  RefreshCw,
+  ShieldCheck,
+  Unplug,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type EmailStatus = {
@@ -20,6 +21,7 @@ type EmailStatus = {
 };
 
 export default function EmailSetupPage() {
+  const router = useRouter();
   const [status, setStatus] = useState<EmailStatus>({
     connected: false,
     email: null,
@@ -56,26 +58,56 @@ export default function EmailSetupPage() {
   }
 
   useEffect(() => {
-    void loadStatus();
+    let ignore = false;
+    async function init() {
+      try {
+        const response = await fetch("/api/gmail/status", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Gagal memuat status koneksi email.");
+        }
+
+        const data = await response.json();
+        if (!ignore) {
+          setStatus({
+            connected: Boolean(data.connected),
+            email: data.email ?? null,
+            lastSyncedAt: data.lastSyncedAt ?? null,
+          });
+        }
+      } catch {
+        if (!ignore) {
+          setError("Status email belum dapat dimuat. Coba lagi.");
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void init();
 
     const params = new URLSearchParams(window.location.search);
     const result = params.get("gmail");
 
     if (result === "connected") {
       window.history.replaceState({}, "", window.location.pathname);
-    } else if (result === "error") {
-      setError("Google gagal menghubungkan akun email. Silakan coba lagi.");
     }
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   function connectEmail() {
-    window.location.href = "/api/gmail/connect";
+    router.push("/api/gmail/connect?returnTo=/email");
   }
 
   async function disconnectEmail() {
-    const confirmed = window.confirm(
-      "Putuskan koneksi Gmail dari aplikasi ini?"
-    );
+    const confirmed = window.confirm("Putuskan koneksi Gmail dari aplikasi ini?");
 
     if (!confirmed) return;
 
@@ -111,15 +143,11 @@ export default function EmailSetupPage() {
         </Link>
 
         <header className="space-y-2">
-          <p className="text-sm font-medium text-[#88C0D0]">
-            PENGATURAN INTEGRASI
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Setup Email
-          </h1>
+          <p className="text-sm font-medium text-[#88C0D0]">PENGATURAN INTEGRASI</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Setup Email</h1>
           <p className="max-w-xl text-sm leading-6 text-[#D8DEE9]">
-            Hubungkan Gmail untuk membantu mendeteksi notifikasi transaksi
-            dan mencatat pemasukan atau pengeluaran secara otomatis.
+            Hubungkan Gmail untuk membantu mendeteksi notifikasi transaksi dan mencatat
+            pemasukan atau pengeluaran secara otomatis.
           </p>
         </header>
 
@@ -159,7 +187,7 @@ export default function EmailSetupPage() {
               <p className="mt-1 break-all text-sm text-[#D8DEE9]">
                 {loading
                   ? "Memeriksa status koneksi..."
-                  : status.email ?? "Belum ada akun Gmail yang terhubung"}
+                  : (status.email ?? "Belum ada akun Gmail yang terhubung")}
               </p>
 
               {status.connected && status.lastSyncedAt && (
@@ -175,32 +203,23 @@ export default function EmailSetupPage() {
 
           <div className="space-y-3">
             <div className="flex items-start gap-3 text-sm text-[#D8DEE9]">
-              <CheckCircle2
-                size={18}
-                className="mt-0.5 shrink-0 text-[#A3BE8C]"
-              />
+              <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-[#A3BE8C]" />
               <p>Mendeteksi notifikasi transaksi dari email yang relevan.</p>
             </div>
 
             <div className="flex items-start gap-3 text-sm text-[#D8DEE9]">
-              <ShieldCheck
-                size={18}
-                className="mt-0.5 shrink-0 text-[#88C0D0]"
-              />
+              <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#88C0D0]" />
               <p>
-                Akses Gmail diberikan melalui halaman persetujuan resmi
-                Google, bukan dengan membagikan password.
+                Akses Gmail diberikan melalui halaman persetujuan resmi Google, bukan
+                dengan membagikan password.
               </p>
             </div>
 
             <div className="flex items-start gap-3 text-sm text-[#D8DEE9]">
-              <RefreshCw
-                size={18}
-                className="mt-0.5 shrink-0 text-[#88C0D0]"
-              />
+              <RefreshCw size={18} className="mt-0.5 shrink-0 text-[#88C0D0]" />
               <p>
-                Proses pembacaan dan sinkronisasi email perlu diaktifkan
-                melalui backend aplikasi.
+                Proses pembacaan dan sinkronisasi email perlu diaktifkan melalui backend
+                aplikasi.
               </p>
             </div>
           </div>
@@ -246,8 +265,16 @@ export default function EmailSetupPage() {
           <ol className="mt-4 space-y-4">
             {[
               ["1", "Hubungkan akun", "Berikan izin akses Gmail melalui Google."],
-              ["2", "Deteksi transaksi", "Backend membaca email yang relevan dan mengekstrak detail transaksi."],
-              ["3", "Periksa hasil", "Tinjau data hasil ekstraksi sebelum menyimpannya sebagai transaksi."],
+              [
+                "2",
+                "Deteksi transaksi",
+                "Backend membaca email yang relevan dan mengekstrak detail transaksi.",
+              ],
+              [
+                "3",
+                "Periksa hasil",
+                "Tinjau data hasil ekstraksi sebelum menyimpannya sebagai transaksi.",
+              ],
             ].map(([number, title, description]) => (
               <li key={number} className="flex gap-3">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#434C5E] text-sm font-semibold text-[#88C0D0]">
@@ -255,9 +282,7 @@ export default function EmailSetupPage() {
                 </span>
                 <div>
                   <p className="text-sm font-medium">{title}</p>
-                  <p className="mt-1 text-sm leading-5 text-[#D8DEE9]">
-                    {description}
-                  </p>
+                  <p className="mt-1 text-sm leading-5 text-[#D8DEE9]">{description}</p>
                 </div>
               </li>
             ))}

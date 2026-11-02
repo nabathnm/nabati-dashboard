@@ -12,6 +12,7 @@ export type Task = {
   created_at: string;
   updated_at: string;
   is_pinned: boolean;
+  google_event_id?: string | null;
 };
 
 export type TaskCategory = "Kuliah" | "Organisasi" | "Praktikum" | "Personal" | "Lainnya";
@@ -23,9 +24,26 @@ export type CreateTaskInput = {
   progress?: number;
   is_completed?: boolean;
   due_date?: string | null;
+  google_event_id?: string | null;
+  sync_to_calendar?: boolean;
 };
 
 export type UpdateTaskInput = Partial<CreateTaskInput>;
+
+export type GoogleCalendarSyncResult = {
+  success: boolean;
+  eventId?: string;
+  htmlLink?: string;
+  error?: string;
+  message?: string;
+};
+
+export type GoogleCalendarSyncSummary = {
+  total: number;
+  synced: number;
+  failed: number;
+  errors: string[];
+};
 
 export type TaskFilters = {
   search?: string;
