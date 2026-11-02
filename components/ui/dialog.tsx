@@ -104,6 +104,16 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
+  return (
+    <DialogPrimitive.Title
+      data-slot="dialog-title"
+      className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+      {...props}
+    />
+  );
+}
+
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -151,6 +161,7 @@ export {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogTitle,
   DialogOverlay,
   DialogPortal,
   DialogTrigger,

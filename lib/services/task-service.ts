@@ -503,34 +503,6 @@ export async function removeTaskFromGoogleCalendar(
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Integrasi Google Calendar Khusus Task                                     */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Menyinkronkan satu tugas secara eksplisit ke Google Calendar.
- */
-export async function syncTaskToGoogleCalendar(task: Task): Promise<GoogleCalendarSyncResult> {
-  return task.google_event_id
-    ? updateCalendarEvent(task, task.google_event_id)
-    : createCalendarEvent(task);
-}
-
-/**
- * Menyinkronkan semua tugas yang memiliki tenggat (due_date) ke Google Calendar.
- */
-export async function syncAllTasksToGoogleCalendar(): Promise<GoogleCalendarSyncSummary> {
-  const tasks = await getTasks();
-  return syncAllTasksGcal(tasks);
-}
-
-/**
- * Menghapus event tugas dari Google Calendar secara manual.
- */
-export async function removeTaskFromGoogleCalendar(eventId: string): Promise<GoogleCalendarSyncResult> {
-  return deleteCalendarEvent(eventId);
-}
-
-/* -------------------------------------------------------------------------- */
 /*  Opsional: akses lewat satu objek (taskService.getTasks(), dst.)           */
 /* -------------------------------------------------------------------------- */
 

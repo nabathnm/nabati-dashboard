@@ -20,6 +20,7 @@ import {
   FolderKanban,
   LayoutDashboard,
   LogOut,
+  NotebookPen,
   Settings,
   Wrench,
 } from "lucide-react";
@@ -36,6 +37,11 @@ const mainItem = [
     title: "Task",
     url: "/tasks",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Notes",
+    url: "/notes",
+    icon: NotebookPen,
   },
   {
     title: "Transaction",
@@ -83,7 +89,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItem.map(item => {
+              {mainItem.map((item) => {
                 const isActive = pathname === item.url;
                 const Icon = item.icon;
                 return (
@@ -106,7 +112,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>About Me</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map(item => {
+              {navItems.map((item) => {
                 const isActive = pathname === item.url;
                 const Icon = item.icon;
                 return (
