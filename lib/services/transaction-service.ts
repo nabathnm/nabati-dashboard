@@ -156,24 +156,25 @@ export const transactionService = {
 
     // Inisialisasi kategori bawaan jika tabel masih kosong
     if (categories.length === 0) {
-      const defaultCategories: CreateCategoryInput[] = [
-        { name: "Makanan & Minuman", type: "expense", is_default: true },
-        { name: "Transportasi", type: "expense", is_default: true },
-        { name: "Belanja", type: "expense", is_default: true },
-        { name: "Tagihan & Utilitas", type: "expense", is_default: true },
-        { name: "Hiburan", type: "expense", is_default: true },
-        { name: "Kesehatan", type: "expense", is_default: true },
-        { name: "Pendidikan", type: "expense", is_default: true },
-        { name: "Gaji / Upah", type: "income", is_default: true },
-        { name: "Pemasukan Lainnya", type: "income", is_default: true },
-        { name: "Lainnya", type: "expense", is_default: true },
+      const defaultCategories = [
+        { name: "Makanan & Minuman", type: "expense" as const },
+        { name: "Kopi & Nongkrong", type: "expense" as const },
+        { name: "Transportasi", type: "expense" as const },
+        { name: "Belanja", type: "expense" as const },
+        { name: "Tagihan & Utilitas", type: "expense" as const },
+        { name: "Hiburan", type: "expense" as const },
+        { name: "Kesehatan", type: "expense" as const },
+        { name: "Pendidikan", type: "expense" as const },
+        { name: "Gaji & Pemasukan", type: "income" as const },
+        { name: "Pemasukan Lainnya", type: "income" as const },
+        { name: "Lainnya", type: "expense" as const },
       ];
 
       const toInsert = defaultCategories.map((c) => ({
         user_id: userId,
         name: c.name,
         type: c.type,
-        is_default: true,
+        is_default: false,
       }));
 
       const { data: inserted, error: insertError } = await supabase
@@ -181,7 +182,9 @@ export const transactionService = {
         .insert(toInsert)
         .select("*");
 
-      if (!insertError && inserted && inserted.length > 0) {
+      if (insertError) {
+        console.error("[CategoryService] Error inserting default categories:", insertError);
+      } else if (inserted && inserted.length > 0) {
         categories = inserted as TransactionCategory[];
       }
     }
@@ -452,7 +455,7 @@ export const transactionService = {
   ): Promise<{ importedCount: number; errors: string[] }> {
     const userId = await getAuthenticatedUserId();
     const accounts = await this.getAccounts();
-    const categories = await this.getCategories();
+    let categories = await this.getCategories();
 
     if (accounts.length === 0) {
       throw new Error("Tidak ada akun transaksi yang tersedia di database Supabase.");
@@ -520,7 +523,38 @@ export const transactionService = {
           continue;
         }
 
-        const categoryId = getCategoryId(item.description, item.type);
+        let categoryId = getCategoryId(item.description, item.type);
+        if (!categoryId) {
+          const fallback = categories.find((c) => c.type === item.type) || categories[0];
+          categoryId = fallback?.id || null;
+        }
+
+        // Jika masih null, buat kategori darurat di database
+        if (!categoryId) {
+          const emergencyName = item.type === "income" ? "Pemasukan" : "Lainnya";
+          const { data: emergencyCat, error: emCatErr } = await supabase
+            .from(CATEGORIES_TABLE)
+            .insert({
+              user_id: userId,
+              name: emergencyName,
+              type: item.type,
+              is_default: false,
+            })
+            .select("id, name, type")
+            .single();
+
+          if (emergencyCat) {
+            categoryId = emergencyCat.id;
+            categories.push(emergencyCat as TransactionCategory);
+          } else {
+            console.error("[TransactionService] Failed to create emergency category:", emCatErr);
+          }
+        }
+
+        if (!categoryId) {
+          errors.push(`Kategori tidak dapat ditentukan untuk transaksi "${item.description}".`);
+          continue;
+        }
         const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(item.date)
           ? `${item.date}T12:00:00+07:00`
           : item.date;
@@ -541,11 +575,24 @@ export const transactionService = {
           review_status: "confirmed" as const,
         };
 
-        const { data: inserted, error: insertError } = await supabase
+        let { data: inserted, error: insertError } = await supabase
           .from(TRANSACTIONS_TABLE)
           .insert(payload)
           .select("id")
           .single();
+
+        if (insertError && (insertError.message?.includes("transactions_check") || insertError.details?.includes("transactions_check"))) {
+          const retryRes = await supabase
+            .from(TRANSACTIONS_TABLE)
+            .insert({ ...payload, source: "manual" })
+            .select("id")
+            .single();
+
+          if (!retryRes.error && retryRes.data) {
+            inserted = retryRes.data;
+            insertError = null;
+          }
+        }
 
         if (insertError) {
           errors.push(`Gagal menyimpan "${item.description}": ${insertError.message}`);

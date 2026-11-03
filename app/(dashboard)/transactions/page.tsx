@@ -545,7 +545,7 @@ export default function TransactionPage() {
 
       const primaryAccountId = accounts.length > 0 ? accounts[0].id : undefined;
 
-      // 2. Request ke endpoint server dengan Bearer token
+      // 2. Request ke endpoint server dengan Bearer token dan kategori saat ini
       const response = await fetch("/api/gmail/sync", {
         method: "POST",
         headers: {
@@ -555,32 +555,46 @@ export default function TransactionPage() {
         body: JSON.stringify({
           userId: user.id,
           accountId: primaryAccountId,
+          categories: categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            type: c.type,
+          })),
         }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Gagal menyinkronkan transaksi dari Gmail.");
-      }
+      const data = await response.json().catch(() => ({}));
 
       let totalInserted = data.syncedCount || 0;
 
-      // 3. Fallback client-side import jika server tidak menginsert namun terdapat parsed transactions
+      // 3. Fallback client-side import jika server belum berhasil menyimpan namun email berhasil diparse
       if (
         totalInserted === 0 &&
         Array.isArray(data.parsedTransactions) &&
-        data.parsedTransactions.length > 0 &&
-        (!data.insertedTransactions || data.insertedTransactions.length === 0)
+        data.parsedTransactions.length > 0
       ) {
         try {
           const clientResult = await transactionService.importFromGmailParsed(data.parsedTransactions);
           if (clientResult.importedCount > 0) {
             totalInserted = clientResult.importedCount;
+          } else if (clientResult.errors && clientResult.errors.length > 0) {
+            console.error("[TransactionsPage] Client import errors:", clientResult.errors);
           }
         } catch (clientErr) {
           console.error("[TransactionsPage] Client import fallback error:", clientErr);
         }
+      }
+
+      // 4. Jika ada error dari server dan tidak ada yang berhasil disimpan
+      if (!response.ok || !data.success) {
+        if (totalInserted === 0) {
+          const errMsg = data.error || (data.errors && data.errors[0]) || "Gagal menyinkronkan transaksi dari Gmail.";
+          throw new Error(errMsg);
+        }
+      }
+
+      if (data.errors && data.errors.length > 0 && totalInserted === 0) {
+        throw new Error(data.errors[0] || "Gagal menyimpan transaksi ke database.");
       }
 
       // 4. Update notifikasi yang akurat ke pengguna
@@ -590,7 +604,9 @@ export default function TransactionPage() {
           `Berhasil menambahkan ${totalInserted} transaksi baru ke database Supabase (dari ${data.totalScanned || 0} email dipindai).`
         );
       } else if (data.totalScanned > 0) {
-        toast.info(`Semua ${data.totalScanned} email transaksi yang dipindai sudah tersimpan di database.`);
+        toast.info(
+          `Semua ${data.totalScanned} email transaksi yang dipindai sudah pernah diimpor ke database sebelumnya.`
+        );
         setSyncStatusMessage(
           `Semua ${data.totalScanned} email transaksi yang dipindai sudah tersimpan di database Supabase (tidak ada transaksi baru).`
         );
@@ -609,6 +625,7 @@ export default function TransactionPage() {
       const msg = error instanceof Error ? error.message : "Gagal menyinkronkan transaksi dari Gmail.";
       toast.error(msg);
       setActionError(msg);
+      setSyncStatusMessage(`Terjadi kesalahan: ${msg}`);
     } finally {
       setIsSyncing(false);
     }
