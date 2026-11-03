@@ -37,12 +37,12 @@ export default function PinnedTasks({ className }: PinnedTasksProps) {
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3 bg-card-foreground">
+      <div className="flex items-center justify-between border-b border-border/50 px-4 py-3 bg-primary text-primary-foreground">
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-bold text-background">Pinned Tasks</h3>
+          <h3 className="text-base font-bold">Pinned Tasks</h3>
         </div>
         {!isLoading && (
-          <span className="flex h-6 w-6 text-primary items-center justify-center rounded-full bg-muted text-xs font-medium tabular-nums">
+          <span className="flex h-6 w-6 text-primary items-center justify-center rounded-full bg-primary-foreground/20 text-xs font-semibold tabular-nums">
             {tasks.length}
           </span>
         )}

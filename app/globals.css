@@ -26,6 +26,7 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -47,80 +48,132 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Official Nord Theme Color Utilities (nord0 - nord15) */
+  --color-nord-0: #2e3440;
+  --color-nord-1: #3b4252;
+  --color-nord-2: #434c5e;
+  --color-nord-3: #4c566a;
+  --color-nord-4: #d8dee9;
+  --color-nord-5: #e5e9f0;
+  --color-nord-6: #eceff4;
+  --color-nord-7: #8fbcbb;
+  --color-nord-8: #88c0d0;
+  --color-nord-9: #81a1c1;
+  --color-nord-10: #5e81ac;
+  --color-nord-11: #bf616a;
+  --color-nord-12: #d08770;
+  --color-nord-13: #ebcb8b;
+  --color-nord-14: #a3be8c;
+  --color-nord-15: #b48ead;
 }
 
 body {
   font-family: var(--font-sans), sans-serif;
 }
 
+/* ==============================================================================
+   NORD THEME - LIGHT MODE (Snow Storm Canvas with Frost & Polar Accents)
+   ============================================================================== */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --background: #eceff4; /* nord6: Snow Storm clean base canvas */
+  --foreground: #2e3440; /* nord0: Polar Night deep readable text */
+
+  --card: #ffffff; /* Clean white elevated surface */
+  --card-foreground: #2e3440; /* nord0: Polar Night card text */
+  --card-border: #d8dee9; /* nord4: Crisp snow border */
+
+  --popover: #ffffff;
+  --popover-foreground: #2e3440; /* nord0 */
+
+  --primary: #5e81ac; /* nord10: High contrast Frost deep blue */
+  --primary-foreground: #eceff4; /* nord6: Crisp snow text */
+
+  --secondary: #e5e9f0; /* nord5: Snow Storm surface */
+  --secondary-foreground: #2e3440; /* nord0 */
+
+  --muted: #e5e9f0; /* nord5 */
+  --muted-foreground: #4c566a; /* nord3: Muted polar slate (WCAG AA compliant) */
+
+  --accent: #e5e9f0; /* nord5 */
+  --accent-foreground: #2e3440; /* nord0 */
+
+  --destructive: #bf616a; /* nord11: Aurora red */
+  --destructive-foreground: #ffffff;
+
+  --border: #d8dee9; /* nord4: Snow Storm subtle divider */
+  --input: #d8dee9; /* nord4 */
+  --ring: #88c0d0; /* nord8: Ice blue focus ring */
+
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Sidebar */
+  --sidebar: #f0f3f8; /* Soft Snow Storm sidebar */
+  --sidebar-foreground: #2e3440; /* nord0 */
+  --sidebar-primary: #5e81ac; /* nord10 */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e5e9f0; /* nord5 */
+  --sidebar-accent-foreground: #2e3440; /* nord0 */
+  --sidebar-border: #d8dee9; /* nord4 */
+  --sidebar-ring: #88c0d0; /* nord8 */
+
+  /* Charts */
+  --chart-1: #5e81ac; /* nord10 */
+  --chart-2: #88c0d0; /* nord8 */
+  --chart-3: #a3be8c; /* nord14 */
+  --chart-4: #ebcb8b; /* nord13 */
+  --chart-5: #d08770; /* nord12 */
 }
 
+/* ==============================================================================
+   NORD THEME - DARK MODE (Polar Night with Frost & Aurora Accents)
+   ============================================================================== */
 .dark {
-  --background: #2e3440;
-  --foreground: #ffffff;
-  --card: #394352;
-  --card-foreground: #85d2e7;
-  --card-border: #465365;
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: #2e3440;
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: #2e3440;
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #2e3440; /* nord0: Polar Night deep slate */
+  --foreground: #eceff4; /* nord6: Snow Storm bright text */
+
+  --card: #3b4252; /* nord1: Polar Night elevated surface */
+  --card-foreground: #eceff4; /* nord6: Snow Storm text */
+  --card-border: #434c5e; /* nord2: Secondary elevated border */
+
+  --popover: #3b4252; /* nord1 */
+  --popover-foreground: #eceff4; /* nord6 */
+
+  --primary: #88c0d0; /* nord8: Iconic Frost sky/ice blue */
+  --primary-foreground: #2e3440; /* nord0: High contrast deep polar text */
+
+  --secondary: #434c5e; /* nord2 */
+  --secondary-foreground: #eceff4; /* nord6 */
+
+  --muted: #434c5e; /* nord2 */
+  --muted-foreground: #d8dee9; /* nord4: Muted snow text */
+
+  --accent: #434c5e; /* nord2 */
+  --accent-foreground: #eceff4; /* nord6 */
+
+  --destructive: #bf616a; /* nord11: Aurora red */
+  --destructive-foreground: #eceff4; /* nord6 */
+
+  --border: #434c5e; /* nord2 */
+  --input: #434c5e; /* nord2 */
+  --ring: #88c0d0; /* nord8: Ice blue glow */
+
+  /* Sidebar */
+  --sidebar: #242933; /* Deep Polar Night anchor */
+  --sidebar-foreground: #eceff4; /* nord6 */
+  --sidebar-primary: #88c0d0; /* nord8 */
+  --sidebar-primary-foreground: #2e3440; /* nord0 */
+  --sidebar-accent: #3b4252; /* nord1 */
+  --sidebar-accent-foreground: #eceff4; /* nord6 */
+  --sidebar-border: #3b4252; /* nord1 */
+  --sidebar-ring: #88c0d0; /* nord8 */
+
+  /* Charts */
+  --chart-1: #88c0d0; /* nord8: Frost sky blue */
+  --chart-2: #81a1c1; /* nord9: Glacier blue */
+  --chart-3: #a3be8c; /* nord14: Aurora green */
+  --chart-4: #ebcb8b; /* nord13: Aurora yellow */
+  --chart-5: #b48ead; /* nord15: Aurora purple */
 }
 
 @layer base {
@@ -138,5 +191,21 @@ body {
   }
   html {
     @apply font-sans;
+  }
+
+  /* Custom Nord Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
   }
 }

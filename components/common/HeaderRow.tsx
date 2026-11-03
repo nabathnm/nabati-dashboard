@@ -18,7 +18,7 @@ export function HeaderRow({ labels, columns, prefix, className }: HeaderRowProps
     columns || (labels?.map(l => ({ header: l })) ?? []);
 
   return (
-    <div className={cn("flex bg-card-foreground", className)}>
+    <div className={cn("flex bg-primary", className)}>
       {prefix && <div className="">{prefix}</div>}
       {normalizedCols.map((col, i) => (
         <div key={i} className={cn("flex-1 py-3 text-center", col.className)}>

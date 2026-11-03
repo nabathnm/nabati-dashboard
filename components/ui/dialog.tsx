@@ -93,7 +93,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-header"
       className={cn(
-        "relative z-10 bg-card-foreground text-background",
+        "relative z-10 bg-primary text-primary-foreground",
         "px-6 py-5 pr-14 sm:px-7 sm:py-5 sm:pr-14",
         // bayangan halus yang jatuh ke body, memisahkan header dari content
         "shadow-[0_1px_2px_rgba(0,0,0,0.10),0_4px_12px_-2px_rgba(0,0,0,0.18)]",
