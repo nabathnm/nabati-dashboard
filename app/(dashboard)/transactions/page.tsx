@@ -1,27 +1,28 @@
-
 "use client";
 
 import { useCreateTransaction, useDeleteTransaction, useTransactions, useTransactionSummary, useUpdateTransaction } from "@/hooks/use-transactions";
 import type { CreateTransactionInput, Transaction, TransactionType, UpdateTransactionInput } from "@/types/transaction";
 import {
-    ArrowDownLeft,
-    ArrowLeftRight,
-    ArrowUpRight,
-    CalendarDays,
-    ChevronLeft,
-    ChevronRight,
-    CircleAlert,
-    LoaderCircle,
-    Pencil,
-    Plus,
-    Search,
-    Trash2,
-    Wallet,
-    X,
+  ArrowDownLeft,
+  ArrowLeftRight,
+  ArrowUpRight,
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  LoaderCircle,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  Wallet,
+  X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-
-
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 type TransactionPageProps = {
   accounts: {
@@ -47,6 +48,28 @@ type FormValues = {
 };
 
 const PAGE_SIZE = 10;
+
+const DEFAULT_ACCOUNTS = [
+  { id: "acc-main", name: "Main Balance (Bank BRI)" },
+  { id: "acc-bca", name: "Bank BCA" },
+  { id: "acc-cash", name: "Cash / Tunai" },
+  { id: "acc-ewallet", name: "E-Wallet (GoPay/ShopeePay)" },
+];
+
+const DEFAULT_CATEGORIES = [
+  { id: "cat-kopi", name: "Kopi", type: "expense" as const },
+  { id: "cat-makanan", name: "Makanan", type: "expense" as const },
+  { id: "cat-transport", name: "Transportasi", type: "expense" as const },
+  { id: "cat-belanja", name: "Belanja", type: "expense" as const },
+  { id: "cat-tagihan", name: "Tagihan", type: "expense" as const },
+  { id: "cat-hiburan", name: "Hiburan", type: "expense" as const },
+  { id: "cat-kesehatan", name: "Kesehatan", type: "expense" as const },
+  { id: "cat-pendidikan", name: "Pendidikan", type: "expense" as const },
+  { id: "cat-perawatan", name: "Perawatan", type: "expense" as const },
+  { id: "cat-lainnya", name: "Lainnya", type: "expense" as const },
+  { id: "cat-gaji", name: "Pemasukan / Gaji", type: "income" as const },
+  { id: "cat-pemasukan", name: "Pemasukan Lainnya", type: "income" as const },
+];
 
 const INITIAL_FORM: FormValues = {
   type: "expense",
@@ -198,41 +221,26 @@ function TransactionForm({
 
   function update<K extends keyof FormValues>(
     key: K,
-    value: FormValues[K],
+    val: FormValues[K],
   ) {
-    setValues((current) => ({ ...current, [key]: value }));
-  }
-
-  function handleTypeChange(type: TransactionType) {
     setValues((current) => ({
       ...current,
-      type,
-      category_id: "",
-      destination_account_id: "",
+      [key]: val,
+      ...(key === "type" && val === "transfer" ? { category_id: "" } : {}),
     }));
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setFormError("");
 
-    const amount = Number(values.amount);
-
     if (!values.account_id) {
-      setFormError("Pilih akun transaksi terlebih dahulu.");
+      setFormError("Akun harus dipilih.");
       return;
     }
 
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setFormError("Nominal harus lebih besar dari 0.");
-      return;
-    }
-
-    if (
-      values.type === "transfer" &&
-      !values.destination_account_id
-    ) {
-      setFormError("Pilih akun tujuan transfer.");
+    if (values.type === "transfer" && !values.destination_account_id) {
+      setFormError("Akun tujuan transfer harus dipilih.");
       return;
     }
 
@@ -240,12 +248,13 @@ function TransactionForm({
       values.type === "transfer" &&
       values.account_id === values.destination_account_id
     ) {
-      setFormError("Akun asal dan tujuan tidak boleh sama.");
+      setFormError("Akun asal dan akun tujuan tidak boleh sama.");
       return;
     }
 
-    if (values.type !== "transfer" && !values.category_id) {
-      setFormError("Pilih kategori transaksi.");
+    const numericAmount = Number(values.amount);
+    if (!values.amount || Number.isNaN(numericAmount) || numericAmount <= 0) {
+      setFormError("Nominal transaksi harus berupa angka lebih dari 0.");
       return;
     }
 
@@ -253,99 +262,84 @@ function TransactionForm({
   }
 
   const inputClass =
-    "mt-1.5 w-full rounded-xl border border-[#4C566A] bg-[#2E3440] px-3 py-2.5 text-sm text-[#ECEFF4] outline-none transition placeholder:text-[#7B8495] focus:border-[#88C0D0]";
-
-  const labelClass = "text-sm font-medium text-[#D8DEE9]";
+    "w-full rounded-xl border border-[#4C566A] bg-[#2E3440] px-4 py-3 text-sm text-[#ECEFF4] outline-none transition focus:border-[#88C0D0]";
+  const labelClass = "mb-2 block text-xs font-medium text-[#D8DEE9]";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="transaction-form-title"
-        className="my-auto max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[#434C5E] bg-[#3B4252] shadow-2xl"
+        aria-labelledby="modal-title"
+        className="w-full max-w-xl rounded-2xl border border-[#434C5E] bg-[#3B4252] p-6 shadow-2xl"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#434C5E] bg-[#3B4252] px-5 py-4">
-          <h2
-            id="transaction-form-title"
-            className="text-lg font-semibold text-[#ECEFF4]"
-          >
-            {initialValues === INITIAL_FORM
-              ? "Tambah Transaksi"
-              : "Edit Transaksi"}
+        <div className="flex items-center justify-between border-b border-[#434C5E] pb-4">
+          <h2 id="modal-title" className="text-lg font-semibold">
+            {initialValues.account_id ? "Edit Transaksi" : "Tambah Transaksi"}
           </h2>
-
           <button
-            type="button"
             onClick={onClose}
-            aria-label="Tutup form"
             className="rounded-lg p-2 text-[#D8DEE9] hover:bg-[#434C5E]"
+            aria-label="Tutup form"
           >
-            <X size={19} />
+            <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 p-5">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          {formError && (
+            <div className="flex items-center gap-2 rounded-xl border border-[#BF616A]/40 bg-[#503B42] p-3 text-sm text-[#ECEFF4]">
+              <CircleAlert size={18} className="shrink-0 text-[#BF616A]" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           <div>
             <label className={labelClass}>Jenis Transaksi</label>
-
-            <div className="mt-2 grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {(
-                ["expense", "income", "transfer"] as TransactionType[]
-              ).map((type) => {
-                const config = TYPE_CONFIG[type];
-                const Icon = config.icon;
-                const active = values.type === type;
-
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => handleTypeChange(type)}
-                    className={`flex items-center justify-center gap-2 rounded-xl border px-2 py-3 text-xs font-medium transition sm:text-sm ${
-                      active
-                        ? "border-[#88C0D0] bg-[#354954] text-[#88C0D0]"
-                        : "border-[#4C566A] text-[#D8DEE9] hover:bg-[#434C5E]"
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {config.label}
-                  </button>
-                );
-              })}
+                [
+                  ["expense", "Pengeluaran"],
+                  ["income", "Pemasukan"],
+                  ["transfer", "Transfer"],
+                ] as const
+              ).map(([type, label]) => (
+                <button
+                  type="button"
+                  key={type}
+                  onClick={() => update("type", type)}
+                  className={`rounded-xl py-2.5 text-xs font-semibold transition sm:text-sm ${
+                    values.type === type
+                      ? "bg-[#88C0D0] text-[#2E3440]"
+                      : "bg-[#2E3440] text-[#D8DEE9] hover:bg-[#434C5E]"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
           <div>
             <label htmlFor="transaction-amount" className={labelClass}>
-              Nominal (Rp)
+              Nominal (IDR)
             </label>
             <input
               id="transaction-amount"
               type="number"
               min="1"
-              step="1"
               required
               value={values.amount}
               onChange={(event) => update("amount", event.target.value)}
-              placeholder="Contoh: 25000"
+              placeholder="0"
               className={inputClass}
             />
           </div>
 
-          <div
-            className={`grid gap-4 ${
-              values.type === "transfer" ? "sm:grid-cols-2" : ""
-            }`}
-          >
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="transaction-account" className={labelClass}>
-                {values.type === "transfer" ? "Akun Asal" : "Akun"}
+                {values.type === "transfer" ? "Dari Akun" : "Akun"}
               </label>
               <select
                 id="transaction-account"
@@ -452,38 +446,30 @@ function TransactionForm({
 
           <div>
             <label htmlFor="transaction-note" className={labelClass}>
-              Catatan (Opsional)
+              Catatan Tambahan
             </label>
             <textarea
               id="transaction-note"
               rows={3}
               value={values.note}
               onChange={(event) => update("note", event.target.value)}
-              placeholder="Tambahkan catatan..."
+              placeholder="Catatan opsional..."
               className={inputClass}
             />
           </div>
 
-          {formError && (
-            <p className="flex items-start gap-2 text-sm text-[#BF616A]">
-              <CircleAlert size={17} className="mt-0.5 shrink-0" />
-              {formError}
-            </p>
-          )}
-
-          <div className="flex justify-end gap-3 border-t border-[#434C5E] pt-4">
+          <div className="flex justify-end gap-3 pt-3">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-[#4C566A] px-4 py-2.5 text-sm text-[#D8DEE9] hover:bg-[#434C5E]"
+              className="rounded-xl border border-[#4C566A] px-5 py-2.5 text-sm font-semibold text-[#D8DEE9] hover:bg-[#434C5E]"
             >
               Batal
             </button>
-
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center gap-2 rounded-xl bg-[#88C0D0] px-4 py-2.5 text-sm font-semibold text-[#2E3440] transition hover:bg-[#9AD0DF] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex items-center gap-2 rounded-xl bg-[#88C0D0] px-5 py-2.5 text-sm font-semibold text-[#2E3440] hover:bg-[#9AD0DF] disabled:opacity-50"
             >
               {isPending && (
                 <LoaderCircle size={16} className="animate-spin" />
@@ -498,9 +484,12 @@ function TransactionForm({
 }
 
 export default function TransactionPage({
-  accounts,
-  categories,
-}: TransactionPageProps) {
+  accounts = DEFAULT_ACCOUNTS,
+  categories = DEFAULT_CATEGORIES,
+}: Partial<TransactionPageProps>) {
+  const safeAccounts = accounts && accounts.length > 0 ? accounts : DEFAULT_ACCOUNTS;
+  const safeCategories = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>(
     "all",
@@ -511,6 +500,10 @@ export default function TransactionPage({
     useState<Transaction | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
   const [actionError, setActionError] = useState("");
+
+  // Gmail Sync states
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatusMessage, setSyncStatusMessage] = useState<string | null>(null);
 
   const dateRange = useMemo(() => getCurrentMonthRange(), []);
 
@@ -534,7 +527,6 @@ export default function TransactionPage({
 
   const {
     data: summary,
-    isPending: summaryPending,
   } = useTransactionSummary(dateRange);
 
   const createMutation = useCreateTransaction();
@@ -543,6 +535,44 @@ export default function TransactionPage({
 
   const mutationPending =
     createMutation.isPending || updateMutation.isPending;
+
+  // Handler for Syncing with Gmail
+  async function handleSyncGmail() {
+    setIsSyncing(true);
+    setActionError("");
+    setSyncStatusMessage(null);
+
+    try {
+      const response = await fetch("/api/gmail/sync", {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Gagal menyinkronkan transaksi dari Gmail");
+      }
+
+      if (data.syncedCount > 0) {
+        toast.success(`Berhasil menyinkronkan ${data.syncedCount} transaksi baru dari Gmail!`);
+        setSyncStatusMessage(
+          `Berhasil menyinkronkan ${data.syncedCount} transaksi baru dari email notifikasi perbankan.`
+        );
+      } else {
+        toast.info("Tidak ada transaksi baru di kotak masuk Gmail Anda.");
+        setSyncStatusMessage(
+          `Semua transaksi dari Gmail (${data.totalScanned || 0} email) sudah sinkron atau telah diimpor sebelumnya.`
+        );
+      }
+
+      await refetch();
+    } catch (error: any) {
+      const msg = error.message || "Gagal menyinkronkan transaksi dari Gmail.";
+      toast.error(msg);
+      setActionError(msg);
+    } finally {
+      setIsSyncing(false);
+    }
+  }
 
   async function handleSubmit(values: FormValues) {
     setActionError("");
@@ -627,18 +657,46 @@ export default function TransactionPage({
               Transaksi
             </h1>
             <p className="mt-2 text-sm text-[#D8DEE9]">
-              Pantau pemasukan dan pengeluaranmu dalam satu tempat.
+              Pantau pemasukan, pengeluaran, dan sinkronkan otomatis dari notifikasi email perbankan Gmail.
             </p>
           </div>
 
-          <button
-            onClick={openCreateModal}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#88C0D0] px-4 py-3 text-sm font-semibold text-[#2E3440] transition hover:bg-[#9AD0DF]"
-          >
-            <Plus size={18} />
-            Tambah Transaksi
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleSyncGmail}
+              disabled={isSyncing}
+              className="flex items-center justify-center gap-2 rounded-xl border border-[#434C5E] bg-[#3B4252] hover:bg-[#434C5E] px-4 py-3 text-sm font-semibold text-[#ECEFF4] transition disabled:opacity-50 cursor-pointer shadow-xs"
+              title="Pindai email perbankan (BRI, QRIS, e-wallet) dari Gmail"
+            >
+              <RefreshCw className={cn("size-4 text-[#88C0D0]", isSyncing && "animate-spin")} />
+              <span>{isSyncing ? "Menyinkronkan Gmail..." : "Sync Gmail"}</span>
+            </button>
+
+            <button
+              onClick={openCreateModal}
+              className="flex items-center justify-center gap-2 rounded-xl bg-[#88C0D0] px-4 py-3 text-sm font-semibold text-[#2E3440] transition hover:bg-[#9AD0DF] cursor-pointer shadow-xs"
+            >
+              <Plus size={18} />
+              Tambah Transaksi
+            </button>
+          </div>
         </header>
+
+        {syncStatusMessage && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-[#A3BE8C]/40 bg-[#3B4B43] p-3 text-sm text-[#ECEFF4] transition-all">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4 shrink-0 text-[#A3BE8C]" />
+              <span>{syncStatusMessage}</span>
+            </div>
+            <button
+              onClick={() => setSyncStatusMessage(null)}
+              aria-label="Tutup pesan"
+              className="cursor-pointer text-[#D8DEE9] hover:text-[#ECEFF4]"
+            >
+              <X size={17} />
+            </button>
+          </div>
+        )}
 
         {actionError && !modalOpen && (
           <div className="flex items-center justify-between gap-3 rounded-xl border border-[#BF616A]/40 bg-[#503B42] p-3 text-sm text-[#ECEFF4]">
@@ -666,39 +724,28 @@ export default function TransactionPage({
             tone="red"
           />
           <SummaryCard
-            title="Selisih Bulan Ini"
-            amount={
-              (summary?.totalIncome ?? 0) - (summary?.totalExpense ?? 0)
-            }
+            title="Selisih / Sisa Saldo"
+            amount={summary?.balance ?? 0}
             icon={Wallet}
             tone="blue"
           />
         </section>
 
-        {summaryPending && (
-          <p className="text-xs text-[#7B8495]">
-            Memuat ringkasan bulan ini...
-          </p>
-        )}
-
         <section className="overflow-hidden rounded-2xl border border-[#434C5E] bg-[#3B4252]">
-          <div className="space-y-4 border-b border-[#434C5E] p-4 sm:p-5">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <h2 className="text-lg font-semibold">Riwayat Transaksi</h2>
-
-              <div className="relative w-full lg:max-w-sm">
+          <div className="flex flex-col gap-4 border-b border-[#434C5E] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex flex-1 items-center gap-3">
+              <div className="relative w-full max-w-sm">
                 <Search
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7B8495]"
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7B8495]"
                 />
                 <input
-                  type="search"
                   value={search}
                   onChange={(event) => {
                     setSearch(event.target.value);
                     setPage(0);
                   }}
-                  placeholder="Cari merchant..."
+                  placeholder="Cari merchant atau catatan..."
                   className="w-full rounded-xl border border-[#4C566A] bg-[#2E3440] py-2.5 pl-10 pr-4 text-sm outline-none placeholder:text-[#7B8495] focus:border-[#88C0D0]"
                 />
               </div>
@@ -753,15 +800,26 @@ export default function TransactionPage({
               </div>
               <h3 className="font-semibold">Belum ada transaksi</h3>
               <p className="max-w-sm text-sm text-[#D8DEE9]">
-                Transaksi yang sesuai filter akan muncul di sini.
+                Transaksi yang sesuai filter akan muncul di sini. Anda juga dapat menggunakan <strong>Sync Gmail</strong> untuk menarik transaksi dari email.
               </p>
-              <button
-                onClick={openCreateModal}
-                className="mt-1 flex items-center gap-2 rounded-xl bg-[#88C0D0] px-4 py-2.5 text-sm font-semibold text-[#2E3440]"
-              >
-                <Plus size={16} />
-                Tambah transaksi pertama
-              </button>
+              <div className="flex items-center gap-3 mt-2">
+                <button
+                  onClick={handleSyncGmail}
+                  disabled={isSyncing}
+                  className="flex items-center gap-2 rounded-xl border border-[#4C566A] bg-[#2E3440] px-4 py-2.5 text-sm font-semibold text-[#ECEFF4] hover:bg-[#434C5E]"
+                >
+                  <RefreshCw className={cn("size-4 text-[#88C0D0]", isSyncing && "animate-spin")} />
+                  <span>Sync dari Gmail</span>
+                </button>
+
+                <button
+                  onClick={openCreateModal}
+                  className="flex items-center gap-2 rounded-xl bg-[#88C0D0] px-4 py-2.5 text-sm font-semibold text-[#2E3440]"
+                >
+                  <Plus size={16} />
+                  Tambah Transaksi
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -772,17 +830,21 @@ export default function TransactionPage({
 
                   const accountName =
                     transaction.account?.name ??
-                    accounts.find(
+                    safeAccounts.find(
                       (account) => account.id === transaction.account_id,
                     )?.name ??
                     "Akun";
 
                   const destinationName =
                     transaction.destination_account?.name ??
-                    accounts.find(
+                    safeAccounts.find(
                       (account) =>
                         account.id === transaction.destination_account_id,
                     )?.name;
+
+                  const isGmailSynced =
+                    transaction.note?.toLowerCase().includes("gmail") ||
+                    transaction.note?.toLowerCase().includes("synced");
 
                   return (
                     <article
@@ -797,11 +859,18 @@ export default function TransactionPage({
                         </div>
 
                         <div className="min-w-0">
-                          <p className="truncate font-medium">
-                            {transaction.merchant ||
-                              transaction.category?.name ||
-                              config.label}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="truncate font-medium">
+                              {transaction.merchant ||
+                                transaction.category?.name ||
+                                config.label}
+                            </p>
+                            {isGmailSynced && (
+                              <span className="inline-flex items-center gap-1 rounded-md bg-[#88C0D0]/15 px-1.5 py-0.5 text-[10px] font-medium text-[#88C0D0] shrink-0 border border-[#88C0D0]/30">
+                                Gmail Sync
+                              </span>
+                            )}
+                          </div>
 
                           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#D8DEE9]">
                             <span>{formatDate(transaction.transaction_date)}</span>
@@ -818,7 +887,7 @@ export default function TransactionPage({
                             </span>
                           </div>
 
-                          {transaction.note && (
+                          {transaction.note && !isGmailSynced && (
                             <p className="mt-1 break-words text-xs text-[#7B8495]">
                               {transaction.note}
                             </p>
@@ -902,8 +971,8 @@ export default function TransactionPage({
               ? toFormValues(editingTransaction)
               : { ...INITIAL_FORM }
           }
-          accounts={accounts}
-          categories={categories}
+          accounts={safeAccounts}
+          categories={safeCategories}
           isPending={mutationPending}
           onClose={() => {
             if (mutationPending) return;
