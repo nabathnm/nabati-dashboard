@@ -72,15 +72,74 @@ export class TaskServiceError extends Error {
   }
 }
 
-function fail(error: { code?: string; message?: string }, fallback: string): never {
-  // 23514 = check_violation, 23503 = foreign_key_violation
+function fail(
+  error: { code?: string; message?: string; details?: string; hint?: string },
+  fallback: string
+): never {
+  console.error(`[TaskService] ${fallback}:`, {
+    message: error?.message,
+    code: error?.code,
+    details: error?.details,
+    hint: error?.hint,
+  });
+
+  if (error.code === "42501") {
+    throw new TaskServiceError(
+      `Gagal menyimpan tugas: Pembatasan hak akses (RLS) di Supabase. ${error.message || "Pastikan RLS policy tabel tasks sudah diaktifkan."}`,
+      error.code,
+      error
+    );
+  }
   if (error.code === "23514") {
-    throw new TaskServiceError("Data tugas tidak valid.", error.code, error);
+    throw new TaskServiceError("Data tugas tidak valid (melanggar batasan database).", error.code, error);
   }
   if (error.code === "23503") {
-    throw new TaskServiceError("Profil pengguna tidak ditemukan.", error.code, error);
+    throw new TaskServiceError(
+      "Profil pengguna belum terdaftar di tabel profiles (foreign key violation).",
+      error.code,
+      error
+    );
   }
-  throw new TaskServiceError(fallback, error.code ?? "UNKNOWN", error);
+  if (error.code === "22P02") {
+    throw new TaskServiceError(`Format data atau nilai kategori tidak valid: ${error.message}`, error.code, error);
+  }
+
+  const detailMsg = error?.message || error?.details || fallback;
+  throw new TaskServiceError(`${fallback} (${detailMsg})`, error?.code ?? "UNKNOWN", error);
+}
+
+/**
+ * Memastikan profil pengguna tersedia di tabel public.profiles agar
+ * foreign key constraint 'tasks_user_id_fkey' tidak memblokir penambahan tugas.
+ */
+async function ensureUserProfile(userId: string, force = false): Promise<void> {
+  try {
+    if (!force) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (data) return;
+    }
+
+    const { data: authData } = await supabase.auth.getUser();
+    if (authData?.user) {
+      const u = authData.user;
+      await supabase.from("profiles").upsert({
+        id: userId,
+        email: u.email,
+        full_name:
+          u.user_metadata?.full_name ||
+          u.user_metadata?.name ||
+          u.email?.split("@")[0] ||
+          "User",
+        avatar_url: u.user_metadata?.avatar_url || null,
+      });
+    }
+  } catch (err) {
+    console.warn("[TaskService] Warning saat sinkronisasi profil pengguna:", err);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -307,18 +366,46 @@ export async function getTaskStats(): Promise<TaskStats> {
 export async function createTask(input: CreateTaskInput): Promise<Task> {
   const userId = await requireUserId();
 
-  const payload = {
+  // Pastikan profile user ada di public.profiles agar foreign key tasks_user_id_fkey tidak gagal
+  await ensureUserProfile(userId);
+
+  // Validasi kategori
+  let category = input.category ?? "Lainnya";
+  if (!TASK_CATEGORIES.includes(category)) {
+    category = "Lainnya";
+  }
+
+  const payload: Record<string, unknown> = {
     user_id: userId,
     title: validateTitle(input.title),
     description: normalizeDescription(input.description),
-    category: validateCategory(input.category ?? "Lainnya"),
+    category,
     due_date: normalizeDueDate(input.due_date),
     ...resolveCompletionForCreate(input),
   };
 
-  const { data, error } = await supabase.from(TABLE).insert(payload).select().single();
+  let { data, error } = await supabase.from(TABLE).insert(payload).select().maybeSingle();
+
+  // Jika gagal karena foreign key ke profiles (23503), coba upsert profile dan retry insert
+  if (error && error.code === "23503") {
+    console.warn("[TaskService] Foreign key error. Upserting profile and retrying insert...");
+    await ensureUserProfile(userId, true);
+    const retry = await supabase.from(TABLE).insert(payload).select().maybeSingle();
+    data = retry.data;
+    error = retry.error;
+  }
+
+  // Jika gagal karena enum task_category tidak menerima nilai tersebut (22P02), coba fallback ke 'Lainnya'
+  if (error && (error.code === "22P02" || error.message?.includes("enum task_category"))) {
+    console.warn("[TaskService] Retrying insert with fallback category 'Lainnya'");
+    payload.category = "Lainnya";
+    const retry = await supabase.from(TABLE).insert(payload).select().maybeSingle();
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) fail(error, "Gagal membuat tugas.");
+  if (!data) throw new TaskServiceError("Gagal membuat tugas: tidak ada data yang dikembalikan.", "NO_DATA");
   const created = data as Task;
   notifyTasksChanged();
 

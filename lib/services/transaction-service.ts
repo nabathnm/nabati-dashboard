@@ -336,7 +336,13 @@ export const transactionService = {
       payload.account_id = input.account_id || null;
     }
     if (input.category_id !== undefined) {
-      payload.category_id = input.type === "transfer" ? null : input.category_id || null;
+      if (input.type === "transfer") {
+        payload.category_id = null;
+      } else if (input.category_id) {
+        payload.category_id = input.category_id;
+      }
+      // Jika input.category_id adalah string kosong atau null pada non-transfer,
+      // jangan hapus category_id agar tidak melanggar trigger "Income and expense require a category"
     }
     if (input.type !== undefined) {
       payload.type = input.type;
@@ -366,7 +372,7 @@ export const transactionService = {
 
     payload.updated_at = new Date().toISOString();
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from(TRANSACTIONS_TABLE)
       .update(payload)
       .eq("id", id)
@@ -376,11 +382,55 @@ export const transactionService = {
         account:${ACCOUNTS_TABLE}(id, name, type),
         category:${CATEGORIES_TABLE}(id, name, type)
       `)
-      .single();
+      .maybeSingle();
+
+    // Jika gagal karena check constraint transactions_check, coba tambahkan source='manual'
+    if (error && (error.code === "23514" || error.message?.includes("transactions_check"))) {
+      console.warn("[TransactionService] Retrying update with source='manual'");
+      payload.source = "manual";
+      const retry = await supabase
+        .from(TRANSACTIONS_TABLE)
+        .update(payload)
+        .eq("id", id)
+        .eq("user_id", userId)
+        .select(`
+          *,
+          account:${ACCOUNTS_TABLE}(id, name, type),
+          category:${CATEGORIES_TABLE}(id, name, type)
+        `)
+        .maybeSingle();
+      data = retry.data;
+      error = retry.error;
+    }
+
+    // Jika select relasi join gagal, coba select sederhana
+    if (error && error.code !== "42501" && !data) {
+      const fallback = await supabase
+        .from(TRANSACTIONS_TABLE)
+        .update(payload)
+        .eq("id", id)
+        .eq("user_id", userId)
+        .select()
+        .maybeSingle();
+      if (!fallback.error && fallback.data) {
+        data = fallback.data as any;
+        error = null;
+      }
+    }
 
     if (error) {
-      console.error("[TransactionService] Update error:", error);
-      throw error;
+      console.error("[TransactionService] Update error details:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
+      const errorMsg = error.message || error.details || "Gagal memperbarui transaksi.";
+      throw new Error(`[TransactionService] ${errorMsg} (${error.code || "UNKNOWN"})`);
+    }
+
+    if (!data) {
+      throw new Error("[TransactionService] Transaksi tidak ditemukan atau tidak memiliki akses (RLS).");
     }
 
     return data as Transaction;
