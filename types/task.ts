@@ -13,6 +13,8 @@ export type Task = {
   updated_at: string;
   is_pinned: boolean;
   google_event_id?: string | null;
+  _gcal_error?: string | null;
+  _gcal_link?: string | null;
 };
 
 export type TaskCategory = "Kuliah" | "Organisasi" | "Praktikum" | "Personal" | "Lainnya";
@@ -43,6 +45,32 @@ export type GoogleCalendarSyncSummary = {
   synced: number;
   failed: number;
   errors: string[];
+};
+
+export type GoogleCalendarPullSummary = {
+  totalGoogleEvents: number;
+  imported: number;
+  updated: number;
+  deleted: number;
+  skipped: number;
+  errors: string[];
+  importedTasks?: { id: string; title: string; due_date: string | null }[];
+};
+
+export type GoogleCalendarEvent = {
+  id: string;
+  summary?: string;
+  description?: string;
+  htmlLink?: string;
+  status?: string;
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+  extendedProperties?: {
+    private?: {
+      nabatu_task_id?: string;
+      nabatu_category?: string;
+    };
+  };
 };
 
 export type TaskFilters = {

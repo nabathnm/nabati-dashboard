@@ -80,7 +80,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b px-4 py-3 flex">
-        <span className="text-lg font-bold tracking-tight">Alumni Papua</span>
+        <span className="text-lg font-bold tracking-tight">NabatI</span>
         <SidebarTrigger />
       </SidebarHeader>
 

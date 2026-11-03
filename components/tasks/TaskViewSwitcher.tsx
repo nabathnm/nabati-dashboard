@@ -19,7 +19,9 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { getErrorMessage, useTasks } from "@/hooks/use-task";
-import type { Task, TaskFilters } from "@/types/task";
+import { pullTasksFromGoogleCalendar } from "@/lib/services/task-service";
+import type { Task, TaskCategory, TaskFilters } from "@/types/task";
+import { toast } from "sonner";
 
 /* =========================================================
    HELPER
@@ -60,6 +62,7 @@ export default function TaskViewSwitcher() {
 
   // Error dari aksi
   const [actionError, setActionError] = useState<string | null>(null);
+  const [isSyncingGoogle, setIsSyncingGoogle] = useState(false);
 
   const debouncedSearch = useDebouncedValue(searchTerm.trim(), 300);
 
@@ -140,6 +143,24 @@ export default function TaskViewSwitcher() {
     [runAction, updateTask]
   );
 
+  const handleTaskTitleChange = useCallback(
+    (taskId: string, newTitle: string) =>
+      runAction(() => updateTask(taskId, { title: newTitle })),
+    [runAction, updateTask]
+  );
+
+  const handleTaskCategoryChange = useCallback(
+    (taskId: string, newCategory: TaskCategory) =>
+      runAction(() => updateTask(taskId, { category: newCategory })),
+    [runAction, updateTask]
+  );
+
+  const handleTaskProgressChange = useCallback(
+    (taskId: string, newProgress: number) =>
+      runAction(() => updateTask(taskId, { progress: newProgress })),
+    [runAction, updateTask]
+  );
+
   /* ---------- Modal ---------- */
 
   const handleCreateTask = useCallback(() => {
@@ -171,6 +192,61 @@ export default function TaskViewSwitcher() {
 
   const handleModalSuccess = useCallback(() => refresh({ silent: true }), [refresh]);
 
+  const handleSyncGoogleCalendar = useCallback(async () => {
+    setIsSyncingGoogle(true);
+    try {
+      const summary = await pullTasksFromGoogleCalendar({ referenceDate: currentMonth });
+      await refresh();
+
+      if (summary.errors && summary.errors.length > 0) {
+        toast.error(`Peringatan sinkronisasi: ${summary.errors.join(", ")}`);
+      }
+
+      if (summary.imported > 0 || summary.updated > 0 || summary.deleted > 0) {
+        const parts: string[] = [];
+        if (summary.imported > 0) parts.push(`${summary.imported} event baru diimpor`);
+        if (summary.updated > 0) parts.push(`${summary.updated} diperbarui`);
+        if (summary.deleted > 0) parts.push(`${summary.deleted} dihapus`);
+
+        // Cek apakah ada tugas yang diimpor di luar bulan yang sedang ditampilkan pada kalender
+        const currentMonthKey = format(currentMonth, "yyyy-MM");
+        const otherMonthTasks = (summary.importedTasks || []).filter(t => {
+          if (!t.due_date) return false;
+          return !t.due_date.startsWith(currentMonthKey);
+        });
+
+        if (otherMonthTasks.length > 0 && view === "calendar") {
+          const firstTask = otherMonthTasks[0];
+          const taskDate = new Date(firstTask.due_date!);
+          const targetMonthName = format(taskDate, "MMMM yyyy");
+
+          toast.success(
+            `Sinkronisasi selesai! ${parts.join(", ")}. Ada event pada ${targetMonthName}.`,
+            {
+              action: {
+                label: `Lihat ${format(taskDate, "MMM yyyy")}`,
+                onClick: () => setCurrentMonth(taskDate),
+              },
+              duration: 8000,
+            }
+          );
+        } else {
+          toast.success(`Sinkronisasi selesai! ${parts.join(", ")}.`);
+        }
+      } else {
+        toast.info(
+          summary.totalGoogleEvents > 0
+            ? `Sinkronisasi selesai. Semua ${summary.totalGoogleEvents} event di Google Calendar sudah cocok dengan tugas Anda.`
+            : `Sinkronisasi selesai. Tidak ada event ditemukan di Google Calendar untuk rentang 3 bulan. Pastikan event dibuat sebagai "Acara" (Event) di Google Calendar.`
+        );
+      }
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setIsSyncingGoogle(false);
+    }
+  }, [refresh, currentMonth, view]);
+
   const errorMessage = error ?? actionError;
 
   return (
@@ -187,6 +263,8 @@ export default function TaskViewSwitcher() {
         onNextMonth={handleNextMonth}
         onToday={handleToday}
         onCreateTask={handleCreateTask}
+        onSyncGoogle={handleSyncGoogleCalendar}
+        isSyncingGoogle={isSyncingGoogle}
       />
 
       {errorMessage && (
@@ -219,6 +297,11 @@ export default function TaskViewSwitcher() {
             onTaskDateChange={handleTaskDateChange}
             onTaskCompleteChange={handleTaskCompleteChange}
             onTaskDescriptionChange={handleTaskDescriptionChange}
+            onTaskTitleChange={handleTaskTitleChange}
+            onTaskCategoryChange={handleTaskCategoryChange}
+            onTaskProgressChange={handleTaskProgressChange}
+            onEditTask={handleEditTask}
+            onDeleteTask={setTaskToDelete}
           />
         )}
       </div>

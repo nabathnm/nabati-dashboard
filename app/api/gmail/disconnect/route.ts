@@ -7,6 +7,8 @@ export async function POST() {
   cookieStore.delete("google_email");
   cookieStore.delete("google_last_synced");
   cookieStore.delete("google_calendar_sync");
+  cookieStore.delete("google_access_token");
+  cookieStore.delete("google_refresh_token");
 
   return NextResponse.json({
     success: true,

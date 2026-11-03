@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { Task } from "@/types/task";
+import type { Task, TaskCategory } from "@/types/task";
 import { format, isSameDay, isSameMonth } from "date-fns";
 import TaskPopover from "../TaskPopOver";
 
@@ -13,6 +13,11 @@ interface CalendarDayCellProps {
   onTaskDateChange: (taskId: string, newDate: string) => void;
   onTaskCompleteChange: (taskId: string, isCompleted: boolean) => void;
   onTaskDescriptionChange?: (taskId: string, newDescription: string) => void;
+  onTaskTitleChange?: (taskId: string, newTitle: string) => void;
+  onTaskCategoryChange?: (taskId: string, newCategory: TaskCategory) => void;
+  onTaskProgressChange?: (taskId: string, newProgress: number) => void;
+  onEditTask?: (task: Task) => void;
+  onDeleteTask?: (task: Task) => void;
 }
 
 export default function CalendarDayCell({
@@ -23,6 +28,11 @@ export default function CalendarDayCell({
   onTaskDateChange,
   onTaskCompleteChange,
   onTaskDescriptionChange,
+  onTaskTitleChange,
+  onTaskCategoryChange,
+  onTaskProgressChange,
+  onEditTask,
+  onDeleteTask,
 }: CalendarDayCellProps) {
   const today = new Date();
 
@@ -55,6 +65,11 @@ export default function CalendarDayCell({
             onDateChange={onTaskDateChange}
             onCompleteChange={onTaskCompleteChange}
             onDescriptionChange={onTaskDescriptionChange}
+            onTitleChange={onTaskTitleChange}
+            onCategoryChange={onTaskCategoryChange}
+            onProgressChange={onTaskProgressChange}
+            onEditTask={onEditTask}
+            onDeleteTask={onDeleteTask}
           />
         ))}
       </div>
