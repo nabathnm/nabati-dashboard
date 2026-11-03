@@ -1,16 +1,20 @@
-// src/services/transaction-service.ts
+// lib/services/transaction-service.ts
 
 import { supabase } from "@/lib/supabase";
 import type {
-    CreateTransactionInput,
-    CreateTransactionItemInput,
-    Transaction,
-    TransactionType,
-    UpdateTransactionInput,
+  Account,
+  CreateAccountInput,
+  CreateCategoryInput,
+  CreateTransactionInput,
+  Transaction,
+  TransactionCategory,
+  TransactionType,
+  UpdateTransactionInput,
 } from "@/types/transaction";
 
 const TRANSACTIONS_TABLE = "transactions";
-const TRANSACTION_ITEMS_TABLE = "transaction_items";
+const ACCOUNTS_TABLE = "accounts";
+const CATEGORIES_TABLE = "transaction_categories";
 
 export interface TransactionFilters {
   type?: TransactionType | "all";
@@ -18,6 +22,9 @@ export interface TransactionFilters {
   startDate?: string;
   endDate?: string;
   search?: string;
+  limit?: number;
+  offset?: number;
+  order?: "asc" | "desc";
 }
 
 export interface TransactionSummary {
@@ -28,126 +35,175 @@ export interface TransactionSummary {
   balance: number;
 }
 
-type TransactionPayload = {
-  user_id: string;
-  account_id: string;
-  destination_account_id: string | null;
-  category_id: string | null;
-  type: TransactionType;
-  amount: number;
-  merchant: string | null;
-  note: string | null;
-  transaction_date: string;
-};
-
-function buildTransactionPayload(
-  input: CreateTransactionInput | UpdateTransactionInput,
-  userId: string,
-): Partial<TransactionPayload> {
-  const payload: Partial<TransactionPayload> = {
-    user_id: userId,
-  };
-
-  if (input.account_id !== undefined) {
-    payload.account_id = input.account_id;
-  }
-
-  if (input.type !== undefined) {
-    payload.type = input.type;
-
-    if (input.type === "transfer") {
-      payload.category_id = null;
-      payload.destination_account_id =
-        input.destination_account_id ?? null;
-    } else {
-      payload.category_id = input.category_id ?? null;
-      payload.destination_account_id = null;
-    }
-  } else {
-    if (input.category_id !== undefined) {
-      payload.category_id = input.category_id ?? null;
-    }
-
-    if (input.destination_account_id !== undefined) {
-      payload.destination_account_id =
-        input.destination_account_id ?? null;
-    }
-  }
-
-  if (input.amount !== undefined) {
-    payload.amount = input.amount;
-  }
-
-  if (input.merchant !== undefined) {
-    payload.merchant = input.merchant ?? null;
-  }
-
-  if (input.note !== undefined) {
-    payload.note = input.note ?? null;
-  }
-
-  if (input.transaction_date !== undefined) {
-    payload.transaction_date = input.transaction_date;
-  }
-
-  return payload;
-}
-
 async function getAuthenticatedUserId(): Promise<string> {
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser();
 
-  if (error) {
-    throw error;
-  }
-
-  if (!user) {
-    throw new Error("Kamu harus login untuk mengakses transaksi.");
+  if (error || !user) {
+    throw new Error("Kamu harus login untuk mengakses data transaksi.");
   }
 
   return user.id;
 }
 
-function validateTransactionInput(
-  input: CreateTransactionInput,
-): void {
-  if (!input.account_id) {
-    throw new Error("Akun transaksi wajib dipilih.");
+function validateTransactionInput(input: CreateTransactionInput): void {
+  const numAmount = Number(input.amount);
+  if (!Number.isFinite(numAmount) || numAmount <= 0) {
+    throw new Error("Nominal transaksi harus berupa angka lebih besar dari nol.");
   }
 
-  if (!Number.isFinite(input.amount) || input.amount <= 0) {
-    throw new Error("Nominal transaksi harus lebih besar dari nol.");
-  }
-
-  if (input.type === "transfer") {
-    if (!input.destination_account_id) {
-      throw new Error("Akun tujuan transfer wajib dipilih.");
-    }
-
-    if (input.account_id === input.destination_account_id) {
-      throw new Error("Akun asal dan tujuan tidak boleh sama.");
-    }
-  } else if (!input.category_id) {
-    throw new Error("Kategori transaksi wajib dipilih.");
+  if (!input.type || !["income", "expense", "transfer"].includes(input.type)) {
+    throw new Error("Tipe transaksi tidak valid.");
   }
 }
 
 export const transactionService = {
   /**
-   * Mengambil seluruh transaksi milik pengguna.
+   * Mengambil daftar akun milik pengguna.
+   * Jika pengguna belum memiliki akun sama sekali, akun default akan dibuatkan secara otomatis.
    */
-  async getAll(
-    filters: TransactionFilters = {},
-  ): Promise<Transaction[]> {
+  async getAccounts(): Promise<Account[]> {
+    const userId = await getAuthenticatedUserId();
+
+    const { data, error } = await supabase
+      .from(ACCOUNTS_TABLE)
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("[AccountService] Error fetching accounts:", error);
+      throw error;
+    }
+
+    let accounts = (data ?? []) as Account[];
+
+    // Inisialisasi akun bawaan jika belum ada akun yang dibuat
+    if (accounts.length === 0) {
+      const defaultAccounts: CreateAccountInput[] = [
+        { name: "Main Balance (Bank BRI)", type: "bank", institution: "BRI" },
+        { name: "Cash / Tunai", type: "cash" },
+        { name: "E-Wallet (GoPay/ShopeePay)", type: "e_wallet" },
+      ];
+
+      const toInsert = defaultAccounts.map((a) => ({
+        user_id: userId,
+        name: a.name,
+        type: a.type,
+        institution: a.institution || null,
+        is_active: true,
+      }));
+
+      const { data: inserted, error: insertError } = await supabase
+        .from(ACCOUNTS_TABLE)
+        .insert(toInsert)
+        .select("*");
+
+      if (!insertError && inserted && inserted.length > 0) {
+        accounts = inserted as Account[];
+      }
+    }
+
+    return accounts;
+  },
+
+  /**
+   * Membuat akun baru.
+   */
+  async createAccount(input: CreateAccountInput): Promise<Account> {
+    const userId = await getAuthenticatedUserId();
+
+    const { data, error } = await supabase
+      .from(ACCOUNTS_TABLE)
+      .insert({
+        user_id: userId,
+        name: input.name.trim(),
+        type: input.type,
+        institution: input.institution?.trim() || null,
+        color: input.color || null,
+        icon: input.icon || null,
+        is_active: input.is_active ?? true,
+      })
+      .select("*")
+      .single();
+
+    if (error) throw error;
+    return data as Account;
+  },
+
+  /**
+   * Mengambil daftar kategori transaksi.
+   * Mengambil kategori milik user atau kategori bawaan sistem.
+   */
+  async getCategories(): Promise<TransactionCategory[]> {
+    const userId = await getAuthenticatedUserId();
+
+    const { data, error } = await supabase
+      .from(CATEGORIES_TABLE)
+      .select("*")
+      .or(`user_id.eq.${userId},user_id.is.null,is_default.eq.true`)
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error("[CategoryService] Error fetching categories:", error);
+      throw error;
+    }
+
+    let categories = (data ?? []) as TransactionCategory[];
+
+    // Inisialisasi kategori bawaan jika tabel masih kosong
+    if (categories.length === 0) {
+      const defaultCategories: CreateCategoryInput[] = [
+        { name: "Makanan & Minuman", type: "expense", is_default: true },
+        { name: "Transportasi", type: "expense", is_default: true },
+        { name: "Belanja", type: "expense", is_default: true },
+        { name: "Tagihan & Utilitas", type: "expense", is_default: true },
+        { name: "Hiburan", type: "expense", is_default: true },
+        { name: "Kesehatan", type: "expense", is_default: true },
+        { name: "Pendidikan", type: "expense", is_default: true },
+        { name: "Gaji / Upah", type: "income", is_default: true },
+        { name: "Pemasukan Lainnya", type: "income", is_default: true },
+        { name: "Lainnya", type: "expense", is_default: true },
+      ];
+
+      const toInsert = defaultCategories.map((c) => ({
+        user_id: userId,
+        name: c.name,
+        type: c.type,
+        is_default: true,
+      }));
+
+      const { data: inserted, error: insertError } = await supabase
+        .from(CATEGORIES_TABLE)
+        .insert(toInsert)
+        .select("*");
+
+      if (!insertError && inserted && inserted.length > 0) {
+        categories = inserted as TransactionCategory[];
+      }
+    }
+
+    return categories;
+  },
+
+  /**
+   * Mengambil seluruh transaksi milik pengguna sesuai filter.
+   */
+  async getAll(filters: TransactionFilters = {}): Promise<Transaction[]> {
     const userId = await getAuthenticatedUserId();
 
     let query = supabase
       .from(TRANSACTIONS_TABLE)
-      .select("*")
+      .select(`
+        *,
+        account:${ACCOUNTS_TABLE}(id, name, type, color, icon),
+        category:${CATEGORIES_TABLE}(id, name, type, icon, color)
+      `)
       .eq("user_id", userId)
-      .order("transaction_date", { ascending: false })
+      .order("transaction_date", { ascending: filters.order === "asc" })
       .order("created_at", { ascending: false });
 
     if (filters.type && filters.type !== "all") {
@@ -155,9 +211,7 @@ export const transactionService = {
     }
 
     if (filters.accountId) {
-      query = query.or(
-        `account_id.eq.${filters.accountId},destination_account_id.eq.${filters.accountId}`,
-      );
+      query = query.eq("account_id", filters.accountId);
     }
 
     if (filters.startDate) {
@@ -165,18 +219,35 @@ export const transactionService = {
     }
 
     if (filters.endDate) {
-      query = query.lte("transaction_date", filters.endDate);
+      query = query.lte("transaction_date", `${filters.endDate}T23:59:59.999Z`);
     }
 
     if (filters.search?.trim()) {
       const search = filters.search.trim().replace(/[%_,]/g, "");
-      query = query.ilike("merchant", `%${search}%`);
+      query = query.or(`merchant.ilike.%${search}%,note.ilike.%${search}%`);
+    }
+
+    if (typeof filters.limit === "number") {
+      query = query.limit(filters.limit);
+    }
+
+    if (typeof filters.offset === "number") {
+      query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      throw error;
+      // Fallback jika query join mengalami issue schema cache
+      const simpleQuery = supabase
+        .from(TRANSACTIONS_TABLE)
+        .select("*")
+        .eq("user_id", userId)
+        .order("transaction_date", { ascending: false });
+
+      const { data: simpleData, error: simpleError } = await simpleQuery;
+      if (simpleError) throw simpleError;
+      return (simpleData ?? []) as Transaction[];
     }
 
     return (data ?? []) as Transaction[];
@@ -190,12 +261,60 @@ export const transactionService = {
 
     const { data, error } = await supabase
       .from(TRANSACTIONS_TABLE)
-      .select("*")
+      .select(`
+        *,
+        account:${ACCOUNTS_TABLE}(id, name, type),
+        category:${CATEGORIES_TABLE}(id, name, type)
+      `)
       .eq("id", id)
       .eq("user_id", userId)
       .single();
 
+    if (error) throw error;
+    return data as Transaction;
+  },
+
+  /**
+   * Membuat transaksi baru di database Supabase sesuai schema.
+   */
+  async create(input: CreateTransactionInput): Promise<Transaction> {
+    validateTransactionInput(input);
+    const userId = await getAuthenticatedUserId();
+
+    const rawDate = input.transaction_date || new Date().toISOString();
+    const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+      ? `${rawDate}T12:00:00+07:00`
+      : rawDate;
+
+    const payload = {
+      user_id: userId,
+      account_id: input.account_id || null,
+      category_id: input.type === "transfer" ? null : input.category_id || null,
+      type: input.type,
+      amount: Math.round(Number(input.amount)),
+      currency: (input.currency || "IDR").toUpperCase(),
+      merchant: input.merchant?.trim() || null,
+      note: input.note?.trim() || null,
+      transaction_date: new Date(isoDate).toISOString(),
+      source: input.source || "manual",
+      external_id: input.external_id || null,
+      dedupe_key: input.dedupe_key || null,
+      email_message_id: input.email_message_id || null,
+      review_status: input.review_status || "confirmed",
+    };
+
+    const { data, error } = await supabase
+      .from(TRANSACTIONS_TABLE)
+      .insert(payload)
+      .select(`
+        *,
+        account:${ACCOUNTS_TABLE}(id, name, type),
+        category:${CATEGORIES_TABLE}(id, name, type)
+      `)
+      .single();
+
     if (error) {
+      console.error("[TransactionService] Insert error:", error);
       throw error;
     }
 
@@ -203,152 +322,62 @@ export const transactionService = {
   },
 
   /**
-   * Membuat transaksi baru.
-   *
-   * Item transaksi disimpan setelah transaksi utama berhasil dibuat.
-   */
-  async create(input: CreateTransactionInput): Promise<Transaction> {
-    validateTransactionInput(input);
-
-    const userId = await getAuthenticatedUserId();
-
-    const payload: TransactionPayload = {
-      user_id: userId,
-      account_id: input.account_id,
-      destination_account_id:
-        input.type === "transfer"
-          ? input.destination_account_id ?? null
-          : null,
-      category_id:
-        input.type === "transfer"
-          ? null
-          : input.category_id ?? null,
-      type: input.type,
-      amount: input.amount,
-      merchant: input.merchant?.trim() || null,
-      note: input.note?.trim() || null,
-      transaction_date:
-        input.transaction_date ??
-        new Date().toISOString().slice(0, 10),
-    };
-
-    const { data, error } = await supabase
-      .from(TRANSACTIONS_TABLE)
-      .insert(payload)
-      .select("*")
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    const transaction = data as Transaction;
-
-    if (input.items?.length) {
-      const itemsPayload = input.items.map((item) => ({
-        transaction_id: transaction.id,
-        name: item.name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        amount: item.amount,
-        category_id: item.category_id ?? null,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from(TRANSACTION_ITEMS_TABLE)
-        .insert(itemsPayload);
-
-      if (itemsError) {
-        // Bersihkan transaksi utama jika penyimpanan item gagal.
-        await supabase
-          .from(TRANSACTIONS_TABLE)
-          .delete()
-          .eq("id", transaction.id)
-          .eq("user_id", userId);
-
-        throw itemsError;
-      }
-    }
-
-    return transaction;
-  },
-
-  /**
    * Memperbarui transaksi berdasarkan ID.
    */
-  async update(
-    id: string,
-    input: UpdateTransactionInput,
-  ): Promise<Transaction> {
+  async update(id: string, input: UpdateTransactionInput): Promise<Transaction> {
     const userId = await getAuthenticatedUserId();
 
-    const existing = await this.getById(id);
+    const payload: Record<string, unknown> = {};
 
-    const merged: CreateTransactionInput = {
-      account_id: input.account_id ?? existing.account_id,
-      destination_account_id:
-        input.destination_account_id ??
-        existing.destination_account_id,
-      category_id: input.category_id ?? existing.category_id,
-      type: input.type ?? existing.type,
-      amount: input.amount ?? existing.amount,
-      merchant:
-        input.merchant !== undefined
-          ? input.merchant
-          : existing.merchant,
-      note:
-        input.note !== undefined
-          ? input.note
-          : existing.note,
-      transaction_date:
-        input.transaction_date ?? existing.transaction_date,
-    };
+    if (input.account_id !== undefined) {
+      payload.account_id = input.account_id || null;
+    }
+    if (input.category_id !== undefined) {
+      payload.category_id = input.type === "transfer" ? null : input.category_id || null;
+    }
+    if (input.type !== undefined) {
+      payload.type = input.type;
+      if (input.type === "transfer") {
+        payload.category_id = null;
+      }
+    }
+    if (input.amount !== undefined) {
+      payload.amount = Math.round(Number(input.amount));
+    }
+    if (input.merchant !== undefined) {
+      payload.merchant = input.merchant?.trim() || null;
+    }
+    if (input.note !== undefined) {
+      payload.note = input.note?.trim() || null;
+    }
+    if (input.transaction_date !== undefined) {
+      const rawDate = input.transaction_date;
+      const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(rawDate)
+        ? `${rawDate}T12:00:00+07:00`
+        : rawDate;
+      payload.transaction_date = new Date(isoDate).toISOString();
+    }
+    if (input.currency !== undefined) {
+      payload.currency = input.currency.toUpperCase();
+    }
 
-    validateTransactionInput(merged);
-
-    const payload = buildTransactionPayload(merged, userId);
+    payload.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
       .from(TRANSACTIONS_TABLE)
       .update(payload)
       .eq("id", id)
       .eq("user_id", userId)
-      .select("*")
+      .select(`
+        *,
+        account:${ACCOUNTS_TABLE}(id, name, type),
+        category:${CATEGORIES_TABLE}(id, name, type)
+      `)
       .single();
 
     if (error) {
+      console.error("[TransactionService] Update error:", error);
       throw error;
-    }
-
-    // Jika items tidak disertakan, item lama tidak diubah.
-    if (input.items !== undefined) {
-      const { error: deleteItemsError } = await supabase
-        .from(TRANSACTION_ITEMS_TABLE)
-        .delete()
-        .eq("transaction_id", id);
-
-      if (deleteItemsError) {
-        throw deleteItemsError;
-      }
-
-      if (input.items.length > 0) {
-        const itemsPayload = input.items.map((item) => ({
-          transaction_id: id,
-          name: item.name,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          amount: item.amount,
-          category_id: item.category_id ?? null,
-        }));
-
-        const { error: insertItemsError } = await supabase
-          .from(TRANSACTION_ITEMS_TABLE)
-          .insert(itemsPayload);
-
-        if (insertItemsError) {
-          throw insertItemsError;
-        }
-      }
     }
 
     return data as Transaction;
@@ -367,61 +396,30 @@ export const transactionService = {
       .eq("user_id", userId);
 
     if (error) {
+      console.error("[TransactionService] Delete error:", error);
       throw error;
     }
   },
 
   /**
-   * Mengambil item-item dari satu transaksi.
-   */
-  async getItems(
-    transactionId: string,
-  ): Promise<CreateTransactionItemInput[]> {
-    const userId = await getAuthenticatedUserId();
-
-    const { data: transaction, error: transactionError } =
-      await supabase
-        .from(TRANSACTIONS_TABLE)
-        .select("id")
-        .eq("id", transactionId)
-        .eq("user_id", userId)
-        .single();
-
-    if (transactionError) {
-      throw transactionError;
-    }
-
-    const { data, error } = await supabase
-      .from(TRANSACTION_ITEMS_TABLE)
-      .select("name, quantity, unit_price, amount, category_id")
-      .eq("transaction_id", transaction.id);
-
-    if (error) {
-      throw error;
-    }
-
-    return (data ?? []) as CreateTransactionItemInput[];
-  },
-
-  /**
-   * Menghitung ringkasan transaksi dalam rentang tanggal.
-   * Transfer tidak dihitung sebagai pemasukan atau pengeluaran.
+   * Menghitung ringkasan pemasukan, pengeluaran, transfer, dan sisa saldo.
    */
   async getSummary(
-    filters: Pick<TransactionFilters, "startDate" | "endDate" | "accountId"> = {},
+    filters: Pick<TransactionFilters, "startDate" | "endDate" | "accountId"> = {}
   ): Promise<TransactionSummary> {
     const transactions = await this.getAll(filters);
 
     const summary = transactions.reduce(
       (result, transaction) => {
         result.transactionCount += 1;
+        const amt = Number(transaction.amount) || 0;
 
         if (transaction.type === "income") {
-          result.totalIncome += transaction.amount;
+          result.totalIncome += amt;
         } else if (transaction.type === "expense") {
-          result.totalExpense += transaction.amount;
+          result.totalExpense += amt;
         } else if (transaction.type === "transfer") {
-          result.totalTransfer += transaction.amount;
+          result.totalTransfer += amt;
         }
 
         return result;
@@ -432,11 +430,143 @@ export const transactionService = {
         totalTransfer: 0,
         transactionCount: 0,
         balance: 0,
-      },
+      }
     );
 
     summary.balance = summary.totalIncome - summary.totalExpense;
-
     return summary;
   },
+
+  /**
+   * Mengimpor transaksi yang diparse dari Gmail langsung ke database Supabase.
+   * Digunakan sebagai eksekutor utama atau fallback client-side berotorisasi.
+   */
+  async importFromGmailParsed(
+    items: Array<{
+      amount: number;
+      type: "expense" | "income";
+      description: string;
+      date: string;
+      emailId?: string;
+    }>
+  ): Promise<{ importedCount: number; errors: string[] }> {
+    const userId = await getAuthenticatedUserId();
+    const accounts = await this.getAccounts();
+    const categories = await this.getCategories();
+
+    if (accounts.length === 0) {
+      throw new Error("Tidak ada akun transaksi yang tersedia di database Supabase.");
+    }
+
+    const targetAccount =
+      accounts.find(
+        (a) =>
+          a.name?.toLowerCase().includes("main") ||
+          a.name?.toLowerCase().includes("bri") ||
+          a.name?.toLowerCase().includes("bank")
+      ) || accounts[0];
+
+    // Ambil transaksi yang sudah ada untuk memeriksa duplikasi
+    const { data: existingList } = await supabase
+      .from(TRANSACTIONS_TABLE)
+      .select("id, external_id, dedupe_key, amount, type, merchant")
+      .eq("user_id", userId);
+
+    const existing = existingList || [];
+    let importedCount = 0;
+    const errors: string[] = [];
+
+    // Helper penentu kategori
+    const getCategoryId = (desc: string, type: "expense" | "income"): string | null => {
+      const typed = categories.filter((c) => c.type === type);
+      if (type === "income") {
+        return typed.find((c) => c.name.toLowerCase().includes("pemasukan") || c.name.toLowerCase().includes("gaji"))?.id || typed[0]?.id || null;
+      }
+      const descLower = desc.toLowerCase();
+      const match = typed.find((c) => {
+        const cLower = c.name.toLowerCase();
+        return (
+          (cLower.includes("kopi") && /kopi|coffee|cafe|latte/i.test(descLower)) ||
+          (cLower.includes("makan") && /makan|resto|warung|kantin|food/i.test(descLower)) ||
+          (cLower.includes("transport") && /gojek|grab|kereta|bensin|spbu|pertamina/i.test(descLower)) ||
+          (cLower.includes("belanja") && /shopee|tokopedia|indomaret|alfamart|toko/i.test(descLower)) ||
+          (cLower.includes("tagihan") && /pln|listrik|pulsa|wifi|telkom|seabank/i.test(descLower))
+        );
+      });
+      return match?.id || typed.find((c) => c.name.toLowerCase().includes("lainnya"))?.id || typed[0]?.id || null;
+    };
+
+    for (const item of items) {
+      try {
+        const emailId = item.emailId;
+        const dedupeKey = emailId ? `gmail_${emailId}` : null;
+
+        // Cek duplikasi
+        const isDuplicate = existing.some((ex) => {
+          if (emailId && (ex.external_id === emailId || ex.dedupe_key === dedupeKey)) {
+            return true;
+          }
+          if (
+            Number(ex.amount) === Math.round(item.amount) &&
+            ex.type === item.type &&
+            ex.merchant?.toLowerCase() === item.description?.toLowerCase()
+          ) {
+            return true;
+          }
+          return false;
+        });
+
+        if (isDuplicate) {
+          continue;
+        }
+
+        const categoryId = getCategoryId(item.description, item.type);
+        const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(item.date)
+          ? `${item.date}T12:00:00+07:00`
+          : item.date;
+
+        const payload = {
+          user_id: userId,
+          account_id: targetAccount.id,
+          category_id: categoryId,
+          type: item.type,
+          amount: Math.round(Number(item.amount)),
+          currency: "IDR",
+          merchant: item.description,
+          note: "Synced from Gmail (Bank Notification)",
+          transaction_date: new Date(isoDate).toISOString(),
+          source: "email" as const,
+          external_id: emailId || null,
+          dedupe_key: dedupeKey,
+          review_status: "confirmed" as const,
+        };
+
+        const { data: inserted, error: insertError } = await supabase
+          .from(TRANSACTIONS_TABLE)
+          .insert(payload)
+          .select("id")
+          .single();
+
+        if (insertError) {
+          errors.push(`Gagal menyimpan "${item.description}": ${insertError.message}`);
+        } else if (inserted) {
+          importedCount++;
+          existing.push({
+            id: inserted.id,
+            external_id: emailId || null,
+            dedupe_key: dedupeKey,
+            amount: payload.amount,
+            type: payload.type,
+            merchant: payload.merchant,
+          });
+        }
+      } catch (err: unknown) {
+        errors.push(err instanceof Error ? err.message : "Gagal memproses item transaksi.");
+      }
+    }
+
+    return { importedCount, errors };
+  },
 };
+
+export default transactionService;

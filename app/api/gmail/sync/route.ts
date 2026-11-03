@@ -168,28 +168,61 @@ export function parseEmail(
   description = normalizeDescription(description, bodyText, type);
   description = toTitleCase(description);
 
-  // 4. Date extraction
-  let dateStr = emailDate.toISOString().split("T")[0];
+  // 4. Date & Time extraction
+  const MONTH_MAP: Record<string, string> = {
+    jan: "01", januari: "01",
+    feb: "02", februari: "02",
+    mar: "03", maret: "03",
+    apr: "04", april: "04",
+    mei: "05", may: "05",
+    jun: "06", juni: "06",
+    jul: "07", juli: "07",
+    agu: "08", ags: "08", agustus: "08", aug: "08", august: "08",
+    sep: "09", september: "09",
+    okt: "10", oktober: "10", oct: "10", october: "10",
+    nov: "11", november: "11",
+    des: "12", desember: "12", dec: "12", december: "12",
+  };
 
-  const dateRegex1 = /(?:Tanggal Transaksi|Tanggal)[ \t]*:?[ \t]*([0-9]{1,2} [A-Za-z]+ [0-9]{4})/i;
-  const dateRegex2 = /(?:Tanggal Transaksi|Tanggal)[ \t]*:?[ \t]*([0-9]{2}[\/\-][0-9]{2}[\/\-][0-9]{4})/i;
+  let dateIso = emailDate && !isNaN(emailDate.getTime())
+    ? emailDate.toISOString()
+    : new Date().toISOString();
 
-  const matchDate1 = bodyText.match(dateRegex1);
-  const matchDate2 = bodyText.match(dateRegex2);
-
-  if (matchDate1) {
-    const d = new Date(matchDate1[1]);
-    if (!isNaN(d.getTime())) dateStr = d.toISOString().split("T")[0];
-  } else if (matchDate2) {
-    const parts = matchDate2[1].split(/[\/\-]/);
-    if (parts.length === 3) dateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+  // Pola 1: "02 Nov 2026, 12:19:39 WIB" atau "02 November 2026 12:19:39"
+  const dtRegex1 = /(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})(?:,\s*|\s+)(\d{1,2}):(\d{2}):(\d{2})/i;
+  const m1 = bodyText.match(dtRegex1);
+  if (m1) {
+    const day = m1[1].padStart(2, "0");
+    const mKey = m1[2].toLowerCase();
+    const month = MONTH_MAP[mKey];
+    const year = m1[3];
+    const hour = m1[4].padStart(2, "0");
+    const min = m1[5];
+    const sec = m1[6];
+    if (month) {
+      dateIso = `${year}-${month}-${day}T${hour}:${min}:${sec}+07:00`;
+    }
+  } else {
+    // Pola 2: "pada 07/09/26 09:44:01"
+    const dtRegex2 = /(\d{2})\/(\d{2})\/(\d{2,4})\s+(\d{2}):(\d{2}):(\d{2})/i;
+    const m2 = bodyText.match(dtRegex2);
+    if (m2) {
+      const day = m2[1];
+      const month = m2[2];
+      let year = m2[3];
+      if (year.length === 2) year = `20${year}`;
+      const hour = m2[4];
+      const min = m2[5];
+      const sec = m2[6];
+      dateIso = `${year}-${month}-${day}T${hour}:${min}:${sec}+07:00`;
+    }
   }
 
   return {
     amount,
     type,
     description,
-    date: dateStr,
+    date: dateIso,
     emailId,
     source: "Gmail (Bank Notification)",
   };
@@ -303,7 +336,7 @@ export async function POST(req: Request) {
       process.env.APPS_SCRIPT_URL ||
       "https://script.google.com/macros/s/AKfycbxTEKBLQpTg7BRBNUtUMm1o2Jd-ODMUpxlBYzLXMiGaR_ltVxRqDc9m4BSpVINkh-7bPQ/exec";
 
-    // 1. Fetch raw emails from Google Apps Script / Gmail connector
+    // 1. Ambil data mentah email dari Google Apps Script / Gmail connector
     const response = await fetch(appsScriptUrl, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -322,7 +355,7 @@ export async function POST(req: Request) {
     const rawEmails: any[] = result.data || [];
     const parsedTransactions: ParsedTransaction[] = [];
 
-    // 2. Parse banking emails
+    // 2. Parsing email perbankan
     for (const msg of rawEmails) {
       const emailDate = new Date(msg.date);
       const parsed = parseEmail(msg.subject || "", msg.bodyText || "", emailDate, msg.id);
@@ -331,93 +364,206 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3. Connect Supabase
+    // 3. Ekstrak kredensial otorisasi Supabase
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
     const supabaseKey =
       process.env.NEXT_PUBLIC_SUPABASE_KEY ||
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
       "";
 
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+    let token: string | null = null;
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    }
+
+    const body = await req.json().catch(() => ({}));
+
     let syncedCount = 0;
     const insertedItems: any[] = [];
+    const errors: string[] = [];
 
     if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      // Inisialisasi Supabase client dengan token JWT pengguna untuk mematuhi RLS
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+        global: {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        },
+      });
 
-      // Check current user session if token is provided in header
-      const authHeader = req.headers.get("authorization");
       let userId: string | null = null;
 
-      if (authHeader?.startsWith("Bearer ")) {
-        const token = authHeader.substring(7);
+      if (token) {
         const { data: userData } = await supabase.auth.getUser(token);
         userId = userData?.user?.id || null;
       }
 
-      // If no auth token in request, get first user or public active account
-      let targetAccountId: string | null = null;
-      let targetAccountBalance = 0;
+      if (!userId && body?.userId) {
+        userId = body.userId;
+      }
 
-      const { data: accounts } = await supabase
-        .from("accounts")
-        .select("*")
-        .limit(5);
+      // Jika user tidak terautentikasi sama sekali, kembalikan parsed data tapi beri tahu frontend
+      if (!userId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Sesi autentikasi tidak ditemukan. Silakan login ke aplikasi Nabatu terlebih dahulu.",
+            totalScanned: rawEmails.length,
+            parsedTransactions,
+            syncedCount: 0,
+          },
+          { status: 401 }
+        );
+      }
 
-      if (accounts && accounts.length > 0) {
-        const primaryAccount =
-          accounts.find((a) =>
-            a.name?.toLowerCase().includes("main") ||
-            a.name?.toLowerCase().includes("bri") ||
-            a.name?.toLowerCase().includes("bank")
-          ) || accounts[0];
+      // 4. Cari atau inisialisasi akun transaksi pengguna
+      let targetAccountId: string | null = body?.accountId || null;
 
-        targetAccountId = primaryAccount.id;
-        targetAccountBalance = Number(primaryAccount.balance || 0);
-        if (!userId) {
-          userId = primaryAccount.user_id;
+      if (targetAccountId) {
+        const { data: accCheck } = await supabase
+          .from("accounts")
+          .select("id")
+          .eq("id", targetAccountId)
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (!accCheck) {
+          targetAccountId = null;
         }
       }
 
-      // Fetch transaction categories for matching
+      if (!targetAccountId) {
+        const { data: userAccounts } = await supabase
+          .from("accounts")
+          .select("id, name, type")
+          .eq("user_id", userId);
+
+        if (userAccounts && userAccounts.length > 0) {
+          const primaryAccount =
+            userAccounts.find((a) =>
+              a.name?.toLowerCase().includes("main") ||
+              a.name?.toLowerCase().includes("bri") ||
+              a.name?.toLowerCase().includes("bank")
+            ) || userAccounts[0];
+
+          targetAccountId = primaryAccount.id;
+        } else {
+          // Buat akun bawaan jika pengguna belum memiliki akun di tabel accounts
+          const { data: createdAcc, error: createAccErr } = await supabase
+            .from("accounts")
+            .insert({
+              user_id: userId,
+              name: "Main Balance (Bank BRI)",
+              type: "bank",
+              institution: "BRI",
+              is_active: true,
+            })
+            .select("id")
+            .single();
+
+          if (createdAcc?.id) {
+            targetAccountId = createdAcc.id;
+          } else {
+            console.error("[Gmail Sync] Gagal membuat akun default:", createAccErr);
+            errors.push("Gagal membuat akun transaksi default.");
+          }
+        }
+      }
+
+      // 5. Ambil atau inisialisasi kategori transaksi
       const { data: categories } = await supabase
         .from("transaction_categories")
-        .select("id, name, type");
-      const categoryList = categories || [];
+        .select("id, name, type")
+        .or(`user_id.eq.${userId},is_default.eq.true`);
 
-      // 4. Insert each transaction with duplicate prevention
+      let categoryList = categories || [];
+
+      if (categoryList.length === 0) {
+        const defaultCategories = [
+          { name: "Makanan & Minuman", type: "expense", is_default: true, user_id: userId },
+          { name: "Kopi & Nongkrong", type: "expense", is_default: true, user_id: userId },
+          { name: "Transportasi", type: "expense", is_default: true, user_id: userId },
+          { name: "Belanja", type: "expense", is_default: true, user_id: userId },
+          { name: "Tagihan & Utilitas", type: "expense", is_default: true, user_id: userId },
+          { name: "Hiburan", type: "expense", is_default: true, user_id: userId },
+          { name: "Gaji & Pemasukan", type: "income", is_default: true, user_id: userId },
+          { name: "Lainnya", type: "expense", is_default: true, user_id: userId },
+        ];
+        const { data: insertedCats } = await supabase
+          .from("transaction_categories")
+          .insert(defaultCategories)
+          .select("id, name, type");
+
+        if (insertedCats && insertedCats.length > 0) {
+          categoryList = insertedCats;
+        }
+      }
+
+      // 6. Masukkan setiap transaksi dengan pencegahan duplikasi yang ketat
       for (const tx of parsedTransactions) {
-        if (!targetAccountId) break;
-
-        let duplicateQuery = supabase
-          .from("transactions")
-          .select("id")
-          .eq("amount", tx.amount)
-          .eq("type", tx.type)
-          .eq("transaction_date", tx.date)
-          .limit(1);
-
-        if (userId) {
-          duplicateQuery = duplicateQuery.eq("user_id", userId);
+        if (!targetAccountId) {
+          errors.push("Akun transaksi belum siap untuk menyimpan data.");
+          break;
         }
 
-        const { data: existing } = await duplicateQuery;
+        try {
+          // A. Cek duplikasi via external_id (id email unik dari Apps Script) atau dedupe_key
+          let isDuplicate = false;
 
-        if (!existing || existing.length === 0) {
+          if (tx.emailId) {
+            const { data: dupByExt } = await supabase
+              .from("transactions")
+              .select("id")
+              .eq("user_id", userId)
+              .or(`external_id.eq.${tx.emailId},dedupe_key.eq.gmail_${tx.emailId}`)
+              .limit(1);
+
+            if (dupByExt && dupByExt.length > 0) {
+              isDuplicate = true;
+            }
+          }
+
+          // B. Fallback cek duplikasi via amount, type, dan merchant jika external_id belum tercatat
+          if (!isDuplicate) {
+            const { data: dupByAttrs } = await supabase
+              .from("transactions")
+              .select("id")
+              .eq("user_id", userId)
+              .eq("amount", Math.round(tx.amount))
+              .eq("type", tx.type)
+              .eq("merchant", tx.description)
+              .limit(1);
+
+            if (dupByAttrs && dupByAttrs.length > 0) {
+              isDuplicate = true;
+            }
+          }
+
+          if (isDuplicate) {
+            continue;
+          }
+
           const categoryId = matchCategoryId(tx.description, categoryList, tx.type);
 
-          const newTxPayload: any = {
+          const newTxPayload = {
+            user_id: userId,
             account_id: targetAccountId,
-            type: tx.type,
-            amount: tx.amount,
-            merchant: tx.description,
-            note: "Synced from Gmail",
-            transaction_date: tx.date,
             category_id: categoryId || null,
+            type: tx.type,
+            amount: Math.round(tx.amount),
+            currency: "IDR",
+            merchant: tx.description,
+            note: "Synced from Gmail (Bank Notification)",
+            transaction_date: tx.date,
+            source: "email",
+            external_id: tx.emailId || null,
+            dedupe_key: tx.emailId ? `gmail_${tx.emailId}` : null,
+            review_status: "confirmed",
           };
-
-          if (userId) {
-            newTxPayload.user_id = userId;
-          }
 
           const { data: inserted, error: insertError } = await supabase
             .from("transactions")
@@ -425,33 +571,28 @@ export async function POST(req: Request) {
             .select()
             .single();
 
-          if (!insertError && inserted) {
+          if (insertError) {
+            console.error("[Gmail Sync] Insert error:", insertError);
+            errors.push(`Gagal menyimpan "${tx.description}": ${insertError.message}`);
+          } else if (inserted) {
             syncedCount++;
             insertedItems.push(inserted);
-
-            // Update account balance
-            if (tx.type === "income") {
-              targetAccountBalance += tx.amount;
-            } else if (tx.type === "expense") {
-              targetAccountBalance -= tx.amount;
-            }
-
-            await supabase
-              .from("accounts")
-              .update({ balance: targetAccountBalance })
-              .eq("id", targetAccountId);
           }
+        } catch (itemErr: unknown) {
+          const msg = itemErr instanceof Error ? itemErr.message : "Gagal memproses item transaksi.";
+          errors.push(msg);
         }
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: `Berhasil memproses ${rawEmails.length} email. ${syncedCount} transaksi baru disinkronkan.`,
+      message: `Berhasil memproses ${rawEmails.length} email. ${syncedCount} transaksi baru disinkronkan ke Supabase.`,
       syncedCount,
       totalScanned: rawEmails.length,
       parsedTransactions,
       insertedTransactions: insertedItems,
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error: any) {
     console.error("Gmail sync error:", error);
