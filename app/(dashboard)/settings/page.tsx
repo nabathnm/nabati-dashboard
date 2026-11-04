@@ -40,7 +40,7 @@ import { Switch } from "@/components/ui/switch";
 import { getTasks } from "@/lib/services/task-service";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
-import type { TaskCategory } from "@/types/task";
+import type { Task, TaskCategory } from "@/types/task";
 
 type GoogleStatus = {
   connected: boolean;
@@ -337,7 +337,7 @@ export default function SettingsPage() {
     setSyncingCalendar(true);
     try {
       // Ambil daftar task aktif dari service
-      let taskList = [];
+      let taskList: Task[] = [];
       try {
         taskList = await getTasks({ is_completed: false });
       } catch {

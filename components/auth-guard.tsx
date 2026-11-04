@@ -11,10 +11,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+
+      if (!isMounted) return;
 
       if (session) {
         setAuthenticated(true);
@@ -26,17 +30,23 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     checkSession();
 
-    // Listen for auth state changes (e.g. token refresh, sign out)
+    // Listen for auth state changes (e.g. token refresh, sign in, sign out)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+      if (!isMounted) return;
+
+      if (session) {
+        setAuthenticated(true);
+        setLoading(false);
+      } else {
         setAuthenticated(false);
         router.replace("/login");
       }
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [router]);
