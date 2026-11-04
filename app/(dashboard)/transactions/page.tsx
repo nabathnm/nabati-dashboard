@@ -1,7 +1,25 @@
 "use client";
 
-import { useCreateTransaction, useDeleteTransaction, useTransactions, useTransactionSummary, useUpdateTransaction } from "@/hooks/use-transactions";
-import type { CreateTransactionInput, Transaction, TransactionType, UpdateTransactionInput } from "@/types/transaction";
+import {
+  useAccounts,
+  useCategories,
+  useCreateTransaction,
+  useDeleteTransaction,
+  useTransactions,
+  useTransactionSummary,
+  useUpdateTransaction,
+} from "@/hooks/use-transactions";
+import { supabase } from "@/lib/supabase";
+import { transactionService } from "@/lib/services/transaction-service";
+import { useQueryClient } from "@tanstack/react-query";
+import type {
+  Account,
+  CreateTransactionInput,
+  Transaction,
+  TransactionCategory,
+  TransactionType,
+  UpdateTransactionInput,
+} from "@/types/transaction";
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -24,18 +42,6 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-type TransactionPageProps = {
-  accounts: {
-    id: string;
-    name: string;
-  }[];
-  categories: {
-    id: string;
-    name: string;
-    type: "income" | "expense";
-  }[];
-};
-
 type FormValues = {
   type: TransactionType;
   account_id: string;
@@ -48,28 +54,6 @@ type FormValues = {
 };
 
 const PAGE_SIZE = 10;
-
-const DEFAULT_ACCOUNTS = [
-  { id: "acc-main", name: "Main Balance (Bank BRI)" },
-  { id: "acc-bca", name: "Bank BCA" },
-  { id: "acc-cash", name: "Cash / Tunai" },
-  { id: "acc-ewallet", name: "E-Wallet (GoPay/ShopeePay)" },
-];
-
-const DEFAULT_CATEGORIES = [
-  { id: "cat-kopi", name: "Kopi", type: "expense" as const },
-  { id: "cat-makanan", name: "Makanan", type: "expense" as const },
-  { id: "cat-transport", name: "Transportasi", type: "expense" as const },
-  { id: "cat-belanja", name: "Belanja", type: "expense" as const },
-  { id: "cat-tagihan", name: "Tagihan", type: "expense" as const },
-  { id: "cat-hiburan", name: "Hiburan", type: "expense" as const },
-  { id: "cat-kesehatan", name: "Kesehatan", type: "expense" as const },
-  { id: "cat-pendidikan", name: "Pendidikan", type: "expense" as const },
-  { id: "cat-perawatan", name: "Perawatan", type: "expense" as const },
-  { id: "cat-lainnya", name: "Lainnya", type: "expense" as const },
-  { id: "cat-gaji", name: "Pemasukan / Gaji", type: "income" as const },
-  { id: "cat-pemasukan", name: "Pemasukan Lainnya", type: "income" as const },
-];
 
 const INITIAL_FORM: FormValues = {
   type: "expense",
@@ -130,12 +114,12 @@ function getCurrentMonthRange() {
     start_date: new Date(
       now.getFullYear(),
       now.getMonth(),
-      1,
+      1
     ).toLocaleDateString("en-CA"),
     end_date: new Date(
       now.getFullYear(),
       now.getMonth() + 1,
-      0,
+      0
     ).toLocaleDateString("en-CA"),
   };
 }
@@ -143,8 +127,8 @@ function getCurrentMonthRange() {
 function toFormValues(transaction: Transaction): FormValues {
   return {
     type: transaction.type,
-    account_id: transaction.account_id,
-    destination_account_id: transaction.destination_account_id ?? "",
+    account_id: transaction.account_id ?? "",
+    destination_account_id: "",
     category_id: transaction.category_id ?? "",
     amount: String(transaction.amount),
     merchant: transaction.merchant ?? "",
@@ -180,7 +164,7 @@ function SummaryCard({
   };
 
   return (
-    <div className="rounded-2xl border border-[#434C5E] bg-[#3B4252] p-5">
+    <div className="rounded-2xl border border-[#434C5E] bg-[#3B4252] p-5 shadow-xs">
       <div className="flex items-center justify-between">
         <p className="text-sm text-[#D8DEE9]">{title}</p>
         <div className={`rounded-xl p-2 ${toneStyles[tone].icon}`}>
@@ -206,23 +190,28 @@ function TransactionForm({
   onSubmit,
 }: {
   initialValues: FormValues;
-  accounts: TransactionPageProps["accounts"];
-  categories: TransactionPageProps["categories"];
+  accounts: Account[];
+  categories: TransactionCategory[];
   isPending: boolean;
   onClose: () => void;
   onSubmit: (values: FormValues) => void;
 }) {
-  const [values, setValues] = useState(initialValues);
+  const [values, setValues] = useState<FormValues>(() => {
+    // Default account ke akun pertama jika belum terpilih
+    const defAccountId =
+      initialValues.account_id || (accounts.length > 0 ? accounts[0].id : "");
+    return {
+      ...initialValues,
+      account_id: defAccountId,
+    };
+  });
   const [formError, setFormError] = useState("");
 
   const availableCategories = categories.filter(
-    (category) => category.type === values.type,
+    (category) => category.type === values.type
   );
 
-  function update<K extends keyof FormValues>(
-    key: K,
-    val: FormValues[K],
-  ) {
+  function update<K extends keyof FormValues>(key: K, val: FormValues[K]) {
     setValues((current) => ({
       ...current,
       [key]: val,
@@ -252,13 +241,16 @@ function TransactionForm({
       return;
     }
 
-    const numericAmount = Number(values.amount);
+    const numericAmount = Math.round(Number(values.amount));
     if (!values.amount || Number.isNaN(numericAmount) || numericAmount <= 0) {
       setFormError("Nominal transaksi harus berupa angka lebih dari 0.");
       return;
     }
 
-    onSubmit(values);
+    onSubmit({
+      ...values,
+      amount: String(numericAmount),
+    });
   }
 
   const inputClass =
@@ -279,7 +271,7 @@ function TransactionForm({
           </h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-[#D8DEE9] hover:bg-[#434C5E]"
+            className="rounded-lg p-2 text-[#D8DEE9] hover:bg-[#434C5E] cursor-pointer"
             aria-label="Tutup form"
           >
             <X size={18} />
@@ -299,22 +291,24 @@ function TransactionForm({
             <div className="grid grid-cols-3 gap-2">
               {(
                 [
-                  ["expense", "Pengeluaran"],
-                  ["income", "Pemasukan"],
-                  ["transfer", "Transfer"],
+                  ["expense", "Pengeluaran", ArrowUpRight, "text-[#BF616A]"],
+                  ["income", "Pemasukan", ArrowDownLeft, "text-[#A3BE8C]"],
+                  ["transfer", "Transfer", ArrowLeftRight, "text-[#88C0D0]"],
                 ] as const
-              ).map(([type, label]) => (
+              ).map(([type, label, Icon, colorClass]) => (
                 <button
                   type="button"
                   key={type}
                   onClick={() => update("type", type)}
-                  className={`rounded-xl py-2.5 text-xs font-semibold transition sm:text-sm ${
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-xl border p-3 text-sm font-semibold transition cursor-pointer",
                     values.type === type
-                      ? "bg-[#88C0D0] text-[#2E3440]"
-                      : "bg-[#2E3440] text-[#D8DEE9] hover:bg-[#434C5E]"
-                  }`}
+                      ? "border-[#88C0D0] bg-[#2E3440] text-[#ECEFF4]"
+                      : "border-[#4C566A] bg-[#3B4252] text-[#D8DEE9] hover:bg-[#434C5E]"
+                  )}
                 >
-                  {label}
+                  <Icon size={16} className={colorClass} />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
@@ -322,24 +316,25 @@ function TransactionForm({
 
           <div>
             <label htmlFor="transaction-amount" className={labelClass}>
-              Nominal (IDR)
+              Nominal Transaksi (Rp)
             </label>
             <input
               id="transaction-amount"
               type="number"
               min="1"
+              step="1"
               required
+              placeholder="Contoh: 50000"
               value={values.amount}
               onChange={(event) => update("amount", event.target.value)}
-              placeholder="0"
               className={inputClass}
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="transaction-account" className={labelClass}>
-                {values.type === "transfer" ? "Dari Akun" : "Akun"}
+                {values.type === "transfer" ? "Dari Akun" : "Akun Pembayaran"}
               </label>
               <select
                 id="transaction-account"
@@ -351,22 +346,19 @@ function TransactionForm({
                 <option value="">Pilih akun</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.name}
+                    {account.name} ({account.type})
                   </option>
                 ))}
               </select>
             </div>
 
-            {values.type === "transfer" && (
+            {values.type === "transfer" ? (
               <div>
-                <label
-                  htmlFor="transaction-destination"
-                  className={labelClass}
-                >
-                  Akun Tujuan
+                <label htmlFor="transaction-dest-account" className={labelClass}>
+                  Akun Tujuan Transfer
                 </label>
                 <select
-                  id="transaction-destination"
+                  id="transaction-dest-account"
                   required
                   value={values.destination_account_id}
                   onChange={(event) =>
@@ -376,40 +368,37 @@ function TransactionForm({
                 >
                   <option value="">Pilih akun tujuan</option>
                   {accounts
-                    .filter((account) => account.id !== values.account_id)
+                    .filter((a) => a.id !== values.account_id)
                     .map((account) => (
                       <option key={account.id} value={account.id}>
-                        {account.name}
+                        {account.name} ({account.type})
                       </option>
                     ))}
                 </select>
               </div>
+            ) : (
+              <div>
+                <label htmlFor="transaction-category" className={labelClass}>
+                  Kategori Transaksi
+                </label>
+                <select
+                  id="transaction-category"
+                  value={values.category_id}
+                  onChange={(event) =>
+                    update("category_id", event.target.value)
+                  }
+                  className={inputClass}
+                >
+                  <option value="">Pilih kategori (opsional)</option>
+                  {availableCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </div>
-
-          {values.type !== "transfer" && (
-            <div>
-              <label htmlFor="transaction-category" className={labelClass}>
-                Kategori
-              </label>
-              <select
-                id="transaction-category"
-                required
-                value={values.category_id}
-                onChange={(event) =>
-                  update("category_id", event.target.value)
-                }
-                className={inputClass}
-              >
-                <option value="">Pilih kategori</option>
-                {availableCategories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           <div>
             <label htmlFor="transaction-merchant" className={labelClass}>
@@ -423,7 +412,13 @@ function TransactionForm({
               id="transaction-merchant"
               value={values.merchant}
               onChange={(event) => update("merchant", event.target.value)}
-              placeholder="Contoh: Warung Makan"
+              placeholder={
+                values.type === "income"
+                  ? "Contoh: Gaji Kantor, Honor Freelance"
+                  : values.type === "transfer"
+                    ? "Contoh: Pindah Saldo Tabungan"
+                    : "Contoh: Indomaret, Warung Makan, Kopi Kenangan"
+              }
               className={inputClass}
             />
           </div>
@@ -446,14 +441,14 @@ function TransactionForm({
 
           <div>
             <label htmlFor="transaction-note" className={labelClass}>
-              Catatan Tambahan
+              Catatan Tambahan (Opsional)
             </label>
             <textarea
               id="transaction-note"
-              rows={3}
+              rows={2}
               value={values.note}
               onChange={(event) => update("note", event.target.value)}
-              placeholder="Catatan opsional..."
+              placeholder="Catatan kecil mengenai transaksi ini..."
               className={inputClass}
             />
           </div>
@@ -462,14 +457,14 @@ function TransactionForm({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-[#4C566A] px-5 py-2.5 text-sm font-semibold text-[#D8DEE9] hover:bg-[#434C5E]"
+              className="rounded-xl border border-[#4C566A] px-5 py-2.5 text-sm font-semibold text-[#D8DEE9] hover:bg-[#434C5E] cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center gap-2 rounded-xl bg-[#88C0D0] px-5 py-2.5 text-sm font-semibold text-[#2E3440] hover:bg-[#9AD0DF] disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-[#88C0D0] px-5 py-2.5 text-sm font-semibold text-[#2E3440] hover:bg-[#9AD0DF] disabled:opacity-50 cursor-pointer"
             >
               {isPending && (
                 <LoaderCircle size={16} className="animate-spin" />
@@ -483,21 +478,16 @@ function TransactionForm({
   );
 }
 
-export default function TransactionPage({
-  accounts = DEFAULT_ACCOUNTS,
-  categories = DEFAULT_CATEGORIES,
-}: Partial<TransactionPageProps>) {
-  const safeAccounts = accounts && accounts.length > 0 ? accounts : DEFAULT_ACCOUNTS;
-  const safeCategories = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+export default function TransactionPage() {
+  // Ambil akun dan kategori ASLI dari database Supabase
+  const { data: accounts = [], isLoading: accountsLoading } = useAccounts();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>(
-    "all",
-  );
+  const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all");
   const [page, setPage] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] =
-    useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
   const [actionError, setActionError] = useState("");
 
@@ -515,7 +505,7 @@ export default function TransactionPage({
       offset: page * PAGE_SIZE,
       order: "desc" as const,
     }),
-    [typeFilter, search, page],
+    [typeFilter, search, page]
   );
 
   const {
@@ -525,9 +515,7 @@ export default function TransactionPage({
     refetch,
   } = useTransactions(filters);
 
-  const {
-    data: summary,
-  } = useTransactionSummary(dateRange);
+  const { data: summary } = useTransactionSummary(dateRange);
 
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction();
@@ -536,6 +524,8 @@ export default function TransactionPage({
   const mutationPending =
     createMutation.isPending || updateMutation.isPending;
 
+  const queryClient = useQueryClient();
+
   // Handler for Syncing with Gmail
   async function handleSyncGmail() {
     setIsSyncing(true);
@@ -543,32 +533,99 @@ export default function TransactionPage({
     setSyncStatusMessage(null);
 
     try {
+      // 1. Ambil sesi login Supabase aktif
+      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      const session = sessionData?.session;
+      const token = session?.access_token;
+      const user = session?.user;
+
+      if (sessionErr || !token || !user) {
+        throw new Error("Anda harus login terlebih dahulu untuk menyinkronkan transaksi.");
+      }
+
+      const primaryAccountId = accounts.length > 0 ? accounts[0].id : undefined;
+
+      // 2. Request ke endpoint server dengan Bearer token dan kategori saat ini
       const response = await fetch("/api/gmail/sync", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          accountId: primaryAccountId,
+          categories: categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            type: c.type,
+          })),
+        }),
       });
-      const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Gagal menyinkronkan transaksi dari Gmail");
+      const data = await response.json().catch(() => ({}));
+
+      let totalInserted = data.syncedCount || 0;
+
+      // 3. Fallback client-side import jika server belum berhasil menyimpan namun email berhasil diparse
+      if (
+        totalInserted === 0 &&
+        Array.isArray(data.parsedTransactions) &&
+        data.parsedTransactions.length > 0
+      ) {
+        try {
+          const clientResult = await transactionService.importFromGmailParsed(data.parsedTransactions);
+          if (clientResult.importedCount > 0) {
+            totalInserted = clientResult.importedCount;
+          } else if (clientResult.errors && clientResult.errors.length > 0) {
+            console.error("[TransactionsPage] Client import errors:", clientResult.errors);
+          }
+        } catch (clientErr) {
+          console.error("[TransactionsPage] Client import fallback error:", clientErr);
+        }
       }
 
-      if (data.syncedCount > 0) {
-        toast.success(`Berhasil menyinkronkan ${data.syncedCount} transaksi baru dari Gmail!`);
+      // 4. Jika ada error dari server dan tidak ada yang berhasil disimpan
+      if (!response.ok || !data.success) {
+        if (totalInserted === 0) {
+          const errMsg = data.error || (data.errors && data.errors[0]) || "Gagal menyinkronkan transaksi dari Gmail.";
+          throw new Error(errMsg);
+        }
+      }
+
+      if (data.errors && data.errors.length > 0 && totalInserted === 0) {
+        throw new Error(data.errors[0] || "Gagal menyimpan transaksi ke database.");
+      }
+
+      // 4. Update notifikasi yang akurat ke pengguna
+      if (totalInserted > 0) {
+        toast.success(`Berhasil menyinkronkan ${totalInserted} transaksi baru ke database Supabase!`);
         setSyncStatusMessage(
-          `Berhasil menyinkronkan ${data.syncedCount} transaksi baru dari email notifikasi perbankan.`
+          `Berhasil menambahkan ${totalInserted} transaksi baru ke database Supabase (dari ${data.totalScanned || 0} email dipindai).`
+        );
+      } else if (data.totalScanned > 0) {
+        toast.info(
+          `Semua ${data.totalScanned} email transaksi yang dipindai sudah pernah diimpor ke database sebelumnya.`
+        );
+        setSyncStatusMessage(
+          `Semua ${data.totalScanned} email transaksi yang dipindai sudah tersimpan di database Supabase (tidak ada transaksi baru).`
         );
       } else {
-        toast.info("Tidak ada transaksi baru di kotak masuk Gmail Anda.");
-        setSyncStatusMessage(
-          `Semua transaksi dari Gmail (${data.totalScanned || 0} email) sudah sinkron atau telah diimpor sebelumnya.`
-        );
+        toast.info("Tidak ditemukan email notifikasi transaksi baru di Gmail.");
+        setSyncStatusMessage("Tidak ditemukan email transaksi di kotak masuk Gmail.");
       }
 
+      // 5. Muat ulang data transaksi di tampilan
       await refetch();
-    } catch (error: any) {
-      const msg = error.message || "Gagal menyinkronkan transaksi dari Gmail.";
+      await queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      await queryClient.invalidateQueries({ queryKey: ["transaction-categories"] });
+      await queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      await queryClient.invalidateQueries({ queryKey: ["transaction-summary"] });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Gagal menyinkronkan transaksi dari Gmail.";
       toast.error(msg);
       setActionError(msg);
+      setSyncStatusMessage(`Terjadi kesalahan: ${msg}`);
     } finally {
       setIsSyncing(false);
     }
@@ -577,39 +634,44 @@ export default function TransactionPage({
   async function handleSubmit(values: FormValues) {
     setActionError("");
 
-    const common = {
-      account_id: values.account_id,
-      category_id:
-        values.type === "transfer" ? null : values.category_id,
-      destination_account_id:
-        values.type === "transfer"
-          ? values.destination_account_id
-          : null,
+    let noteText = values.note.trim() || null;
+    let merchantText = values.merchant.trim() || null;
+
+    if (values.type === "transfer" && values.destination_account_id) {
+      const destAcc = accounts.find((a) => a.id === values.destination_account_id);
+      const destLabel = destAcc ? destAcc.name : "Akun Tujuan";
+      merchantText = merchantText || `Transfer ke ${destLabel}`;
+      noteText = noteText ? `${noteText} (Tujuan: ${destLabel})` : `Transfer ke ${destLabel}`;
+    }
+
+    const common: CreateTransactionInput = {
+      account_id: values.account_id || null,
+      category_id: values.type === "transfer" ? null : values.category_id || null,
       type: values.type,
-      amount: Number(values.amount),
-      merchant: values.merchant.trim() || null,
-      note: values.note.trim() || null,
+      amount: Math.round(Number(values.amount)),
+      merchant: merchantText,
+      note: noteText,
       transaction_date: values.transaction_date,
-    } satisfies CreateTransactionInput;
+    };
 
     try {
       if (editingTransaction) {
         await updateMutation.mutateAsync({
           id: editingTransaction.id,
-          input: common satisfies UpdateTransactionInput,
+          input: common as UpdateTransactionInput,
         });
+        toast.success("Transaksi berhasil diperbarui!");
       } else {
         await createMutation.mutateAsync(common);
+        toast.success("Transaksi berhasil ditambahkan!");
       }
 
       setModalOpen(false);
       setEditingTransaction(null);
     } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "Transaksi gagal disimpan.",
-      );
+      const msg = error instanceof Error ? error.message : "Transaksi gagal disimpan.";
+      setActionError(msg);
+      toast.error(msg);
     }
   }
 
@@ -620,13 +682,12 @@ export default function TransactionPage({
 
     try {
       await deleteMutation.mutateAsync(deleteTarget.id);
+      toast.success("Transaksi berhasil dihapus!");
       setDeleteTarget(null);
     } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "Transaksi gagal dihapus.",
-      );
+      const msg = error instanceof Error ? error.message : "Transaksi gagal dihapus.";
+      setActionError(msg);
+      toast.error(msg);
     }
   }
 
@@ -653,9 +714,7 @@ export default function TransactionPage({
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-sm text-[#88C0D0]">Keuangan pribadi</p>
-            <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
-              Transaksi
-            </h1>
+            <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Transaksi</h1>
             <p className="mt-2 text-sm text-[#D8DEE9]">
               Pantau pemasukan, pengeluaran, dan sinkronkan otomatis dari notifikasi email perbankan Gmail.
             </p>
@@ -704,6 +763,7 @@ export default function TransactionPage({
             <button
               onClick={() => setActionError("")}
               aria-label="Tutup pesan error"
+              className="cursor-pointer text-[#D8DEE9] hover:text-[#ECEFF4]"
             >
               <X size={17} />
             </button>
@@ -731,7 +791,7 @@ export default function TransactionPage({
           />
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-[#434C5E] bg-[#3B4252]">
+        <section className="overflow-hidden rounded-2xl border border-[#434C5E] bg-[#3B4252] shadow-xs">
           <div className="flex flex-col gap-4 border-b border-[#434C5E] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div className="flex flex-1 items-center gap-3">
               <div className="relative w-full max-w-sm">
@@ -763,7 +823,7 @@ export default function TransactionPage({
                 <button
                   key={value}
                   onClick={() => changeTypeFilter(value)}
-                  className={`rounded-lg px-3 py-2 text-sm transition ${
+                  className={`rounded-lg px-3 py-2 text-sm transition cursor-pointer ${
                     typeFilter === value
                       ? "bg-[#88C0D0] font-medium text-[#2E3440]"
                       : "bg-[#434C5E] text-[#D8DEE9] hover:bg-[#4C566A]"
@@ -788,7 +848,7 @@ export default function TransactionPage({
               </p>
               <button
                 onClick={() => refetch()}
-                className="rounded-lg bg-[#434C5E] px-4 py-2 text-sm hover:bg-[#4C566A]"
+                className="rounded-lg bg-[#434C5E] px-4 py-2 text-sm hover:bg-[#4C566A] cursor-pointer"
               >
                 Coba lagi
               </button>
@@ -800,13 +860,14 @@ export default function TransactionPage({
               </div>
               <h3 className="font-semibold">Belum ada transaksi</h3>
               <p className="max-w-sm text-sm text-[#D8DEE9]">
-                Transaksi yang sesuai filter akan muncul di sini. Anda juga dapat menggunakan <strong>Sync Gmail</strong> untuk menarik transaksi dari email.
+                Transaksi yang sesuai filter akan muncul di sini. Anda juga dapat menggunakan{" "}
+                <strong>Sync Gmail</strong> untuk menarik transaksi otomatis dari email perbankan.
               </p>
               <div className="flex items-center gap-3 mt-2">
                 <button
                   onClick={handleSyncGmail}
                   disabled={isSyncing}
-                  className="flex items-center gap-2 rounded-xl border border-[#4C566A] bg-[#2E3440] px-4 py-2.5 text-sm font-semibold text-[#ECEFF4] hover:bg-[#434C5E]"
+                  className="flex items-center gap-2 rounded-xl border border-[#4C566A] bg-[#2E3440] px-4 py-2.5 text-sm font-semibold text-[#ECEFF4] hover:bg-[#434C5E] cursor-pointer"
                 >
                   <RefreshCw className={cn("size-4 text-[#88C0D0]", isSyncing && "animate-spin")} />
                   <span>Sync dari Gmail</span>
@@ -814,7 +875,7 @@ export default function TransactionPage({
 
                 <button
                   onClick={openCreateModal}
-                  className="flex items-center gap-2 rounded-xl bg-[#88C0D0] px-4 py-2.5 text-sm font-semibold text-[#2E3440]"
+                  className="flex items-center gap-2 rounded-xl bg-[#88C0D0] px-4 py-2.5 text-sm font-semibold text-[#2E3440] cursor-pointer hover:bg-[#9AD0DF]"
                 >
                   <Plus size={16} />
                   Tambah Transaksi
@@ -830,19 +891,11 @@ export default function TransactionPage({
 
                   const accountName =
                     transaction.account?.name ??
-                    safeAccounts.find(
-                      (account) => account.id === transaction.account_id,
-                    )?.name ??
+                    accounts.find((a) => a.id === transaction.account_id)?.name ??
                     "Akun";
 
-                  const destinationName =
-                    transaction.destination_account?.name ??
-                    safeAccounts.find(
-                      (account) =>
-                        account.id === transaction.destination_account_id,
-                    )?.name;
-
                   const isGmailSynced =
+                    transaction.source === "email" ||
                     transaction.note?.toLowerCase().includes("gmail") ||
                     transaction.note?.toLowerCase().includes("synced");
 
@@ -879,12 +932,7 @@ export default function TransactionPage({
                               {transaction.category?.name ?? config.label}
                             </span>
                             <span>·</span>
-                            <span>
-                              {accountName}
-                              {transaction.type === "transfer" &&
-                                destinationName &&
-                                ` → ${destinationName}`}
-                            </span>
+                            <span>{accountName}</span>
                           </div>
 
                           {transaction.note && !isGmailSynced && (
@@ -910,7 +958,7 @@ export default function TransactionPage({
                             onClick={() => openEditModal(transaction)}
                             aria-label="Edit transaksi"
                             title="Edit transaksi"
-                            className="rounded-lg p-2 text-[#D8DEE9] hover:bg-[#4C566A] hover:text-[#88C0D0]"
+                            className="rounded-lg p-2 text-[#D8DEE9] hover:bg-[#4C566A] hover:text-[#88C0D0] cursor-pointer"
                           >
                             <Pencil size={17} />
                           </button>
@@ -921,7 +969,7 @@ export default function TransactionPage({
                             }}
                             aria-label="Hapus transaksi"
                             title="Hapus transaksi"
-                            className="rounded-lg p-2 text-[#D8DEE9] hover:bg-[#503B42] hover:text-[#BF616A]"
+                            className="rounded-lg p-2 text-[#D8DEE9] hover:bg-[#503B42] hover:text-[#BF616A] cursor-pointer"
                           >
                             <Trash2 size={17} />
                           </button>
@@ -942,7 +990,7 @@ export default function TransactionPage({
                   <button
                     disabled={page === 0}
                     onClick={() => setPage((current) => Math.max(0, current - 1))}
-                    className="rounded-lg border border-[#4C566A] p-2 text-[#D8DEE9] hover:bg-[#434C5E] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-lg border border-[#4C566A] p-2 text-[#D8DEE9] hover:bg-[#434C5E] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                     aria-label="Halaman sebelumnya"
                   >
                     <ChevronLeft size={18} />
@@ -951,7 +999,7 @@ export default function TransactionPage({
                   <button
                     disabled={transactions.length < PAGE_SIZE}
                     onClick={() => setPage((current) => current + 1)}
-                    className="rounded-lg border border-[#4C566A] p-2 text-[#D8DEE9] hover:bg-[#434C5E] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-lg border border-[#4C566A] p-2 text-[#D8DEE9] hover:bg-[#434C5E] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                     aria-label="Halaman berikutnya"
                   >
                     <ChevronRight size={18} />
@@ -971,8 +1019,8 @@ export default function TransactionPage({
               ? toFormValues(editingTransaction)
               : { ...INITIAL_FORM }
           }
-          accounts={safeAccounts}
-          categories={safeCategories}
+          accounts={accounts}
+          categories={categories}
           isPending={mutationPending}
           onClose={() => {
             if (mutationPending) return;
@@ -1028,7 +1076,7 @@ export default function TransactionPage({
               <button
                 onClick={() => setDeleteTarget(null)}
                 disabled={deleteMutation.isPending}
-                className="rounded-xl border border-[#4C566A] px-4 py-2.5 text-sm text-[#D8DEE9] hover:bg-[#434C5E] disabled:opacity-50"
+                className="rounded-xl border border-[#4C566A] px-4 py-2.5 text-sm text-[#D8DEE9] hover:bg-[#434C5E] disabled:opacity-50 cursor-pointer"
               >
                 Batal
               </button>
@@ -1036,7 +1084,7 @@ export default function TransactionPage({
               <button
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
-                className="flex items-center gap-2 rounded-xl bg-[#BF616A] px-4 py-2.5 text-sm font-semibold text-[#ECEFF4] hover:bg-[#C9757D] disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-[#BF616A] px-4 py-2.5 text-sm font-semibold text-[#ECEFF4] hover:bg-[#C9757D] disabled:opacity-50 cursor-pointer"
               >
                 {deleteMutation.isPending && (
                   <LoaderCircle size={16} className="animate-spin" />

@@ -2,7 +2,7 @@
 
 import type { RefObject } from "react";
 import { useCallback, useLayoutEffect, useRef } from "react";
-import type { TaskView } from "../TaskToolbar";
+import type { TaskView } from "./task-toolbar";
 
 interface UseSearchWidthAnimationReturn {
   searchRef: RefObject<HTMLDivElement | null>;

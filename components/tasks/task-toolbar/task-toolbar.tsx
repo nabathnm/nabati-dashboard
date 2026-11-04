@@ -1,8 +1,9 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { TaskFilters } from "@/types/task";
 
 import TaskCalendarNavigation from "./task-calendar-navigation";
@@ -25,6 +26,8 @@ export interface TaskToolbarProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
+  onSyncGoogle?: () => void;
+  isSyncingGoogle?: boolean;
 }
 
 export default function TaskToolbar({
@@ -39,6 +42,8 @@ export default function TaskToolbar({
   onPrevMonth,
   onNextMonth,
   onToday,
+  onSyncGoogle,
+  isSyncingGoogle = false,
 }: TaskToolbarProps) {
   const { searchRef, prepareAnimation } = useSearchWidthAnimation(view);
 
@@ -68,14 +73,47 @@ export default function TaskToolbar({
             <Plus className="mr-1 h-4 w-4" />
             Add task
           </Button>
+
+          {onSyncGoogle && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onSyncGoogle}
+              disabled={isSyncingGoogle}
+              className="h-9 shrink-0 rounded-full border-border/80 text-foreground hover:bg-muted/30"
+              title="Tarik & sinkronkan event dari Google Calendar"
+            >
+              <RefreshCw
+                className={cn("h-3.5 w-3.5 text-[#88C0D0]", isSyncingGoogle && "animate-spin")}
+              />
+              <span className="hidden sm:inline ml-1.5 text-xs font-medium">Sync Google</span>
+            </Button>
+          )}
         </>
       ) : (
-        <TaskCalendarNavigation
-          currentMonth={currentMonth}
-          onPrevMonth={onPrevMonth}
-          onNextMonth={onNextMonth}
-          onToday={onToday}
-        />
+        <div className="flex items-center gap-2 shrink-0">
+          <TaskCalendarNavigation
+            currentMonth={currentMonth}
+            onPrevMonth={onPrevMonth}
+            onNextMonth={onNextMonth}
+            onToday={onToday}
+          />
+          {onSyncGoogle && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onSyncGoogle}
+              disabled={isSyncingGoogle}
+              className="h-9 shrink-0 rounded-full border-border/80 text-foreground hover:bg-muted/30 px-3"
+              title="Tarik & sinkronkan event dari Google Calendar"
+            >
+              <RefreshCw
+                className={cn("h-3.5 w-3.5 text-[#88C0D0]", isSyncingGoogle && "animate-spin")}
+              />
+              <span className="hidden md:inline ml-1.5 text-xs font-medium">Sync Google</span>
+            </Button>
+          )}
+        </div>
       )}
     </div>
   );

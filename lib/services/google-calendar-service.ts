@@ -1,6 +1,8 @@
 // lib/services/google-calendar-service.ts
 import { supabase } from "@/lib/supabase";
 import type {
+  GoogleCalendarEvent,
+  GoogleCalendarPullSummary,
   GoogleCalendarSyncResult,
   GoogleCalendarSyncSummary,
   Task,
@@ -29,7 +31,7 @@ const CATEGORY_COLOR_MAP: Record<TaskCategory, string> = {
 /**
  * Mengambil token autentikasi Google.
  * Prioritas 1: Sesi Supabase `provider_token` pengguna saat ini.
- * Prioritas 2: Endpoint API internal `/api/calendar/events`.
+ * Prioritas 2: Endpoint API internal `/api/calendar/events` (via cookie OAuth).
  */
 export async function getGoogleAccessToken(): Promise<string | null> {
   try {
@@ -44,40 +46,41 @@ export async function getGoogleAccessToken(): Promise<string | null> {
 
 /**
  * Format tanggal batas waktu tugas ke format event Google Calendar (RFC3339).
+ * Penting: Untuk all-day event di Google Calendar API v3, `end.date` bersifat eksklusif
+ * (harus tepat hari berikutnya / start.date + 1 hari) agar tidak error HTTP 400.
  */
-function formatEventDates(dueDate: string) {
-  const due = new Date(dueDate);
-  // Default durasi event 1 jam jika jam ditentukan, atau 1 hari penuh
-  const isAllDay =
-    dueDate.length === 10 ||
-    dueDate.endsWith("T00:00:00.000Z") ||
-    dueDate.endsWith("T23:59:59+07:00");
+export function formatEventDates(dueDate: string) {
+  let yyyyMmDd = "";
 
-  if (isAllDay) {
-    const yyyyMmDd = due.toISOString().slice(0, 10);
-    return {
-      start: { date: yyyyMmDd },
-      end: { date: yyyyMmDd },
-    };
+  if (dueDate.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    yyyyMmDd = dueDate;
+  } else {
+    // Format YYYY-MM-DD dalam timezone lokal WIB (Asia/Jakarta)
+    const d = new Date(dueDate);
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    yyyyMmDd = formatter.format(d);
   }
 
-  const startTime = new Date(due.getTime() - 60 * 60 * 1000); // 1 jam sebelum deadline
+  // Hitung hari berikutnya untuk `end.date` (Google Calendar v3 all-day events are exclusive)
+  const [year, month, day] = yyyyMmDd.split("-").map(Number);
+  const nextDate = new Date(Date.UTC(year, month - 1, day + 1));
+  const nextYyyyMmDd = nextDate.toISOString().slice(0, 10);
+
   return {
-    start: {
-      dateTime: startTime.toISOString(),
-      timeZone: "Asia/Jakarta",
-    },
-    end: {
-      dateTime: due.toISOString(),
-      timeZone: "Asia/Jakarta",
-    },
+    start: { date: yyyyMmDd },
+    end: { date: nextYyyyMmDd },
   };
 }
 
 /**
  * Menyusun payload event Google Calendar dari data tugas.
  */
-function buildCalendarEventPayload(task: Task) {
+export function buildCalendarEventPayload(task: Task) {
   if (!task.due_date) {
     throw new Error("Tugas tidak memiliki batas waktu (due_date).");
   }
@@ -100,18 +103,18 @@ function buildCalendarEventPayload(task: Task) {
     start: dates.start,
     end: dates.end,
     reminders: {
-      useDefault: false,
-      overrides: [
-        { method: "popup", minutes: 60 }, // 1 jam sebelum
-        { method: "email", minutes: 1440 }, // 1 hari sebelum
-      ],
+      useDefault: true,
     },
-    extendedProperties: {
-      private: {
-        nabatu_task_id: task.id,
-        nabatu_category: task.category,
-      },
-    },
+    ...(task.id
+      ? {
+          extendedProperties: {
+            private: {
+              nabatu_task_id: String(task.id),
+              nabatu_category: String(task.category || "Lainnya"),
+            },
+          },
+        }
+      : {}),
   };
 }
 
@@ -163,15 +166,17 @@ export async function createCalendarEvent(task: Task): Promise<GoogleCalendarSyn
       };
     }
 
-    // 2. Fallback melalui endpoint API backend `/api/calendar/events`
+    // 2. Melalui endpoint API internal `/api/calendar/events`
     const apiRes = await fetch("/api/calendar/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ task, payload }),
     });
 
-    if (apiRes.ok) {
-      const result = await apiRes.json();
+    const result = await apiRes.json().catch(() => ({}));
+
+    if (apiRes.ok && result.success) {
       return {
         success: true,
         eventId: result.eventId,
@@ -182,7 +187,8 @@ export async function createCalendarEvent(task: Task): Promise<GoogleCalendarSyn
 
     return {
       success: false,
-      message: "Koneksi Google Calendar belum dikonfigurasi.",
+      error: result.error || "Gagal membuat event di Google Calendar",
+      message: result.error || "Gagal membuat event di Google Calendar",
     };
   } catch (err: unknown) {
     const errorMsg =
@@ -253,11 +259,13 @@ export async function updateCalendarEvent(
     const apiRes = await fetch("/api/calendar/events", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ eventId, task, payload }),
     });
 
-    if (apiRes.ok) {
-      const result = await apiRes.json();
+    const result = await apiRes.json().catch(() => ({}));
+
+    if (apiRes.ok && result.success) {
       return {
         success: true,
         eventId: result.eventId || eventId,
@@ -268,7 +276,8 @@ export async function updateCalendarEvent(
 
     return {
       success: false,
-      message: "Koneksi Google Calendar belum aktif.",
+      error: result.error || "Gagal memperbarui kalender",
+      message: result.error || "Gagal memperbarui kalender",
     };
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Gagal memperbarui kalender.";
@@ -282,50 +291,30 @@ export async function updateCalendarEvent(
 
 /**
  * Menghapus event dari Google Calendar.
+ * Mendukung penghapusan langsung dengan eventId atau taskId (metadata Nabatu).
  */
 export async function deleteCalendarEvent(
-  eventId: string
+  eventId?: string | null,
+  taskId?: string | null
 ): Promise<GoogleCalendarSyncResult> {
-  if (!eventId) {
+  if (!eventId && !taskId) {
     return { success: true, message: "Tidak ada event kalender terkait." };
   }
 
   try {
-    const token = await getGoogleAccessToken();
+    const params = new URLSearchParams();
+    if (eventId) params.set("eventId", eventId);
+    if (taskId) params.set("taskId", taskId);
 
-    if (token) {
-      const response = await fetch(
-        `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(
-          DEFAULT_CALENDAR_ID
-        )}/events/${encodeURIComponent(eventId)}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    // Panggil endpoint backend untuk menghapus event
+    const apiRes = await fetch(`/api/calendar/events?${params.toString()}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
 
-      // 404 atau 410 dianggap sudah terhapus
-      if (!response.ok && response.status !== 404 && response.status !== 410) {
-        throw new Error("Gagal menghapus event dari Google Calendar.");
-      }
+    const result = await apiRes.json().catch(() => ({}));
 
-      return {
-        success: true,
-        message: "Event berhasil dihapus dari Google Calendar.",
-      };
-    }
-
-    // Fallback ke endpoint backend
-    const apiRes = await fetch(
-      `/api/calendar/events?eventId=${encodeURIComponent(eventId)}`,
-      {
-        method: "DELETE",
-      }
-    );
-
-    if (apiRes.ok) {
+    if (apiRes.ok && result.success) {
       return {
         success: true,
         message: "Event kalender berhasil dihapus.",
@@ -334,7 +323,8 @@ export async function deleteCalendarEvent(
 
     return {
       success: false,
-      message: "Koneksi kalender tidak tersedia.",
+      error: result.error || "Koneksi kalender tidak tersedia.",
+      message: result.error || "Koneksi kalender tidak tersedia.",
     };
   } catch (err: unknown) {
     const errorMsg =
@@ -384,12 +374,146 @@ export async function syncAllTasksToGoogleCalendar(
   };
 }
 
+/**
+ * Memprediksi kategori tugas dari judul dan deskripsi event Google Calendar.
+ */
+export function inferCategory(summary?: string, description?: string): TaskCategory {
+  const text = `${summary || ""} ${description || ""}`.toLowerCase();
+  if (/kuliah|kelas|dosen|tugas|matkul|ujian|uts|uas|skripsi|kkn|kampus|seminar/.test(text)) {
+    return "Kuliah";
+  }
+  if (/organisasi|rapat|bph|divisi|himpunan|bem|kepanitiaan|proker|meeting/.test(text)) {
+    return "Organisasi";
+  }
+  if (/praktikum|lab|modul|laporan|asisten/.test(text)) {
+    return "Praktikum";
+  }
+  if (/pribadi|personal|belanja|olahraga|gym|workout|jalan|liburan|bayar|dokter/.test(text)) {
+    return "Personal";
+  }
+  return "Lainnya";
+}
+
+/**
+ * Mengekstrak format tanggal batas waktu (ISO / YYYY-MM-DD) dari event Google Calendar.
+ */
+export function extractDueDateFromGoogleEvent(event: GoogleCalendarEvent): string | null {
+  if (event.start?.dateTime) {
+    return event.start.dateTime;
+  }
+  if (event.start?.date) {
+    return event.start.date;
+  }
+  if (event.end?.dateTime) {
+    return event.end.dateTime;
+  }
+  if (event.end?.date) {
+    return event.end.date;
+  }
+  return null;
+}
+
+/**
+ * Menghitung rentang tanggal sinkronisasi 3 bulan:
+ * Awal bulan lalu (tanggal 1, 00:00:00) sampai akhir bulan depan (tanggal terakhir, 23:59:59).
+ * Ditambahkan buffer tanggal aman agar perbedaan offset timezone (WIB/UTC)
+ * dan sifat eksklusif timeMax pada Google Calendar API tidak memotong event bulan depan.
+ */
+export function getThreeMonthRange(referenceDate: Date = new Date()) {
+  const ref =
+    referenceDate instanceof Date && !isNaN(referenceDate.getTime())
+      ? referenceDate
+      : new Date();
+
+  // Awal bulan lalu dengan buffer 1 hari sebelumnya (hari terakhir 2 bulan lalu, 00:00:00)
+  const startOfLastMonth = new Date(
+    ref.getFullYear(),
+    ref.getMonth() - 1,
+    0,
+    0,
+    0,
+    0,
+    0
+  );
+
+  // Akhir bulan depan dengan buffer ke tanggal 2 bulan berikutnya jam 00:00:00
+  // Memastikan semua event hingga detik terakhir bulan depan 100% masuk dalam filter timeMax
+  const endOfNextMonth = new Date(
+    ref.getFullYear(),
+    ref.getMonth() + 2,
+    2,
+    0,
+    0,
+    0,
+    0
+  );
+
+  return {
+    timeMin: startOfLastMonth.toISOString(),
+    timeMax: endOfNextMonth.toISOString(),
+  };
+}
+
+/**
+ * Mengambil daftar event dari Google Calendar pengguna (default rentang: bulan lalu, bulan ini, bulan depan).
+ */
+export async function listGoogleCalendarEvents(options?: {
+  timeMin?: string;
+  timeMax?: string;
+  maxResults?: number;
+  referenceDate?: Date;
+}): Promise<{ success: boolean; items: GoogleCalendarEvent[]; error?: string }> {
+  try {
+    const range = getThreeMonthRange(options?.referenceDate);
+    const timeMin = options?.timeMin || range.timeMin;
+    const timeMax = options?.timeMax || range.timeMax;
+
+    const params = new URLSearchParams({
+      list: "true",
+      timeMin,
+      timeMax,
+    });
+    if (options?.maxResults) params.set("maxResults", String(options.maxResults));
+
+    const res = await fetch(`/api/calendar/events?${params.toString()}`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      return {
+        success: false,
+        items: [],
+        error: data.error || "Gagal mengambil event dari Google Calendar",
+      };
+    }
+
+    return {
+      success: true,
+      items: (data.items || []) as GoogleCalendarEvent[],
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Gagal menghubungi API Kalender";
+    return {
+      success: false,
+      items: [],
+      error: message,
+    };
+  }
+}
+
 export const googleCalendarService = {
   getGoogleAccessToken,
   createCalendarEvent,
   updateCalendarEvent,
   deleteCalendarEvent,
   syncAllTasksToGoogleCalendar,
+  listGoogleCalendarEvents,
+  inferCategory,
+  extractDueDateFromGoogleEvent,
+  getThreeMonthRange,
 };
 
 export default googleCalendarService;

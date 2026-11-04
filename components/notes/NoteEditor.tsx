@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Archive,
+  ArrowLeft,
   CheckSquare,
   Code2,
   Copy,
@@ -48,6 +50,7 @@ interface NoteEditorProps {
   onDuplicateNote: (id: string) => void;
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
+  onBackToGallery?: () => void;
 }
 
 const EMOJI_LIST = [
@@ -91,6 +94,7 @@ export function NoteEditor({
   onDuplicateNote,
   isSidebarOpen,
   onToggleSidebar,
+  onBackToGallery,
 }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
@@ -221,8 +225,21 @@ export function NoteEditor({
     <div className="flex flex-col h-full bg-background overflow-hidden">
       {/* Top Action Bar */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/60 bg-card/40 backdrop-blur-xs">
-        {/* Left: Sidebar toggle & Breadcrumbs */}
+        {/* Left: Back to Gallery, Sidebar toggle & Breadcrumbs */}
         <div className="flex items-center gap-2 min-w-0">
+          {onBackToGallery && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onBackToGallery}
+              className="h-7 px-2.5 gap-1.5 text-xs rounded-lg hover:bg-muted font-mono font-medium shrink-0 cursor-pointer"
+              title="Kembali ke Galeri Floe"
+            >
+              <ArrowLeft className="size-3.5 text-cyan-500" />
+              <span className="hidden sm:inline">Galeri</span>
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="icon"

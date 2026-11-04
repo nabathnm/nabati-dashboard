@@ -72,12 +72,12 @@ export default function TaskTable({
       <div className="overflow-x-auto">
         <div className="min-w-[760px]">
           {/* Header */}
-          <div className={cn(GRID, "py-4 bg-card-foreground text-xs ")}>
+          <div className={cn(GRID, "py-4 bg-primary text-primary-foreground text-xs ")}>
             {COLUMNS.map(col => (
               <div
                 key={col.label}
                 className={cn(
-                  "flex text-xs font-semibold uppercase tracking-wide text-background",
+                  "flex text-xs font-semibold uppercase tracking-wide",
                   col.align
                 )}
               >

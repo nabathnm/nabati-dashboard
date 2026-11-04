@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  ArrowDownToLine,
   Calendar,
   CalendarCheck,
   Check,
@@ -20,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -37,7 +38,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { getTasks } from "@/lib/services/task-service";
+import { getTasks, pullTasksFromGoogleCalendar } from "@/lib/services/task-service";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { Task, TaskCategory } from "@/types/task";
@@ -92,10 +93,9 @@ export default function SettingsPage() {
     "google"
   );
 
-  const router = useRouter();
-
-  const queryError =
-    searchParams.get("google") === "error" || searchParams.get("gmail") === "error"
+  const queryError = searchParams.get("google_error")
+    ? `Koneksi Google gagal: ${searchParams.get("google_error")}`
+    : searchParams.get("google") === "error" || searchParams.get("gmail") === "error"
       ? "Gagal menghubungkan akun Google. Silakan periksa izin dan coba lagi."
       : "";
   const displayError = error || queryError;
@@ -240,58 +240,26 @@ export default function SettingsPage() {
       window.history.replaceState({}, "", window.location.pathname);
     }
 
+    const googleError = searchParams.get("google_error");
+    if (googleError) {
+      toast.error(`Koneksi Google gagal: ${googleError}`);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+
     return () => {
       ignore = true;
     };
   }, [searchParams]);
 
-  // Hubungkan Google dengan scope Gmail & Calendar
-  async function handleConnectGoogle() {
+  // Hubungkan Google dengan scope Gmail & Calendar langsung via Google Cloud OAuth
+  function handleConnectGoogle() {
     setConnecting(true);
     setError("");
 
-    const scopes = [
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/calendar",
-      "https://www.googleapis.com/auth/calendar.events",
-      "https://www.googleapis.com/auth/gmail.readonly",
-    ].join(" ");
-
     try {
-      // 1. Coba hubungkan via Supabase OAuth linkIdentity
-      const { data, error: linkError } = await supabase.auth.linkIdentity({
-        provider: "google",
-        options: {
-          scopes,
-          redirectTo: `${window.location.origin}/auth/callback?next=/settings?google=connected`,
-        },
-      });
-
-      if (!linkError && data?.url) {
-        window.location.href = data.url;
-        return;
-      }
-
-      // 2. Jika linkIdentity gagal atau belum didukung, gunakan signInWithOAuth
-      const { data: oAuthData, error: oAuthError } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          scopes,
-          redirectTo: `${window.location.origin}/auth/callback?next=/settings?google=connected`,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
-        },
-      });
-
-      if (!oAuthError && oAuthData?.url) {
-        window.location.href = oAuthData.url;
-        return;
-      }
-
-      // 3. Fallback route ke endpoint API
-      router.push("/api/gmail/connect?returnTo=/settings");
+      const url = new URL("/api/gmail/connect?returnTo=/settings", window.location.origin)
+        .href;
+      window.location.assign(url);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Gagal memulai koneksi Google.";
       setError(msg);
@@ -378,6 +346,42 @@ export default function SettingsPage() {
     }
   }
 
+  // Tarik event dari Google Calendar ke daftar tugas Nabatu
+  async function handlePullFromGoogleCalendar() {
+    setSyncingCalendar(true);
+    try {
+      const summary = await pullTasksFromGoogleCalendar();
+      const now = new Date().toISOString();
+      setStatus(prev => ({ ...prev, lastSyncedAt: now }));
+
+      if (summary.errors && summary.errors.length > 0) {
+        toast.error(`Peringatan: ${summary.errors.join(", ")}`);
+      }
+
+      if (summary.imported > 0 || summary.updated > 0 || summary.deleted > 0) {
+        const parts: string[] = [];
+        if (summary.imported > 0) parts.push(`${summary.imported} event baru diimpor`);
+        if (summary.updated > 0) parts.push(`${summary.updated} diperbarui`);
+        if (summary.deleted > 0) parts.push(`${summary.deleted} dihapus`);
+        toast.success(`Berhasil menarik dari Google Calendar! ${parts.join(", ")}. Buka halaman Tugas untuk melihat hasilnya.`);
+      } else {
+        toast.info(
+          summary.totalGoogleEvents > 0
+            ? `Semua ${summary.totalGoogleEvents} event di Google Calendar sudah tersinkronkan dengan tugas Nabatu.`
+            : `Tidak ada event ditemukan di Google Calendar pada rentang 3 bulan (bulan lalu, bulan ini, bulan depan). Pastikan event dibuat sebagai "Acara" (Event) di Google Calendar.`
+        );
+      }
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Gagal menarik event dari Google Calendar."
+      );
+    } finally {
+      setSyncingCalendar(false);
+    }
+  }
+
   function toggleCategory(cat: TaskCategory) {
     setSelectedCategories(prev => {
       const next = new Set(prev);
@@ -446,164 +450,162 @@ export default function SettingsPage() {
       {activeTab === "google" && (
         <div className="space-y-6">
           {/* Card Status Akun Google */}
-         
-            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-500/20 via-red-500/20 to-yellow-500/20 border border-border/50">
-                  <div className="flex items-center gap-1 text-foreground">
-                    <Mail className="size-5 text-red-500" />
-                    <Calendar className="size-5 text-blue-500" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">Akun Google</CardTitle>
-                    {!loading && (
-                      <Badge
-                        variant={status.connected ? "secondary" : "outline"}
-                        className={cn(
-                          status.connected
-                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                            : "bg-muted text-muted-foreground"
-                        )}
-                      >
-                        {status.connected ? "Terhubung" : "Belum Terhubung"}
-                      </Badge>
-                    )}
-                  </div>
-                  <CardDescription className="text-sm mt-0.5">
-                    Hubungkan Gmail dan Google Calendar untuk menyinkronkan tugas dan
-                    transaksi.
-                  </CardDescription>
+
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-500/20 via-red-500/20 to-yellow-500/20 border border-border/50">
+                <div className="flex items-center gap-1 text-foreground">
+                  <Mail className="size-5 text-red-500" />
+                  <Calendar className="size-5 text-blue-500" />
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void refreshStatus()}
-                  disabled={loading}
-                  className="cursor-pointer"
-                  title="Periksa status koneksi terbaru"
-                >
-                  <RefreshCw
-                    className={cn("size-3.5 mr-1.5", loading && "animate-spin")}
-                  />
-                  Cek Status
-                </Button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-lg">Akun Google</CardTitle>
+                  {!loading && (
+                    <Badge
+                      variant={status.connected ? "secondary" : "outline"}
+                      className={cn(
+                        status.connected
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                          : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {status.connected ? "Terhubung" : "Belum Terhubung"}
+                    </Badge>
+                  )}
+                </div>
+                <CardDescription className="text-sm mt-0.5">
+                  Hubungkan Gmail dan Google Calendar untuk menyinkronkan tugas dan
+                  transaksi.
+                </CardDescription>
               </div>
-            </CardHeader>
+            </div>
 
-            <Separator />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void refreshStatus()}
+                disabled={loading}
+                className="cursor-pointer"
+                title="Periksa status koneksi terbaru"
+              >
+                <RefreshCw className={cn("size-3.5 mr-1.5", loading && "animate-spin")} />
+                Cek Status
+              </Button>
+            </div>
+          </CardHeader>
 
-            <CardContent className="pt-5 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-muted/40 border border-border/40">
-                <div className="space-y-0.5">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Email Terhubung
+          <Separator />
+
+          <CardContent className="pt-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-xl bg-muted/40 border border-border/40">
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Email Terhubung
+                </span>
+                <p className="text-sm font-medium text-foreground">
+                  {loading
+                    ? "Memeriksa status..."
+                    : (status.email ?? "Belum ada akun Google yang dikaitkan")}
+                </p>
+              </div>
+              {status.connected && status.lastSyncedAt && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground sm:text-right">
+                  <Clock className="size-3.5" />
+                  <span>
+                    Sinkronisasi terakhir:{" "}
+                    {new Date(status.lastSyncedAt).toLocaleString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
-                  <p className="text-sm font-medium text-foreground">
-                    {loading
-                      ? "Memeriksa status..."
-                      : (status.email ?? "Belum ada akun Google yang dikaitkan")}
+                </div>
+              )}
+            </div>
+
+            {/* Scope & Manfaat Izin */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-border/40 bg-background/50">
+                <CalendarCheck className="size-5 text-blue-500 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium text-foreground">
+                    Integrasi Fitur Task & Kalender
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Jadwal dan deadline tugas otomatis masuk ke Google Calendar sehingga
+                    Anda dapat melihat agenda kuliah, organisasi, dan praktikum dalam satu
+                    kalender terpadu.
                   </p>
                 </div>
-                {status.connected && status.lastSyncedAt && (
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground sm:text-right">
-                    <Clock className="size-3.5" />
-                    <span>
-                      Sinkronisasi terakhir:{" "}
-                      {new Date(status.lastSyncedAt).toLocaleString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                )}
               </div>
 
-              {/* Scope & Manfaat Izin */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                <div className="flex items-start gap-3 p-3 rounded-lg border border-border/40 bg-background/50">
-                  <CalendarCheck className="size-5 text-blue-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1 text-sm">
-                    <p className="font-medium text-foreground">
-                      Integrasi Fitur Task & Kalender
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Jadwal dan deadline tugas otomatis masuk ke Google Calendar sehingga
-                      Anda dapat melihat agenda kuliah, organisasi, dan praktikum dalam
-                      satu kalender terpadu.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 p-3 rounded-lg border border-border/40 bg-background/50">
-                  <Mail className="size-5 text-red-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1 text-sm">
-                    <p className="font-medium text-foreground">
-                      Integrasi Notifikasi Transaksi Gmail
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Membaca tanda terima digital, e-wallet, dan mutasi perbankan untuk
-                      pencatatan keuangan otomatis tanpa perlu memasukkan nominal secara
-                      manual.
-                    </p>
-                  </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-border/40 bg-background/50">
+                <Mail className="size-5 text-red-500 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium text-foreground">
+                    Integrasi Notifikasi Transaksi Gmail
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Membaca tanda terima digital, e-wallet, dan mutasi perbankan untuk
+                    pencatatan keuangan otomatis tanpa perlu memasukkan nominal secara
+                    manual.
+                  </p>
                 </div>
               </div>
-            </CardContent>
+            </div>
+          </CardContent>
 
-            <CardFooter className="flex flex-wrap items-center justify-between gap-3 bg-muted/20 border-t border-border/40 pt-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="size-4 text-emerald-500" />
-                <span className="text-xs text-muted-foreground">
-                  Akses resmi OAuth 2.0 Google dengan enkripsi aman
-                </span>
-              </div>
+          <CardFooter className="flex flex-wrap items-center justify-between gap-3 bg-muted/20 border-t border-border/40 pt-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="size-4 text-emerald-500" />
+              <span className="text-xs text-muted-foreground">
+                Akses resmi OAuth 2.0 Google dengan enkripsi aman
+              </span>
+            </div>
 
-              <div className="flex items-center gap-2">
-                {status.connected ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void handleDisconnectGoogle()}
-                      disabled={disconnecting}
-                      className="cursor-pointer text-destructive border-destructive/30 hover:bg-destructive/10"
-                    >
-                      <Unplug className="size-4 mr-1.5" />
-                      {disconnecting ? "Memutuskan..." : "Putuskan Akun"}
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => void handleConnectGoogle()}
-                      disabled={connecting}
-                      className="cursor-pointer"
-                    >
-                      <RefreshCw className="size-4 mr-1.5" />
-                      Hubungkan Ulang
-                    </Button>
-                  </>
-                ) : (
+            <div className="flex items-center gap-2">
+              {status.connected ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleDisconnectGoogle()}
+                    disabled={disconnecting}
+                    className="cursor-pointer text-destructive border-destructive/30 hover:bg-destructive/10"
+                  >
+                    <Unplug className="size-4 mr-1.5" />
+                    {disconnecting ? "Memutuskan..." : "Putuskan Akun"}
+                  </Button>
                   <Button
                     variant="default"
                     size="sm"
                     onClick={() => void handleConnectGoogle()}
                     disabled={connecting}
-                    className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                    className="cursor-pointer"
                   >
-                    <Mail className="size-4 mr-1.5" />
-                    {connecting ? "Menghubungkan..." : "Hubungkan Akun Google"}
+                    <RefreshCw className="size-4 mr-1.5" />
+                    Hubungkan Ulang
                   </Button>
-                )}
-              </div>
-            </CardFooter>
+                </>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => void handleConnectGoogle()}
+                  disabled={connecting}
+                  className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                >
+                  <Mail className="size-4 mr-1.5" />
+                  {connecting ? "Menghubungkan..." : "Hubungkan Akun Google"}
+                </Button>
+              )}
+            </div>
+          </CardFooter>
 
           {/* Card Pengaturan Khusus: Fitur Task & Google Calendar */}
           <Card className="border border-border/50 shadow-sm">
@@ -623,18 +625,32 @@ export default function SettingsPage() {
                     </CardDescription>
                   </div>
                 </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => void handleSyncTasksToCalendar()}
-                  disabled={syncingCalendar}
-                  className="cursor-pointer"
-                >
-                  <RefreshCw
-                    className={cn("size-3.5 mr-1.5", syncingCalendar && "animate-spin")}
-                  />
-                  {syncingCalendar ? "Menyinkronkan..." : "Sinkronkan Sekarang"}
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handlePullFromGoogleCalendar()}
+                    disabled={syncingCalendar}
+                    className="cursor-pointer"
+                    title="Tarik event dari Google Calendar ke daftar tugas"
+                  >
+                    <ArrowDownToLine className="size-3.5 mr-1.5 text-blue-500" />
+                    Tarik dari Google
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void handleSyncTasksToCalendar()}
+                    disabled={syncingCalendar}
+                    className="cursor-pointer"
+                    title="Kirim tugas Nabatu ke Google Calendar"
+                  >
+                    <RefreshCw
+                      className={cn("size-3.5 mr-1.5", syncingCalendar && "animate-spin")}
+                    />
+                    {syncingCalendar ? "Menyinkronkan..." : "Kirim ke Google"}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 

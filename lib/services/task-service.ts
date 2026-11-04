@@ -5,9 +5,14 @@ import {
   updateCalendarEvent,
   deleteCalendarEvent,
   syncAllTasksToGoogleCalendar as syncAllTasksGcal,
+  listGoogleCalendarEvents,
+  inferCategory,
+  extractDueDateFromGoogleEvent,
+  getThreeMonthRange,
 } from "@/lib/services/google-calendar-service";
 import type {
   CreateTaskInput,
+  GoogleCalendarPullSummary,
   GoogleCalendarSyncResult,
   GoogleCalendarSyncSummary,
   Task,
@@ -67,15 +72,74 @@ export class TaskServiceError extends Error {
   }
 }
 
-function fail(error: { code?: string; message?: string }, fallback: string): never {
-  // 23514 = check_violation, 23503 = foreign_key_violation
+function fail(
+  error: { code?: string; message?: string; details?: string; hint?: string },
+  fallback: string
+): never {
+  console.error(`[TaskService] ${fallback}:`, {
+    message: error?.message,
+    code: error?.code,
+    details: error?.details,
+    hint: error?.hint,
+  });
+
+  if (error.code === "42501") {
+    throw new TaskServiceError(
+      `Gagal menyimpan tugas: Pembatasan hak akses (RLS) di Supabase. ${error.message || "Pastikan RLS policy tabel tasks sudah diaktifkan."}`,
+      error.code,
+      error
+    );
+  }
   if (error.code === "23514") {
-    throw new TaskServiceError("Data tugas tidak valid.", error.code, error);
+    throw new TaskServiceError("Data tugas tidak valid (melanggar batasan database).", error.code, error);
   }
   if (error.code === "23503") {
-    throw new TaskServiceError("Profil pengguna tidak ditemukan.", error.code, error);
+    throw new TaskServiceError(
+      "Profil pengguna belum terdaftar di tabel profiles (foreign key violation).",
+      error.code,
+      error
+    );
   }
-  throw new TaskServiceError(fallback, error.code ?? "UNKNOWN", error);
+  if (error.code === "22P02") {
+    throw new TaskServiceError(`Format data atau nilai kategori tidak valid: ${error.message}`, error.code, error);
+  }
+
+  const detailMsg = error?.message || error?.details || fallback;
+  throw new TaskServiceError(`${fallback} (${detailMsg})`, error?.code ?? "UNKNOWN", error);
+}
+
+/**
+ * Memastikan profil pengguna tersedia di tabel public.profiles agar
+ * foreign key constraint 'tasks_user_id_fkey' tidak memblokir penambahan tugas.
+ */
+async function ensureUserProfile(userId: string, force = false): Promise<void> {
+  try {
+    if (!force) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (data) return;
+    }
+
+    const { data: authData } = await supabase.auth.getUser();
+    if (authData?.user) {
+      const u = authData.user;
+      await supabase.from("profiles").upsert({
+        id: userId,
+        email: u.email,
+        full_name:
+          u.user_metadata?.full_name ||
+          u.user_metadata?.name ||
+          u.email?.split("@")[0] ||
+          "User",
+        avatar_url: u.user_metadata?.avatar_url || null,
+      });
+    }
+  } catch (err) {
+    console.warn("[TaskService] Warning saat sinkronisasi profil pengguna:", err);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -302,20 +366,61 @@ export async function getTaskStats(): Promise<TaskStats> {
 export async function createTask(input: CreateTaskInput): Promise<Task> {
   const userId = await requireUserId();
 
-  const payload = {
+  // Pastikan profile user ada di public.profiles agar foreign key tasks_user_id_fkey tidak gagal
+  await ensureUserProfile(userId);
+
+  // Validasi kategori
+  let category = input.category ?? "Lainnya";
+  if (!TASK_CATEGORIES.includes(category)) {
+    category = "Lainnya";
+  }
+
+  const payload: Record<string, unknown> = {
     user_id: userId,
     title: validateTitle(input.title),
     description: normalizeDescription(input.description),
-    category: validateCategory(input.category ?? "Lainnya"),
+    category,
     due_date: normalizeDueDate(input.due_date),
     ...resolveCompletionForCreate(input),
   };
 
-  const { data, error } = await supabase.from(TABLE).insert(payload).select().single();
+  let { data, error } = await supabase.from(TABLE).insert(payload).select().maybeSingle();
+
+  // Jika gagal karena foreign key ke profiles (23503), coba upsert profile dan retry insert
+  if (error && error.code === "23503") {
+    console.warn("[TaskService] Foreign key error. Upserting profile and retrying insert...");
+    await ensureUserProfile(userId, true);
+    const retry = await supabase.from(TABLE).insert(payload).select().maybeSingle();
+    data = retry.data;
+    error = retry.error;
+  }
+
+  // Jika gagal karena enum task_category tidak menerima nilai tersebut (22P02), coba fallback ke 'Lainnya'
+  if (error && (error.code === "22P02" || error.message?.includes("enum task_category"))) {
+    console.warn("[TaskService] Retrying insert with fallback category 'Lainnya'");
+    payload.category = "Lainnya";
+    const retry = await supabase.from(TABLE).insert(payload).select().maybeSingle();
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) fail(error, "Gagal membuat tugas.");
+  if (!data) throw new TaskServiceError("Gagal membuat tugas: tidak ada data yang dikembalikan.", "NO_DATA");
   const created = data as Task;
   notifyTasksChanged();
+
+  // Jika input sudah memiliki google_event_id (misal dari Google Calendar pull), coba simpan ke Supabase
+  if (input.google_event_id) {
+    try {
+      await supabase
+        .from(TABLE)
+        .update({ google_event_id: input.google_event_id })
+        .eq("id", created.id);
+      created.google_event_id = input.google_event_id;
+    } catch {
+      // Abaikan jika kolom google_event_id belum dimigrasi di tabel Supabase
+    }
+  }
 
   // Integrasi Google Calendar: Jika due_date ada dan sync diaktifkan
   if (input.sync_to_calendar !== false && created.due_date) {
@@ -323,9 +428,20 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
       const gcal = await createCalendarEvent(created);
       if (gcal.success && gcal.eventId) {
         created.google_event_id = gcal.eventId;
+        created._gcal_link = gcal.htmlLink || null;
+        try {
+          await supabase
+            .from(TABLE)
+            .update({ google_event_id: gcal.eventId })
+            .eq("id", created.id);
+        } catch {
+          // Abaikan jika kolom google_event_id belum dimigrasi di tabel Supabase
+        }
+      } else if (!gcal.success) {
+        created._gcal_error = gcal.error || gcal.message || "Gagal sinkronisasi kalender";
       }
-    } catch {
-      // Kesalahan sinkronisasi kalender tidak menggagalkan penyimpanan task
+    } catch (err: unknown) {
+      created._gcal_error = err instanceof Error ? err.message : "Gagal sinkronisasi kalender";
     }
   }
 
@@ -403,10 +519,16 @@ export async function updateTask(id: string, input: UpdateTaskInput): Promise<Ta
   if (input.sync_to_calendar !== false) {
     try {
       if (updated.due_date) {
-        await updateCalendarEvent(updated, updated.google_event_id || id);
+        const gcal = await updateCalendarEvent(updated, updated.google_event_id || id);
+        if (gcal.success && gcal.eventId) {
+          updated.google_event_id = gcal.eventId;
+          updated._gcal_link = gcal.htmlLink || null;
+        } else if (!gcal.success) {
+          updated._gcal_error = gcal.error || gcal.message;
+        }
       }
-    } catch {
-      // Kesalahan sinkronisasi kalender tidak menggagalkan update database
+    } catch (err: unknown) {
+      updated._gcal_error = err instanceof Error ? err.message : "Gagal sinkronisasi kalender";
     }
   }
 
@@ -461,10 +583,16 @@ export async function deleteTask(id: string): Promise<void> {
 
   // Integrasi Google Calendar: hapus event dari kalender jika ada
   try {
-    const eventIdToDelete = existing?.google_event_id || id;
-    if (eventIdToDelete) {
-      await deleteCalendarEvent(eventIdToDelete);
+    let eventIdToDelete = existing?.google_event_id || null;
+    if (!eventIdToDelete && existing?.description) {
+      const match = existing.description.match(/<!--gcal:([^>]+)-->/);
+      if (match) {
+        eventIdToDelete = match[1];
+      }
     }
+
+    // Panggil deleteCalendarEvent dengan eventId (jika ada) dan id task sebagai fallback
+    await deleteCalendarEvent(eventIdToDelete, id);
   } catch {
     // Abaikan jika kalender belum terhubung
   }
@@ -502,6 +630,209 @@ export async function removeTaskFromGoogleCalendar(
   return deleteCalendarEvent(eventId);
 }
 
+/**
+ * Menarik event dari Google Calendar pengguna dan menyinkronkannya ke daftar tugas Nabatu.
+ * Default rentang waktu: hanya bulan lalu, bulan ini, dan bulan depan.
+ * - Event yang sudah terhubung akan diperbarui.
+ * - Event baru dari Google Calendar akan dibuatkan task di Nabatu.
+ * - Event yang dihapus di Google Calendar akan dihapus dari daftar tugas Nabatu.
+ */
+export async function pullTasksFromGoogleCalendar(options?: {
+  timeMin?: string;
+  timeMax?: string;
+  referenceDate?: Date;
+}): Promise<GoogleCalendarPullSummary> {
+  const range = getThreeMonthRange(options?.referenceDate);
+  const timeMin = options?.timeMin || range.timeMin;
+  const timeMax = options?.timeMax || range.timeMax;
+
+  console.log(
+    `[GCAL PULL] Starting sync: timeMin=${timeMin}, timeMax=${timeMax}`
+  );
+
+  const gcalRes = await listGoogleCalendarEvents({
+    timeMin,
+    timeMax,
+    referenceDate: options?.referenceDate,
+  });
+
+  if (!gcalRes.success) {
+    throw new TaskServiceError(
+      gcalRes.error || "Gagal mengambil event dari Google Calendar.",
+      "GCAL_FETCH_FAILED"
+    );
+  }
+
+  const gEvents = gcalRes.items;
+  const existingTasks = await getTasks();
+
+  console.log(
+    `[GCAL PULL] Fetched ${gEvents.length} events from Google Calendar. Local tasks count: ${existingTasks.length}`
+  );
+
+  let imported = 0;
+  let updated = 0;
+  let deleted = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+  const importedTasks: { id: string; title: string; due_date: string | null }[] = [];
+
+  for (const event of gEvents) {
+    try {
+      if (!event.id) {
+        skipped++;
+        continue;
+      }
+
+      const gcalTag = `<!--gcal:${event.id}-->`;
+
+      // 1. Cari tugas di Nabatu yang sudah terhubung dengan event ini
+      const matchedTask = existingTasks.find(t => {
+        if (t.google_event_id && t.google_event_id === event.id) return true;
+        if (
+          event.extendedProperties?.private?.nabatu_task_id &&
+          t.id === event.extendedProperties.private.nabatu_task_id
+        ) {
+          return true;
+        }
+        if (t.description?.includes(gcalTag)) return true;
+        return false;
+      });
+
+      // 2. Jika event di Google Calendar berstatus 'cancelled' (dihapus), hapus juga tugas di Nabatu
+      if (event.status === "cancelled") {
+        if (matchedTask) {
+          const { error: delError } = await supabase
+            .from(TABLE)
+            .delete()
+            .eq("id", matchedTask.id);
+          if (!delError) {
+            deleted++;
+            console.log(
+              `[GCAL PULL] Deleted local task "${matchedTask.title}" (${matchedTask.id}) because Google event was cancelled.`
+            );
+          }
+        }
+        continue;
+      }
+
+      const rawSummary = event.summary?.trim() || "Event Google Calendar";
+      const isCompleted =
+        rawSummary.startsWith("✅") || rawSummary.toLowerCase().startsWith("[selesai]");
+      const cleanTitle =
+        rawSummary
+          .replace(/^✅\s*(\[Selesai\]\s*)?/i, "")
+          .replace(/^\[Selesai\]\s*/i, "")
+          .trim() || rawSummary;
+
+      const rawDueDate = extractDueDateFromGoogleEvent(event);
+      let cleanDescription = event.description || "";
+      cleanDescription = cleanDescription
+        .replace(/\n*--\s*\nDisinkronkan otomatis dari Nabatu Dashboard/g, "")
+        .trim();
+
+      const descWithTag = cleanDescription.includes(gcalTag)
+        ? cleanDescription
+        : cleanDescription
+          ? `${cleanDescription}\n${gcalTag}`
+          : gcalTag;
+
+      const category =
+        (event.extendedProperties?.private?.nabatu_category as TaskCategory) ||
+        inferCategory(cleanTitle, cleanDescription);
+
+      if (matchedTask) {
+        // Update tugas yang sudah ada jika ada perubahan
+        await updateTask(matchedTask.id, {
+          title: cleanTitle,
+          description: descWithTag,
+          due_date: rawDueDate,
+          category,
+          is_completed: isCompleted,
+          progress: isCompleted ? 100 : matchedTask.progress,
+          sync_to_calendar: false, // Jangan kirim balik ke Google Calendar
+        });
+        updated++;
+        console.log(`[GCAL PULL] Updated local task "${cleanTitle}" (${matchedTask.id})`);
+      } else {
+        // Buat tugas baru dari event Google Calendar
+        const newTask = await createTask({
+          title: cleanTitle,
+          description: descWithTag,
+          category,
+          due_date: rawDueDate,
+          is_completed: isCompleted,
+          progress: isCompleted ? 100 : 0,
+          google_event_id: event.id,
+          sync_to_calendar: false, // Jangan kirim balik ke Google Calendar
+        });
+        imported++;
+        importedTasks.push({
+          id: newTask.id,
+          title: newTask.title,
+          due_date: newTask.due_date,
+        });
+        console.log(
+          `[GCAL PULL] Created new local task "${cleanTitle}" (${newTask.id}), due: ${newTask.due_date}`
+        );
+      }
+    } catch (err: unknown) {
+      const errMsg = `${event.summary || event.id}: ${err instanceof Error ? err.message : "Gagal memproses"}`;
+      console.error(`[GCAL PULL ERROR] ${errMsg}`, err);
+      errors.push(errMsg);
+    }
+  }
+
+  // 3. Deteksi tugas Nabatu yang event Google Calendar-nya sudah tidak ada dalam rentang bulan lalu s.d. bulan depan
+  const activeGoogleIds = new Set(
+    gEvents.filter(e => e.status !== "cancelled").map(e => e.id)
+  );
+
+  const timeMinMs = new Date(timeMin).getTime();
+  const timeMaxMs = new Date(timeMax).getTime();
+
+  for (const task of existingTasks) {
+    if (!task.due_date) continue;
+    const taskDueMs = new Date(task.due_date).getTime();
+    if (taskDueMs < timeMinMs || taskDueMs > timeMaxMs) continue;
+
+    let linkedGcalId = task.google_event_id;
+    if (!linkedGcalId && task.description) {
+      const match = task.description.match(/<!--gcal:([^>]+)-->/);
+      if (match) linkedGcalId = match[1];
+    }
+
+    // Jika task terhubung ke Google Calendar tetapi event-nya sudah tidak ada di Google Calendar aktif
+    if (linkedGcalId && !activeGoogleIds.has(linkedGcalId)) {
+      try {
+        const { error: delErr } = await supabase.from(TABLE).delete().eq("id", task.id);
+        if (!delErr) {
+          deleted++;
+          console.log(
+            `[GCAL PULL] Deleted local task "${task.title}" (${task.id}) because event no longer exists in Google Calendar.`
+          );
+        }
+      } catch (err: unknown) {
+        errors.push(
+          `Hapus tugas ${task.title}: ${err instanceof Error ? err.message : "Gagal"}`
+        );
+      }
+    }
+  }
+
+  notifyTasksChanged();
+
+  return {
+    totalGoogleEvents: gEvents.length,
+    imported,
+    updated,
+    deleted,
+    skipped,
+    errors,
+    importedTasks,
+  };
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Opsional: akses lewat satu objek (taskService.getTasks(), dst.)           */
 /* -------------------------------------------------------------------------- */
@@ -520,4 +851,5 @@ export const taskService = {
   syncTaskToGoogleCalendar,
   syncAllTasksToGoogleCalendar,
   removeTaskFromGoogleCalendar,
+  pullTasksFromGoogleCalendar,
 };

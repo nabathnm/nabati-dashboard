@@ -1,20 +1,19 @@
-﻿
+// hooks/use-transactions.ts
+
 "use client";
 
 import { TransactionFilters, transactionService } from "@/lib/services/transaction-service";
-import type { CreateTransactionInput, UpdateTransactionInput } from "@/types/transaction";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-
-
-
-
+import type {
+  CreateAccountInput,
+  CreateTransactionInput,
+  UpdateTransactionInput,
+} from "@/types/transaction";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const TRANSACTION_QUERY_KEY = ["transactions"] as const;
 const TRANSACTION_SUMMARY_QUERY_KEY = ["transaction-summary"] as const;
+const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
+const CATEGORIES_QUERY_KEY = ["transaction-categories"] as const;
 
 export const transactionKeys = {
   all: TRANSACTION_QUERY_KEY,
@@ -26,17 +25,55 @@ export const transactionKeys = {
 
   details: () => [...TRANSACTION_QUERY_KEY, "detail"] as const,
 
-  detail: (id: string) =>
-    [...TRANSACTION_QUERY_KEY, "detail", id] as const,
+  detail: (id: string) => [...TRANSACTION_QUERY_KEY, "detail", id] as const,
 
   summaries: () => TRANSACTION_SUMMARY_QUERY_KEY,
 
-  summary: (filters: {
-    start_date?: string;
-    end_date?: string;
-  } = {}) =>
+  summary: (filters: { start_date?: string; end_date?: string } = {}) =>
     [...TRANSACTION_SUMMARY_QUERY_KEY, filters] as const,
+
+  accounts: () => ACCOUNTS_QUERY_KEY,
+
+  categories: () => CATEGORIES_QUERY_KEY,
 };
+
+/**
+ * Mengambil daftar akun pengguna.
+ */
+export function useAccounts() {
+  return useQuery({
+    queryKey: transactionKeys.accounts(),
+    queryFn: () => transactionService.getAccounts(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Menambahkan akun baru.
+ */
+export function useCreateAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateAccountInput) => transactionService.createAccount(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: transactionKeys.accounts(),
+      });
+    },
+  });
+}
+
+/**
+ * Mengambil daftar kategori transaksi.
+ */
+export function useCategories() {
+  return useQuery({
+    queryKey: transactionKeys.categories(),
+    queryFn: () => transactionService.getCategories(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 /**
  * Mengambil daftar transaksi dengan filter opsional.
@@ -66,8 +103,7 @@ export function useCreateTransaction() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: CreateTransactionInput) =>
-      transactionService.create(input),
+    mutationFn: (input: CreateTransactionInput) => transactionService.create(input),
 
     onSuccess: (transaction) => {
       queryClient.invalidateQueries({
@@ -80,7 +116,7 @@ export function useCreateTransaction() {
 
       queryClient.setQueryData(
         transactionKeys.detail(transaction.id),
-        transaction,
+        transaction
       );
     },
   });
@@ -112,7 +148,7 @@ export function useUpdateTransaction() {
 
       queryClient.setQueryData(
         transactionKeys.detail(transaction.id),
-        transaction,
+        transaction
       );
     },
   });
@@ -150,8 +186,7 @@ export function useTransactionSummary(
   filters: {
     start_date?: string;
     end_date?: string;
-  } = {},
-
+  } = {}
 ) {
   return useQuery({
     queryKey: transactionKeys.summary(filters),

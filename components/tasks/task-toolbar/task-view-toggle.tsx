@@ -3,7 +3,7 @@
 import { CalendarDays, LayoutList } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { TaskView } from "../TaskToolbar";
+import type { TaskView } from "./task-toolbar";
 
 interface TaskViewToggleProps {
   view: TaskView;
