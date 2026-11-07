@@ -6,7 +6,10 @@ export async function GET(request: Request) {
   const returnTo = searchParams.get("returnTo") || "/settings";
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${origin}/api/google/callback`;
+  let redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  if (!redirectUri || (origin && !origin.includes("localhost") && redirectUri.includes("localhost"))) {
+    redirectUri = `${origin}/api/google/callback`;
+  }
 
   // If real Google Client ID is configured in env, redirect to Google OAuth with Calendar & Gmail scopes
   if (clientId) {

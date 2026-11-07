@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, User, UserPlus, Sparkles, Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase, getAuthCallbackUrl } from "@/lib/supabase";
 import { registerSchema, type RegisterFormValues } from "@/lib/schemas/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,10 +48,14 @@ export default function RegisterPage() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     try {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("auth_redirect_next", "/dashboard");
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          redirectTo: getAuthCallbackUrl(),
           queryParams: {
             access_type: "offline",
             prompt: "consent",

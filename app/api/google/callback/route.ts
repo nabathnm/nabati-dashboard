@@ -19,7 +19,10 @@ export async function handleGoogleOAuthCallback(request: Request) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${origin}/api/google/callback`;
+  let redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  if (!redirectUri || (origin && !origin.includes("localhost") && redirectUri.includes("localhost"))) {
+    redirectUri = `${origin}/api/google/callback`;
+  }
 
   if (!clientId || !clientSecret) {
     return NextResponse.redirect(
