@@ -77,6 +77,8 @@ function LoginForm() {
         provider: "google",
         options: {
           redirectTo: getAuthCallbackUrl(),
+          scopes:
+            "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email",
           queryParams: {
             access_type: "offline",
             prompt: "consent",

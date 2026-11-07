@@ -26,6 +26,30 @@ function AuthCallbackContent() {
       }
     };
 
+    const saveSessionTokens = async (
+      session?: {
+        provider_token?: string | null;
+        provider_refresh_token?: string | null;
+        user?: { email?: string } | null;
+      } | null
+    ) => {
+      if (session?.provider_token) {
+        try {
+          await fetch("/api/google/save-session-tokens", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              provider_token: session.provider_token,
+              provider_refresh_token: session.provider_refresh_token,
+              email: session.user?.email,
+            }),
+          });
+        } catch {
+          // Non-blocking
+        }
+      }
+    };
+
     const handleCallback = async () => {
       // Mencegah eksekusi ganda pada React 19 / StrictMode
       if (processedRef.current) return;
@@ -78,6 +102,7 @@ function AuthCallbackContent() {
         } = await supabase.auth.getSession();
 
         if (existingSession) {
+          await saveSessionTokens(existingSession);
           if (isMounted) navigateTo(next);
           return;
         }
@@ -89,6 +114,7 @@ function AuthCallbackContent() {
             await supabase.auth.exchangeCodeForSession(code);
 
           if (data?.session) {
+            await saveSessionTokens(data.session);
             if (isMounted) navigateTo(next);
             return;
           }
@@ -101,6 +127,7 @@ function AuthCallbackContent() {
             } = await supabase.auth.getSession();
 
             if (recheckSession) {
+              await saveSessionTokens(recheckSession);
               if (isMounted) navigateTo(next);
               return;
             }
@@ -121,9 +148,10 @@ function AuthCallbackContent() {
         // 4. Dengarkan event onAuthStateChange (untuk implicit flow atau sesi asinkron)
         const {
           data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+        } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
           if (currentSession && isMounted) {
             if (authSubscription) authSubscription.unsubscribe();
+            await saveSessionTokens(currentSession);
             navigateTo(next);
           }
         });
@@ -138,6 +166,7 @@ function AuthCallbackContent() {
           } = await supabase.auth.getSession();
 
           if (finalCheckSession && isMounted) {
+            await saveSessionTokens(finalCheckSession);
             navigateTo(next);
             return;
           }

@@ -117,9 +117,12 @@ export default function SettingsPage() {
       );
 
       const res = await fetch("/api/gmail/status", { cache: "no-store" });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const hasProviderToken = Boolean(sessionData?.session?.provider_token);
+
       if (res.ok) {
         const apiData = await res.json();
-        const isConnected = Boolean(apiData.connected || googleIdentity);
+        const isConnected = Boolean(apiData.connected || hasProviderToken);
         const email =
           apiData.email ||
           (googleIdentity?.identity_data?.email as string) ||
@@ -138,7 +141,7 @@ export default function SettingsPage() {
           setAutoSyncTask(apiData.calendarSyncEnabled);
         }
       } else {
-        const isConnected = Boolean(googleIdentity);
+        const isConnected = Boolean(hasProviderToken);
         setStatus({
           connected: isConnected,
           email:
@@ -151,10 +154,11 @@ export default function SettingsPage() {
       }
     } catch {
       const { data: userData } = await supabase.auth.getUser();
-      const isGoogle = userData?.user?.app_metadata?.provider === "google";
+      const { data: sessionData } = await supabase.auth.getSession();
+      const hasProviderToken = Boolean(sessionData?.session?.provider_token);
       setStatus(prev => ({
         ...prev,
-        connected: isGoogle,
+        connected: hasProviderToken,
         email: userData?.user?.email || prev.email,
       }));
     } finally {
@@ -182,10 +186,12 @@ export default function SettingsPage() {
 
         const res = await fetch("/api/gmail/status", { cache: "no-store" });
         if (ignore) return;
+        const { data: sessionData } = await supabase.auth.getSession();
+        const hasProviderToken = Boolean(sessionData?.session?.provider_token);
 
         if (res.ok) {
           const apiData = await res.json();
-          const isConnected = Boolean(apiData.connected || googleIdentity);
+          const isConnected = Boolean(apiData.connected || hasProviderToken);
           const email =
             apiData.email ||
             (googleIdentity?.identity_data?.email as string) ||
@@ -204,7 +210,7 @@ export default function SettingsPage() {
             setAutoSyncTask(apiData.calendarSyncEnabled);
           }
         } else {
-          const isConnected = Boolean(googleIdentity);
+          const isConnected = Boolean(hasProviderToken);
           setStatus({
             connected: isConnected,
             email:
@@ -218,10 +224,11 @@ export default function SettingsPage() {
       } catch {
         if (ignore) return;
         const { data: userData } = await supabase.auth.getUser();
-        const isGoogle = userData?.user?.app_metadata?.provider === "google";
+        const { data: sessionData } = await supabase.auth.getSession();
+        const hasProviderToken = Boolean(sessionData?.session?.provider_token);
         setStatus(prev => ({
           ...prev,
-          connected: isGoogle,
+          connected: hasProviderToken,
           email: userData?.user?.email || prev.email,
         }));
       } finally {

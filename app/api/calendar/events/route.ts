@@ -37,14 +37,18 @@ async function refreshAccessToken(): Promise<string | null> {
 
     const data = await res.json();
     if (data.access_token) {
-      // Perbarui access token baru di cookie
-      cookieStore.set("google_access_token", data.access_token, {
-        path: "/",
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: data.expires_in || 3600,
-      });
+      // Perbarui access token baru di cookie jika didukung (abaikan error pada konteks GET)
+      try {
+        cookieStore.set("google_access_token", data.access_token, {
+          path: "/",
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: data.expires_in || 3600,
+        });
+      } catch {
+        // Abaikan jika cookieStore tidak dapat di-set pada konteks GET
+      }
       return data.access_token;
     }
     return null;
@@ -54,19 +58,33 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 /**
- * Mengambil access token Google menggunakan token yang tersimpan di cookie
- * atau menggunakan refresh token dari server environment (.env.local).
+ * Mengambil access token Google menggunakan:
+ * 1. Authorization header (Bearer token dari client / sesi Supabase)
+ * 2. Token yang tersimpan di cookie pengguna
+ * 3. Refresh token dari cookie atau server environment (.env / Vercel env).
  */
-async function getServerAccessToken(): Promise<string | null> {
+async function getServerAccessToken(request?: Request): Promise<string | null> {
+  // 1. Cek header Authorization jika dikirim dari client
+  if (request) {
+    const authHeader =
+      request.headers.get("authorization") || request.headers.get("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7).trim();
+      if (token && token !== "undefined" && token !== "null") {
+        return token;
+      }
+    }
+  }
+
   const cookieStore = await cookies();
 
-  // 1. Cek access token yang tersimpan di cookie pengguna
+  // 2. Cek access token yang tersimpan di cookie pengguna
   const cookieAccessToken = cookieStore.get("google_access_token")?.value;
   if (cookieAccessToken) {
     return cookieAccessToken;
   }
 
-  // 2. Jika tidak ada di cookie, coba dapatkan dengan refresh token
+  // 3. Jika tidak ada di cookie, coba dapatkan dengan refresh token
   return refreshAccessToken();
 }
 
@@ -142,7 +160,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const list = searchParams.get("list");
     const calendarId = process.env.GOOGLE_CALENDAR_ID || "primary";
-    let serverToken = await getServerAccessToken();
+    let serverToken = await getServerAccessToken(request);
     const cookieStore = await cookies();
 
     // 1. Jika list=true, tarik daftar event dari Google Calendar
@@ -291,7 +309,7 @@ export async function POST(request: Request) {
     const { payload } = body;
 
     const calendarId = process.env.GOOGLE_CALENDAR_ID || "primary";
-    let serverToken = await getServerAccessToken();
+    let serverToken = await getServerAccessToken(request);
     const cookieStore = await cookies();
 
     if (!serverToken) {
@@ -393,7 +411,7 @@ export async function PATCH(request: Request) {
     }
 
     const calendarId = process.env.GOOGLE_CALENDAR_ID || "primary";
-    let serverToken = await getServerAccessToken();
+    let serverToken = await getServerAccessToken(request);
     const cookieStore = await cookies();
 
     if (!serverToken) {
@@ -480,7 +498,7 @@ export async function DELETE(request: Request) {
     }
 
     const calendarId = process.env.GOOGLE_CALENDAR_ID || "primary";
-    let serverToken = await getServerAccessToken();
+    let serverToken = await getServerAccessToken(request);
     const cookieStore = await cookies();
 
     if (!serverToken) {

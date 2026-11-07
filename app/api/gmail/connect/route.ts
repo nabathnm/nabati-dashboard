@@ -31,28 +31,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(googleAuthUrl);
   }
 
-  // Fallback demo/mock connection if Google Client ID is not yet provided in .env.local
+  // Jika GOOGLE_CLIENT_ID belum diset di server environment
   const targetUrl = new URL(returnTo, origin);
-  targetUrl.searchParams.set("google", "connected");
-  targetUrl.searchParams.set("gmail", "connected");
-
-  const response = NextResponse.redirect(targetUrl.toString());
-  const maxAge = 60 * 60 * 24 * 30;
-
-  response.cookies.set("google_connected", "true", { path: "/", maxAge });
-  response.cookies.set("google_email", "user@gmail.com", { path: "/", maxAge });
-  response.cookies.set("google_last_synced", new Date().toISOString(), { path: "/", maxAge });
-  response.cookies.set("google_calendar_sync", "true", { path: "/", maxAge });
-
-  try {
-    const cookieStore = await cookies();
-    cookieStore.set("google_connected", "true", { path: "/", maxAge });
-    cookieStore.set("google_email", "user@gmail.com", { path: "/", maxAge });
-    cookieStore.set("google_last_synced", new Date().toISOString(), { path: "/", maxAge });
-    cookieStore.set("google_calendar_sync", "true", { path: "/", maxAge });
-  } catch {
-    // Abaikan
-  }
-
-  return response;
+  targetUrl.searchParams.set(
+    "google_error",
+    "GOOGLE_CLIENT_ID belum dikonfigurasi di Environment Variables hosting (Vercel/server)."
+  );
+  return NextResponse.redirect(targetUrl.toString());
 }

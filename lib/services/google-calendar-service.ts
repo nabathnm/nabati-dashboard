@@ -134,42 +134,44 @@ export async function createCalendarEvent(task: Task): Promise<GoogleCalendarSyn
   try {
     const token = await getGoogleAccessToken();
 
-    // 1. Jika token Google tersedia langsung dari sesi Supabase
+    // 1. Jika token Google tersedia langsung dari sesi Supabase, coba panggil langsung
     if (token) {
-      const response = await fetch(
-        `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(
-          DEFAULT_CALENDAR_ID
-        )}/events`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error?.message || "Gagal membuat event di Google Calendar"
+      try {
+        const response = await fetch(
+          `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(
+            DEFAULT_CALENDAR_ID
+          )}/events`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          }
         );
-      }
 
-      const data = await response.json();
-      return {
-        success: true,
-        eventId: data.id,
-        htmlLink: data.htmlLink,
-        message: "Tugas berhasil dibuat di Google Calendar.",
-      };
+        if (response.ok) {
+          const data = await response.json();
+          return {
+            success: true,
+            eventId: data.id,
+            htmlLink: data.htmlLink,
+            message: "Tugas berhasil dibuat di Google Calendar.",
+          };
+        }
+      } catch {
+        // Fallback ke endpoint internal jika direct call gagal
+      }
     }
 
-    // 2. Melalui endpoint API internal `/api/calendar/events`
+    // 2. Melalui endpoint API internal `/api/calendar/events` (dengan cookie atau refresh token server)
     const apiRes = await fetch("/api/calendar/events", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       credentials: "include",
       body: JSON.stringify({ task, payload }),
     });
@@ -223,42 +225,44 @@ export async function updateCalendarEvent(
     const token = await getGoogleAccessToken();
 
     if (token) {
-      const response = await fetch(
-        `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(
-          DEFAULT_CALENDAR_ID
-        )}/events/${encodeURIComponent(eventId)}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      try {
+        const response = await fetch(
+          `${GOOGLE_CALENDAR_API_BASE}/calendars/${encodeURIComponent(
+            DEFAULT_CALENDAR_ID
+          )}/events/${encodeURIComponent(eventId)}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          }
+        );
 
-      if (!response.ok) {
-        // Jika event lama tidak ditemukan di Google Calendar (404), buat event baru
-        if (response.status === 404) {
+        if (response.ok) {
+          const data = await response.json();
+          return {
+            success: true,
+            eventId: data.id,
+            htmlLink: data.htmlLink,
+            message: "Event Google Calendar berhasil diperbarui.",
+          };
+        } else if (response.status === 404) {
           return createCalendarEvent(task);
         }
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || "Gagal memperbarui event kalender");
+      } catch {
+        // Fallback ke endpoint API internal
       }
-
-      const data = await response.json();
-      return {
-        success: true,
-        eventId: data.id,
-        htmlLink: data.htmlLink,
-        message: "Event Google Calendar berhasil diperbarui.",
-      };
     }
 
     // Fallback ke API internal
     const apiRes = await fetch("/api/calendar/events", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       credentials: "include",
       body: JSON.stringify({ eventId, task, payload }),
     });
@@ -306,9 +310,14 @@ export async function deleteCalendarEvent(
     if (eventId) params.set("eventId", eventId);
     if (taskId) params.set("taskId", taskId);
 
+    const token = await getGoogleAccessToken();
+
     // Panggil endpoint backend untuk menghapus event
     const apiRes = await fetch(`/api/calendar/events?${params.toString()}`, {
       method: "DELETE",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       credentials: "include",
     });
 
@@ -475,8 +484,13 @@ export async function listGoogleCalendarEvents(options?: {
     });
     if (options?.maxResults) params.set("maxResults", String(options.maxResults));
 
+    const token = await getGoogleAccessToken();
+
     const res = await fetch(`/api/calendar/events?${params.toString()}`, {
       method: "GET",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       credentials: "include",
       cache: "no-store",
     });
