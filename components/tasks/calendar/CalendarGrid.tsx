@@ -19,6 +19,7 @@ interface CalendarGridProps {
   onTaskProgressChange?: (taskId: string, newProgress: number) => void;
   onEditTask?: (task: Task) => void;
   onDeleteTask?: (task: Task) => void;
+  onTogglePin?: (task: Task) => void;
 }
 
 export default function CalendarGrid({
@@ -33,6 +34,7 @@ export default function CalendarGrid({
   onTaskProgressChange,
   onEditTask,
   onDeleteTask,
+  onTogglePin,
 }: CalendarGridProps) {
   const monthStart = startOfMonth(currentMonth);
 
@@ -77,6 +79,7 @@ export default function CalendarGrid({
         onTaskProgressChange={onTaskProgressChange}
         onEditTask={onEditTask}
         onDeleteTask={onDeleteTask}
+        onTogglePin={onTogglePin}
       />
     );
   };

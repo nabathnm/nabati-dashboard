@@ -294,6 +294,7 @@ export default function TaskViewSwitcher() {
             onTaskProgressChange={handleTaskProgressChange}
             onEditTask={handleEditTask}
             onDeleteTask={setTaskToDelete}
+            onTogglePin={handleTogglePin}
           />
         )}
       </div>

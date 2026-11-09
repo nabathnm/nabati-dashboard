@@ -19,6 +19,7 @@ interface CalendarDayCellProps {
   onTaskProgressChange?: (taskId: string, newProgress: number) => void;
   onEditTask?: (task: Task) => void;
   onDeleteTask?: (task: Task) => void;
+  onTogglePin?: (task: Task) => void;
 }
 
 export default function CalendarDayCell({
@@ -34,6 +35,7 @@ export default function CalendarDayCell({
   onTaskProgressChange,
   onEditTask,
   onDeleteTask,
+  onTogglePin,
 }: CalendarDayCellProps) {
   const today = new Date();
   const isCurrentMonth = isSameMonth(day, monthStart);
@@ -100,6 +102,7 @@ export default function CalendarDayCell({
             onProgressChange={onTaskProgressChange}
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}
+            onTogglePin={onTogglePin}
           />
         ))}
       </div>
