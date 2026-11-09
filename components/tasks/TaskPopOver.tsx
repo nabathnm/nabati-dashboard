@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Circle,
   FileText,
+  MoreVertical,
   Pencil,
   Percent,
   Tag,
@@ -16,6 +17,13 @@ import {
 } from "lucide-react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { Task, TaskCategory } from "@/types/task";
@@ -134,39 +142,49 @@ export default function TaskPopover({
           </div>
 
           <div className="flex items-center gap-1">
-            {onEditTask && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setIsOpen(false);
-                  onEditTask(task);
-                }}
-                className="size-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
-                aria-label="Ubah tugas lengkap"
-                title="Ubah tugas lengkap"
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer transition-colors"
+                aria-label="Menu opsi tugas"
+                title="Menu opsi tugas"
               >
-                <Pencil className="size-3.5" />
-              </Button>
-            )}
-
-            {onDeleteTask && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setIsOpen(false);
-                  onDeleteTask(task);
-                }}
-                className="size-7 rounded-lg text-rose-500 hover:bg-rose-500/15 hover:text-rose-600 cursor-pointer"
-                aria-label="Hapus tugas"
-                title="Hapus tugas"
+                <MoreVertical className="size-3.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                sideOffset={4}
+                className="w-44 rounded-xl border-border/80 bg-popover/95 backdrop-blur-md p-1 shadow-xl z-[60]"
               >
-                <Trash2 className="size-3.5" />
-              </Button>
-            )}
+                {onEditTask && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setIsOpen(false);
+                      onEditTask(task);
+                    }}
+                    className="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg cursor-pointer hover:bg-muted text-foreground"
+                  >
+                    <Pencil className="size-3.5 text-muted-foreground" />
+                    <span>Ubah Lengkap</span>
+                  </DropdownMenuItem>
+                )}
+                {onDeleteTask && (
+                  <>
+                    <DropdownMenuSeparator className="my-1 bg-border/50" />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => {
+                        setIsOpen(false);
+                        onDeleteTask(task);
+                      }}
+                      className="flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-lg cursor-pointer text-rose-500 hover:bg-rose-500/10 focus:bg-rose-500/10 focus:text-rose-500"
+                    >
+                      <Trash2 className="size-3.5 text-rose-500" />
+                      <span>Hapus Tugas</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -242,7 +260,7 @@ export default function TaskPopover({
                 }
               }}
               className={cn(
-                "h-8 min-w-0 rounded-lg px-2 text-xs",
+                "h-8.5 min-w-0 rounded-lg px-2 text-xs",
                 "border-border/70 bg-background/60 text-foreground",
                 "hover:border-border focus-visible:border-foreground",
                 "focus-visible:ring-1 focus-visible:ring-ring"
@@ -282,49 +300,62 @@ export default function TaskPopover({
             </label>
           </div>
 
-          {/* Category */}
+          {/* Category Dropdown using Shadcn DropdownMenu */}
           <div className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-3">
             <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Tag className="size-3.5" />
               Kategori
             </span>
 
-            <div className="relative flex items-center min-w-0">
-              {category && (
-                <span
-                  className={cn(
-                    "pointer-events-none absolute left-2.5 size-2 rounded-full",
-                    category.dot
-                  )}
-                />
-              )}
-              <select
-                value={task.category}
-                onChange={event => {
-                  const val = event.target.value as TaskCategory;
-                  if (val && onCategoryChange && val !== task.category) {
-                    onCategoryChange(task.id, val);
-                  }
-                }}
+            <DropdownMenu>
+              <DropdownMenuTrigger
                 className={cn(
-                  "h-8 w-full appearance-none rounded-lg pl-7 pr-8 text-xs font-medium cursor-pointer",
+                  "flex h-8.5 w-full items-center justify-between rounded-lg px-2.5 text-xs font-medium transition-all cursor-pointer",
                   "border border-border/70 bg-background/60 text-foreground",
-                  "hover:border-border transition-colors",
-                  "focus-visible:border-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  "hover:border-border hover:bg-muted/40",
+                  "focus-visible:outline-none focus-visible:border-foreground focus-visible:ring-1 focus-visible:ring-ring"
                 )}
               >
-                {categoryOptions.map(cat => (
-                  <option
-                    key={cat.value}
-                    value={cat.value}
-                    className="bg-popover text-popover-foreground py-1 text-xs"
-                  >
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-            </div>
+                <div className="flex items-center gap-2 truncate">
+                  {category && (
+                    <span className={cn("size-2 shrink-0 rounded-full", category.dot)} />
+                  )}
+                  <span className="truncate">{category?.label ?? "Pilih Kategori"}</span>
+                </div>
+                <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                sideOffset={4}
+                className="w-48 rounded-xl border-border/80 bg-popover/95 backdrop-blur-md p-1.5 shadow-xl z-[60]"
+              >
+                {categoryOptions.map(cat => {
+                  const isSelected = task.category === cat.value;
+                  return (
+                    <DropdownMenuItem
+                      key={cat.value}
+                      onClick={() => {
+                        if (onCategoryChange && cat.value !== task.category) {
+                          onCategoryChange(task.id, cat.value as TaskCategory);
+                        }
+                      }}
+                      className={cn(
+                        "flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg cursor-pointer transition-colors",
+                        isSelected
+                          ? "bg-muted font-semibold text-foreground"
+                          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={cn("size-2 shrink-0 rounded-full", cat.dotColor)} />
+                        <span>{cat.label}</span>
+                      </div>
+                      {isSelected && <Check className="size-3.5 text-foreground" />}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Progress */}
