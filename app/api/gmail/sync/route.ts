@@ -91,7 +91,7 @@ function normalizeDescription(
 // ============================================================
 // MAIN EMAIL PARSER
 // ============================================================
-export function parseEmail(
+function parseEmail(
   subject: string,
   bodyText: string,
   emailDate: Date,

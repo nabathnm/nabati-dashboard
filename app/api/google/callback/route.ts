@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
-export async function handleGoogleOAuthCallback(request: Request) {
+async function handleGoogleOAuthCallback(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const state = searchParams.get("state") || "/settings";

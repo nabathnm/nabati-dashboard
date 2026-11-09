@@ -48,8 +48,8 @@ interface NoteEditorProps {
   onDeleteNote: (id: string) => void;
   onTogglePin: (id: string) => void;
   onDuplicateNote: (id: string) => void;
-  isSidebarOpen: boolean;
-  onToggleSidebar: () => void;
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
   onBackToGallery?: () => void;
 }
 
@@ -240,19 +240,21 @@ export function NoteEditor({
             </Button>
           )}
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onToggleSidebar}
-            className="size-7 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-            title={isSidebarOpen ? "Sembunyikan Sidebar" : "Buka Sidebar"}
-          >
-            {isSidebarOpen ? (
-              <Minimize2 className="size-3.5" />
-            ) : (
-              <Maximize2 className="size-3.5" />
-            )}
-          </Button>
+          {onToggleSidebar && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleSidebar}
+              className="size-7 text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+              title={isSidebarOpen ? "Sembunyikan Sidebar" : "Buka Sidebar"}
+            >
+              {isSidebarOpen ? (
+                <Minimize2 className="size-3.5" />
+              ) : (
+                <Maximize2 className="size-3.5" />
+              )}
+            </Button>
+          )}
 
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
             <span className="hover:text-foreground cursor-pointer">Catatan</span>

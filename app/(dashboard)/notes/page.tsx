@@ -13,7 +13,6 @@ import {
   togglePinNote,
   updateNote,
 } from "@/lib/services/note-service";
-import { NoteSidebar } from "@/components/notes/NoteSidebar";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteCardGrid } from "@/components/notes/NoteCardGrid";
 import { NoteTemplatesModal } from "@/components/notes/NoteTemplatesModal";
@@ -24,14 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  Columns2,
-  FilePlus,
-  Grid2X2,
-  Search,
-  Sparkles,
-} from "lucide-react";
+import { ChevronDown, Columns2, FilePlus, Grid2X2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -40,12 +32,13 @@ export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [layoutMode, setLayoutMode] = useState<"workspace" | "gallery">("gallery");
 
   // Filters state (Aligned with Floe reference)
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pinned" | "archived">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "pinned" | "archived"
+  >("all");
   const [activeCategory, setActiveCategory] = useState<NoteCategory | "All">("All");
   const [dateFilter, setDateFilter] = useState<"any" | "today" | "week" | "month">("any");
   const [selectedTag, setSelectedTag] = useState<string>("All");
@@ -92,10 +85,10 @@ export default function NotesPage() {
       setAllNotes(data);
 
       // Maintain selected note
-      setSelectedNote((prev) => {
+      setSelectedNote(prev => {
         if (!prev && data.length > 0) return data[0];
         if (prev) {
-          const found = data.find((n) => n.id === prev.id);
+          const found = data.find(n => n.id === prev.id);
           return found || (data.length > 0 ? data[0] : null);
         }
         return null;
@@ -119,9 +112,9 @@ export default function NotesPage() {
   // Extract all unique tags
   const availableTags = useMemo(() => {
     const set = new Set<string>();
-    allNotes.forEach((n) => {
+    allNotes.forEach(n => {
       if (Array.isArray(n.tags)) {
-        n.tags.forEach((t) => set.add(t));
+        n.tags.forEach(t => set.add(t));
       }
     });
     return Array.from(set);
@@ -129,13 +122,13 @@ export default function NotesPage() {
 
   // Filtered notes based on all active controls
   const filteredNotes = useMemo(() => {
-    return allNotes.filter((note) => {
+    return allNotes.filter(note => {
       // 1. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const titleMatch = note.title.toLowerCase().includes(q);
         const contentMatch = note.content.toLowerCase().includes(q);
-        const tagMatch = note.tags?.some((t) => t.toLowerCase().includes(q));
+        const tagMatch = note.tags?.some(t => t.toLowerCase().includes(q));
         const catMatch = note.category.toLowerCase().includes(q);
         if (!titleMatch && !contentMatch && !tagMatch && !catMatch) return false;
       }
@@ -246,7 +239,7 @@ export default function NotesPage() {
     try {
       await deleteNote(id);
       if (selectedNote?.id === id) {
-        const remaining = allNotes.filter((n) => n.id !== id);
+        const remaining = allNotes.filter(n => n.id !== id);
         setSelectedNote(remaining[0] || null);
       }
       toast.success("Catatan berhasil dihapus");
@@ -310,7 +303,7 @@ export default function NotesPage() {
             type="text"
             placeholder="Search..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="h-10 w-full rounded-2xl border border-border/70 bg-card/70 pl-9 pr-14 text-xs font-mono text-foreground placeholder:text-muted-foreground shadow-2xs backdrop-blur-md focus:border-cyan-500/60 focus:outline-hidden focus:ring-2 focus:ring-cyan-500/20 transition-all"
           />
           <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
@@ -392,7 +385,7 @@ export default function NotesPage() {
               <DropdownMenuItem onClick={() => setActiveCategory("All")}>
                 Any (Semua)
               </DropdownMenuItem>
-              {NOTE_CATEGORIES.map((cat) => (
+              {NOTE_CATEGORIES.map(cat => (
                 <DropdownMenuItem key={cat} onClick={() => setActiveCategory(cat)}>
                   {cat}
                 </DropdownMenuItem>
@@ -409,10 +402,10 @@ export default function NotesPage() {
                   {dateFilter === "any"
                     ? "Any"
                     : dateFilter === "today"
-                    ? "Hari ini"
-                    : dateFilter === "week"
-                    ? "7 hari"
-                    : "30 hari"}
+                      ? "Hari ini"
+                      : dateFilter === "week"
+                        ? "7 hari"
+                        : "30 hari"}
                 </span>
               </span>
               <ChevronDown className="size-3 text-muted-foreground" />
@@ -439,17 +432,18 @@ export default function NotesPage() {
               <DropdownMenuTrigger className="flex h-8 items-center gap-1.5 rounded-xl border border-border/70 bg-card px-3 text-xs font-mono font-medium text-muted-foreground shadow-2xs hover:text-foreground hover:bg-muted/60 transition-all focus-visible:outline-hidden">
                 <span>
                   Tags:{" "}
-                  <span className="font-semibold text-foreground">
-                    {selectedTag}
-                  </span>
+                  <span className="font-semibold text-foreground">{selectedTag}</span>
                 </span>
                 <ChevronDown className="size-3 text-muted-foreground" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40 font-mono text-xs max-h-56 overflow-y-auto">
+              <DropdownMenuContent
+                align="end"
+                className="w-40 font-mono text-xs max-h-56 overflow-y-auto"
+              >
                 <DropdownMenuItem onClick={() => setSelectedTag("All")}>
                   All Tags
                 </DropdownMenuItem>
-                {availableTags.map((tag) => (
+                {availableTags.map(tag => (
                   <DropdownMenuItem key={tag} onClick={() => setSelectedTag(tag)}>
                     #{tag}
                   </DropdownMenuItem>
@@ -499,7 +493,7 @@ export default function NotesPage() {
           allNotes={allNotes}
           activeCategory={activeCategory}
           onSelectCategory={setActiveCategory}
-          onSelectNote={(note) => {
+          onSelectNote={note => {
             setSelectedNote(note);
             setLayoutMode("workspace");
           }}
@@ -513,74 +507,46 @@ export default function NotesPage() {
           userInitial={userInitial}
         />
       ) : (
-        /* Workspace Split Notion Editor View */
-        <div className="flex h-[calc(100vh-13rem)] min-h-[580px] rounded-3xl border border-border/70 overflow-hidden bg-card/40 backdrop-blur-md shadow-xs">
-          {/* Left Sidebar */}
-          {isSidebarOpen && (
-            <div className="w-80 md:w-88 shrink-0 h-full">
-              <NoteSidebar
-                notes={allNotes}
-                selectedNoteId={selectedNote?.id || null}
-                onSelectNote={(note) => setSelectedNote(note)}
-                onCreateNote={handleCreateNote}
-                onOpenTemplates={() => setIsTemplatesModalOpen(true)}
-                onTogglePin={handleTogglePin}
-                onDuplicate={handleDuplicate}
-                onToggleArchive={handleToggleArchive}
-                onDelete={handleDeleteNote}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                activeCategory={activeCategory}
-                onCategoryChange={setActiveCategory}
-                activeTab={statusFilter === "archived" ? "archived" : statusFilter === "pinned" ? "pinned" : "all"}
-                onTabChange={(tab) => setStatusFilter(tab)}
-              />
+        /* Workspace Full Notion Editor View */
+        <div className="h-[calc(100vh-13rem)] min-h-[580px] rounded-3xl border border-border/70 overflow-hidden bg-card/40 backdrop-blur-md shadow-xs">
+          {selectedNote ? (
+            <NoteEditor
+              note={selectedNote}
+              onUpdateNote={handleUpdateNote}
+              onDeleteNote={handleDeleteNote}
+              onTogglePin={handleTogglePin}
+              onDuplicateNote={handleDuplicate}
+              onBackToGallery={() => setLayoutMode("gallery")}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+              <span className="text-4xl mb-3">📝</span>
+              <h3 className="font-mono text-base font-semibold text-foreground">
+                Pilih atau buat catatan
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xs font-mono">
+                Pilih catatan dari galeri atau buat halaman baru untuk mulai menulis.
+              </p>
+              <div className="mt-4 flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="font-mono text-xs rounded-xl"
+                  onClick={() => setLayoutMode("gallery")}
+                >
+                  ← Kembali ke Galeri
+                </Button>
+                <Button
+                  size="sm"
+                  className="gap-1.5 font-mono text-xs rounded-xl bg-cyan-600 text-white hover:bg-cyan-500"
+                  onClick={handleCreateNote}
+                >
+                  <FilePlus className="size-4" />
+                  <span>Buat Catatan</span>
+                </Button>
+              </div>
             </div>
           )}
-
-          {/* Right Editor Area */}
-          <div className="flex-1 min-w-0 h-full">
-            {selectedNote ? (
-              <NoteEditor
-                note={selectedNote}
-                onUpdateNote={handleUpdateNote}
-                onDeleteNote={handleDeleteNote}
-                onTogglePin={handleTogglePin}
-                onDuplicateNote={handleDuplicate}
-                isSidebarOpen={isSidebarOpen}
-                onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-                onBackToGallery={() => setLayoutMode("gallery")}
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <span className="text-4xl mb-3">📝</span>
-                <h3 className="font-mono text-base font-semibold text-foreground">
-                  Pilih atau buat catatan
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1 max-w-xs font-mono">
-                  Pilih dokumen di sidebar kiri atau buat halaman baru untuk mulai menulis.
-                </p>
-                <div className="mt-4 flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="font-mono text-xs rounded-xl"
-                    onClick={() => setLayoutMode("gallery")}
-                  >
-                    ← Kembali ke Galeri
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="gap-1.5 font-mono text-xs rounded-xl bg-cyan-600 text-white hover:bg-cyan-500"
-                    onClick={handleCreateNote}
-                  >
-                    <FilePlus className="size-4" />
-                    <span>Buat Catatan</span>
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       )}
 

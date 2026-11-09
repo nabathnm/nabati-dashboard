@@ -76,7 +76,7 @@ function DialogContent({
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Tutup"
-                className="absolute right-3 top-3 z-10 rounded-full text-background/80 hover:bg-background/15 hover:text-background"
+                className="absolute right-3.5 top-3.5 z-20 rounded-full text-foreground/70 hover:bg-muted hover:text-foreground cursor-pointer"
               >
                 <XIcon className="size-4" />
               </Button>

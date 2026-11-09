@@ -22,10 +22,10 @@ const DEFAULT_CALENDAR_ID =
  */
 const CATEGORY_COLOR_MAP: Record<TaskCategory, string> = {
   Kuliah: "9", // Blueberry (Biru)
-  Organisasi: "2", // Sage (Hijau)
-  Praktikum: "6", // Tangerine (Oranye)
-  Personal: "11", // Tomato (Merah)
-  Lainnya: "8", // Graphite (Abu-abu)
+  Organisasi: "5", // Banana (Kuning)
+  Praktikum: "11", // Tomato (Merah)
+  Personal: "3", // Grape (Ungu)
+  Lainnya: "3", // Grape (Ungu)
 };
 
 /**

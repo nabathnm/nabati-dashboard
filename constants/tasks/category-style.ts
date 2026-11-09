@@ -23,27 +23,27 @@ export const categoryStyles: Record<TaskCategory, CategoryStyle> = {
   },
   Organisasi: {
     label: "Organisasi",
-    bg: "bg-violet-50 border-violet-200 dark:bg-violet-950/40 dark:border-violet-900",
-    color: "text-violet-700 dark:text-violet-300",
-    dot: "bg-violet-500",
-  },
-  Praktikum: {
-    label: "Praktikum",
     bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900",
     color: "text-amber-700 dark:text-amber-300",
     dot: "bg-amber-500",
   },
+  Praktikum: {
+    label: "Praktikum",
+    bg: "bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900",
+    color: "text-rose-700 dark:text-rose-300",
+    dot: "bg-rose-500",
+  },
   Personal: {
     label: "Personal",
-    bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900",
-    color: "text-emerald-700 dark:text-emerald-300",
-    dot: "bg-emerald-500",
+    bg: "bg-purple-50 border-purple-200 dark:bg-purple-950/40 dark:border-purple-900",
+    color: "text-purple-700 dark:text-purple-300",
+    dot: "bg-purple-500",
   },
   Lainnya: {
     label: "Lainnya",
-    bg: "bg-slate-50 border-slate-200 dark:bg-slate-900/40 dark:border-slate-800",
-    color: "text-slate-600 dark:text-slate-300",
-    dot: "bg-slate-400",
+    bg: "bg-purple-50 border-purple-200 dark:bg-purple-950/40 dark:border-purple-900",
+    color: "text-purple-700 dark:text-purple-300",
+    dot: "bg-purple-500",
   },
 };
 

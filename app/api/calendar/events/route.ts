@@ -116,7 +116,7 @@ function formatGoogleError(data: unknown, status: number): string {
  * Ditambahkan buffer tanggal aman agar perbedaan offset timezone (WIB/UTC)
  * dan sifat eksklusif timeMax pada Google Calendar API tidak memotong event bulan depan.
  */
-export function getThreeMonthRange(referenceDate: Date = new Date()) {
+function getThreeMonthRange(referenceDate: Date = new Date()) {
   const ref =
     referenceDate instanceof Date && !isNaN(referenceDate.getTime())
       ? referenceDate
