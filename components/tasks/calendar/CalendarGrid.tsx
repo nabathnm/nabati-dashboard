@@ -87,10 +87,10 @@ export default function CalendarGrid({
       renderDay={renderDay}
       weekStartsOn={0}
       classNames={{
-        root: "border border-border/50 rounded-xl overflow-hidden bg-card/10",
-        headerRow: "border-b ",
+        root: "border border-border/70 rounded-2xl overflow-hidden bg-card/40 shadow-xs",
+        headerRow: "border-b border-border/60 bg-muted/40",
         headerCell:
-          "py-3 text-center text-xs font-bold text-primary-foreground uppercase tracking-wider border-r border-primary/20 last:border-0",
+          "py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider border-r border-border/40 last:border-0",
       }}
     />
   );

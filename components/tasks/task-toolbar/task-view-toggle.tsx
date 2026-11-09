@@ -1,8 +1,7 @@
 "use client";
 
 import { CalendarDays, LayoutList } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { TaskView } from "./task-toolbar";
 
 interface TaskViewToggleProps {
@@ -16,13 +15,8 @@ export default function TaskViewToggle({
   onViewChange,
   onBeforeChange,
 }: TaskViewToggleProps) {
-  const nextView: TaskView = view === "list" ? "calendar" : "list";
-
-  const NextViewIcon = nextView === "list" ? LayoutList : CalendarDays;
-
-  const nextViewLabel = nextView === "list" ? "List" : "Calendar";
-
-  const handleViewChange = () => {
+  const handleSelect = (newView: TaskView) => {
+    if (newView === view) return;
     onBeforeChange?.();
 
     const transitionDocument = document as Document & {
@@ -31,24 +25,42 @@ export default function TaskViewToggle({
 
     if (transitionDocument.startViewTransition) {
       transitionDocument.startViewTransition(() => {
-        onViewChange(nextView);
+        onViewChange(newView);
       });
     } else {
-      onViewChange(nextView);
+      onViewChange(newView);
     }
   };
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="icon"
-      onClick={handleViewChange}
-      aria-label={`Switch to ${nextViewLabel} view`}
-      title={`Switch to ${nextViewLabel} view`}
-      className="h-9 w-9 shrink-0 rounded-full"
-    >
-      <NextViewIcon className="h-4 w-4" />
-    </Button>
+    <div className="inline-flex items-center rounded-xl border border-border/70 bg-muted/40 p-1 shrink-0">
+      <button
+        type="button"
+        onClick={() => handleSelect("calendar")}
+        className={cn(
+          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
+          view === "calendar"
+            ? "bg-card text-foreground font-semibold shadow-xs border border-border/60"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <CalendarDays className="size-3.5" />
+        <span>Kalender</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => handleSelect("list")}
+        className={cn(
+          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
+          view === "list"
+            ? "bg-card text-foreground font-semibold shadow-xs border border-border/60"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <LayoutList className="size-3.5" />
+        <span>Daftar</span>
+      </button>
+    </div>
   );
 }

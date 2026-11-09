@@ -38,14 +38,14 @@ export default function TaskFiltersComponent({
           })
         }
       >
-        <SelectTrigger className="h-9 w-full xl:w-36">
+        <SelectTrigger className="h-9 w-full xl:w-32 rounded-xl text-xs bg-muted/30 border-border/70">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
 
-        <SelectContent>
-          <SelectItem value="All">All Status</SelectItem>
-          <SelectItem value="todo">To Do</SelectItem>
-          <SelectItem value="done">Completed</SelectItem>
+        <SelectContent className="rounded-xl">
+          <SelectItem value="All">Semua Status</SelectItem>
+          <SelectItem value="todo">Belum Selesai</SelectItem>
+          <SelectItem value="done">Selesai</SelectItem>
         </SelectContent>
       </Select>
 
@@ -58,16 +58,19 @@ export default function TaskFiltersComponent({
           })
         }
       >
-        <SelectTrigger className="h-9 w-full xl:w-36">
-          <SelectValue placeholder="Category" />
+        <SelectTrigger className="h-9 w-full xl:w-36 rounded-xl text-xs bg-muted/30 border-border/70">
+          <SelectValue placeholder="Kategori" />
         </SelectTrigger>
 
-        <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
+        <SelectContent className="rounded-xl">
+          <SelectItem value="all">Semua Kategori</SelectItem>
 
           {categoryOptions.map(option => (
             <SelectItem key={option.value} value={option.value}>
-              {option.label}
+              <div className="flex items-center gap-2">
+                <span className={`size-2 rounded-full ${option.dotColor}`} />
+                <span>{option.label}</span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>

@@ -50,7 +50,7 @@ export function GenericCalendarGrid({
       {/* Header Row */}
       <div
         className={cn(
-          "grid grid-cols-7 w-full bg-primary",
+          "grid grid-cols-7 w-full bg-muted/40 border-b border-border/60 text-muted-foreground",
           classNames?.headerRow
         )}
       >

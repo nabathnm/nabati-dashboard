@@ -288,7 +288,7 @@ const MATCH_ORDER = [
   "Tagihan", "Hiburan", "Kesehatan", "Pendidikan", "Perawatan",
 ];
 
-export function matchCategoryId(
+function matchCategoryId(
   description: string,
   categories: { id: string; name: string; type: string }[],
   type: "expense" | "income"

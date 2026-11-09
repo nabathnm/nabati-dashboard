@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { Task, TaskCategory } from "@/types/task";
 import { format, isSameDay, isSameMonth } from "date-fns";
+import { Plus } from "lucide-react";
 import TaskPopover from "../TaskPopOver";
 
 interface CalendarDayCellProps {
@@ -15,7 +16,7 @@ interface CalendarDayCellProps {
   onTaskDescriptionChange?: (taskId: string, newDescription: string) => void;
   onTaskTitleChange?: (taskId: string, newTitle: string) => void;
   onTaskCategoryChange?: (taskId: string, newCategory: TaskCategory) => void;
-  onTaskProgressChange?: (taskId: string, newProgress: number) => void;
+  onProgressChange?: (taskId: string, newProgress: number) => void;
   onEditTask?: (task: Task) => void;
   onDeleteTask?: (task: Task) => void;
 }
@@ -35,29 +36,42 @@ export default function CalendarDayCell({
   onDeleteTask,
 }: CalendarDayCellProps) {
   const today = new Date();
+  const isCurrentMonth = isSameMonth(day, monthStart);
+  const isTodayDate = isSameDay(day, today);
 
   return (
     <div
       className={cn(
-        "min-h-32.5 p-2 border-r border-b border-border/50 relative group transition-colors cursor-pointer",
-        !isSameMonth(day, monthStart)
-          ? "bg-card/30 text-foreground/50"
-          : "bg-card hover:bg-card/30"
+        "min-h-32 p-2.5 border-r border-b border-border/40 relative group transition-colors cursor-pointer",
+        !isCurrentMonth
+          ? "bg-card/20 text-muted-foreground/40"
+          : "bg-card/70 hover:bg-card/90"
       )}
       onClick={() => onDateClick(day)}
     >
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-center mb-1.5">
         <span
           className={cn(
-            "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full",
-            isSameDay(day, today) ? "bg-primary text-primary-foreground" : ""
+            "text-xs font-mono font-medium size-6 flex items-center justify-center rounded-lg transition-colors",
+            isTodayDate
+              ? "bg-foreground text-background font-bold shadow-xs"
+              : isCurrentMonth
+                ? "text-muted-foreground group-hover:text-foreground"
+                : "text-muted-foreground/40"
           )}
         >
           {format(day, "d")}
         </span>
+
+        <span
+          className="opacity-0 group-hover:opacity-100 transition-opacity size-5 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          title="Tambah tugas di tanggal ini"
+        >
+          <Plus className="size-3.5" />
+        </span>
       </div>
 
-      <div className="space-y-1 mt-1 overflow-y-auto max-h-25 no-scrollbar">
+      <div className="space-y-1 mt-1 overflow-y-auto max-h-24 no-scrollbar">
         {dayTasks.map(task => (
           <TaskPopover
             key={task.id}

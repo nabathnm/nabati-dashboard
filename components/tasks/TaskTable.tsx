@@ -17,22 +17,19 @@ interface TaskTableProps {
   onEditTask: (task: Task) => void;
   onCreateTask: () => void;
 
-  // Opsional: hubungkan setelah fungsi tersedia
   onDeleteTask?: (task: Task) => void | Promise<void>;
   onTogglePin?: (task: Task) => void | Promise<void>;
   isTaskPinned?: (task: Task) => boolean;
 }
 
-/* 5 kolom dengan lebar sama. minmax(0,1fr) mencegah isi panjang
-   melebarkan kolom. Dipakai bersama oleh header dan setiap baris. */
 const GRID = "grid grid-cols-[repeat(5,minmax(0,1fr))] items-center gap-x-4 px-5";
 
 const COLUMNS = [
-  { label: "Task Name", align: "justify-start text-left" },
-  { label: "Category", align: "justify-center text-center" },
+  { label: "Nama Tugas", align: "justify-start text-left" },
+  { label: "Kategori", align: "justify-center text-center" },
   { label: "Progress", align: "justify-center text-center" },
-  { label: "Deadline", align: "justify-center text-center" },
-  { label: "Action", align: "justify-center text-center" },
+  { label: "Tenggat Waktu", align: "justify-center text-center" },
+  { label: "Aksi", align: "justify-center text-center" },
 ];
 
 export default function TaskTable({
@@ -47,7 +44,7 @@ export default function TaskTable({
 }: TaskTableProps) {
   if (isLoading) {
     return (
-      <div className="overflow-hidden rounded-xl border border-border/60 bg-card">
+      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
         <div className="divide-y divide-border/50">
           <div className="bg-muted/40 px-5 py-3">
             <Skeleton className="h-4 w-full" />
@@ -68,16 +65,16 @@ export default function TaskTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-xs">
       <div className="overflow-x-auto">
         <div className="min-w-[760px]">
           {/* Header */}
-          <div className={cn(GRID, "py-4 bg-primary text-primary-foreground text-xs ")}>
+          <div className={cn(GRID, "py-3 bg-muted/40 text-muted-foreground border-b border-border/60")}>
             {COLUMNS.map(col => (
               <div
                 key={col.label}
                 className={cn(
-                  "flex text-xs font-semibold uppercase tracking-wide",
+                  "flex text-xs font-semibold uppercase tracking-wider",
                   col.align
                 )}
               >
@@ -87,7 +84,7 @@ export default function TaskTable({
           </div>
 
           {/* Rows */}
-          <div className="divide-y divide-border/50">
+          <div className="divide-y divide-border/40">
             {tasks.map(task => {
               const cat = CATEGORY_CONFIG[task.category] ?? CATEGORY_CONFIG.Lainnya;
 
@@ -106,17 +103,17 @@ export default function TaskTable({
                   className={cn(
                     GRID,
                     "group cursor-pointer py-3.5 transition-colors",
-                    "hover:bg-muted/10",
-                    isDone && "bg-muted/10"
+                    "hover:bg-muted/30",
+                    isDone && "bg-muted/15"
                   )}
                   onClick={() => onEditTask(task)}
                 >
                   {/* Task Name */}
-                  <div className="flex min-w-0 justify-start">
+                  <div className="flex min-w-0 items-center gap-2 justify-start">
                     <span
                       className={cn(
                         "truncate text-sm font-medium",
-                        isDone ? "text-muted-foreground line-through" : "text-foreground"
+                        isDone ? "text-muted-foreground line-through opacity-70" : "text-foreground"
                       )}
                       title={task.title}
                     >
@@ -135,21 +132,24 @@ export default function TaskTable({
                       )}
                     >
                       <span
-                        className={cn("h-1.5 w-1.5 shrink-0 rounded-full", cat.dot)}
+                        className={cn("size-1.5 shrink-0 rounded-full", cat.dot)}
                       />
                       <span className="truncate">{cat.label}</span>
                     </span>
                   </div>
 
                   {/* Progress */}
-                  <div className="flex min-w-0 items-center justify-center">
-                    <div className="h-1.5 w-full max-w-28 overflow-hidden rounded-full bg-muted">
+                  <div className="flex min-w-0 items-center justify-center gap-2">
+                    <div className="h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-muted/60">
                       <div
-                        className="h-full rounded-full bg-[#88C0D0] transition-all duration-300"
+                        className={cn(
+                          "h-full rounded-full transition-all duration-300",
+                          isDone ? "bg-emerald-500" : "bg-foreground"
+                        )}
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <span className="w-9 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+                    <span className="w-8 shrink-0 text-right text-xs font-mono tabular-nums text-muted-foreground">
                       {progress}%
                     </span>
                   </div>
@@ -159,20 +159,20 @@ export default function TaskTable({
                     {dueDate ? (
                       <div
                         className={cn(
-                          "flex max-w-full items-center gap-1.5 rounded-md",
-                          "border px-2 py-1 text-xs",
+                          "flex max-w-full items-center gap-1.5 rounded-lg",
+                          "border px-2.5 py-1 text-xs font-medium",
                           isOverdue
-                            ? "border-[#BF616A]/30 bg-[#BF616A]/10 text-[#BF616A]"
+                            ? "border-rose-500/30 bg-rose-500/10 text-rose-500 dark:text-rose-400"
                             : isDone
-                              ? "border-[#A3BE8C]/30 bg-[#A3BE8C]/10 text-[#A3BE8C]"
-                              : "border-border/60 bg-muted/40 text-muted-foreground"
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                              : "border-border/60 bg-muted/30 text-muted-foreground"
                         )}
                       >
                         <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{format(dueDate, "MMM d, yyyy")}</span>
+                        <span className="truncate">{format(dueDate, "d MMM yyyy")}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground/60">—</span>
+                      <span className="text-sm text-muted-foreground/50">—</span>
                     )}
                   </div>
 
@@ -186,20 +186,20 @@ export default function TaskTable({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      aria-label={isDone ? "Mark as incomplete" : "Mark as complete"}
-                      title={isDone ? "Mark as incomplete" : "Mark as complete"}
+                      aria-label={isDone ? "Tandai belum selesai" : "Tandai selesai"}
+                      title={isDone ? "Tandai belum selesai" : "Tandai selesai"}
                       onClick={() => onToggleComplete(task)}
                       className={cn(
-                        "h-8 w-8 shrink-0 rounded-lg",
+                        "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-[#A3BE8C]/15 hover:text-[#A3BE8C]",
-                        isDone && "bg-[#A3BE8C]/10 text-[#A3BE8C]"
+                        "hover:bg-emerald-500/15 hover:text-emerald-500",
+                        isDone && "bg-emerald-500/15 text-emerald-500"
                       )}
                     >
                       {isDone ? (
-                        <Check className="h-4 w-4" />
+                        <Check className="size-4" />
                       ) : (
-                        <CheckCircle2 className="h-4 w-4" />
+                        <CheckCircle2 className="size-4" />
                       )}
                     </Button>
 
@@ -209,24 +209,24 @@ export default function TaskTable({
                       variant="ghost"
                       size="icon"
                       disabled={!onTogglePin}
-                      aria-label={isPinned ? "Unpin task" : "Pin task"}
+                      aria-label={isPinned ? "Lepas sematan" : "Sematkan tugas"}
                       title={
                         !onTogglePin
-                          ? "Pin feature not connected"
+                          ? "Fitur pin belum terhubung"
                           : isPinned
-                            ? "Unpin task"
-                            : "Pin task"
+                            ? "Lepas sematan"
+                            : "Sematkan tugas"
                       }
                       onClick={() => onTogglePin?.(task)}
                       className={cn(
-                        "h-8 w-8 shrink-0 rounded-lg",
+                        "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-[#EBCB8B]/15 hover:text-[#EBCB8B]",
-                        isPinned && "bg-[#EBCB8B]/10 text-[#EBCB8B]",
+                        "hover:bg-amber-500/15 hover:text-amber-500",
+                        isPinned && "bg-amber-500/15 text-amber-500",
                         !onTogglePin && "opacity-40"
                       )}
                     >
-                      <Pin className={cn("h-4 w-4", isPinned && "fill-current")} />
+                      <Pin className={cn("size-3.5", isPinned && "fill-current")} />
                     </Button>
 
                     {/* Edit */}
@@ -234,16 +234,12 @@ export default function TaskTable({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      aria-label="Edit task"
-                      title="Edit task"
+                      aria-label="Ubah tugas"
+                      title="Ubah tugas"
                       onClick={() => onEditTask(task)}
-                      className={cn(
-                        "h-8 w-8 shrink-0 rounded-lg",
-                        "text-muted-foreground transition-colors",
-                        "hover:bg-[#88C0D0]/15 hover:text-[#88C0D0]"
-                      )}
+                      className="size-8 shrink-0 rounded-lg text-muted-foreground hover:bg-muted/70 hover:text-foreground cursor-pointer"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="size-3.5" />
                     </Button>
 
                     {/* Delete */}
@@ -252,24 +248,28 @@ export default function TaskTable({
                       variant="ghost"
                       size="icon"
                       disabled={!onDeleteTask}
-                      aria-label="Delete task"
-                      title={
-                        onDeleteTask ? "Delete task" : "Delete feature not connected"
-                      }
+                      aria-label="Hapus tugas"
+                      title="Hapus tugas"
                       onClick={() => onDeleteTask?.(task)}
                       className={cn(
-                        "h-8 w-8 shrink-0 rounded-lg",
+                        "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-[#BF616A]/15 hover:text-[#BF616A]",
+                        "hover:bg-rose-500/15 hover:text-rose-500",
                         !onDeleteTask && "opacity-40"
                       )}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="size-3.5" />
                     </Button>
                   </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* Table Footer */}
+          <div className="flex items-center justify-between border-t border-border/40 bg-muted/20 px-5 py-2.5 text-xs text-muted-foreground">
+            <span>Menampilkan {tasks.length} tugas</span>
+            <span className="text-[11px]">Klik baris tugas untuk melihat atau mengubah detail</span>
           </div>
         </div>
       </div>

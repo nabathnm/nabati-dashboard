@@ -1,41 +1,48 @@
 import { ListTodo, Clock, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
+import React from "react";
 
-import type { TaskStatStyle } from "@/types/task";
+export interface TaskStatConfig {
+  label: string;
+  subLabel: string;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+}
 
-export const taskStatStyles: Omit<TaskStatStyle, "value">[] = [
+export const taskStatStyles: TaskStatConfig[] = [
   {
-    label: "Total Tasks",
+    label: "Total Tugas",
+    subLabel: "Semua agenda tercatat",
     icon: ListTodo,
-    border: "border-t-slate-400",
-    iconBg: "bg-slate-100",
-    iconColor: "text-slate-600",
+    iconBg: "bg-muted text-foreground border-border/50",
+    iconColor: "text-foreground",
   },
   {
-    label: "In Progress",
+    label: "Sedang Berjalan",
+    subLabel: "Tugas aktif belum selesai",
     icon: Clock,
-    border: "border-t-blue-400",
-    iconBg: "bg-blue-50",
-    iconColor: "text-blue-500",
+    iconBg: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    iconColor: "text-blue-500 dark:text-blue-400",
   },
   {
-    label: "Completed",
+    label: "Selesai",
+    subLabel: "Tercapai tepat waktu",
     icon: CheckCircle2,
-    border: "border-t-emerald-400",
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-500",
+    iconBg: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    iconColor: "text-emerald-500 dark:text-emerald-400",
   },
   {
-    label: "Overdue",
+    label: "Terlewat",
+    subLabel: "Melewati batas tenggat",
     icon: AlertTriangle,
-    border: "border-t-rose-400",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-500",
+    iconBg: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+    iconColor: "text-rose-500 dark:text-rose-400",
   },
   {
-    label: "Completion",
+    label: "Tingkat Selesai",
+    subLabel: "Persentase penyelesaian",
     icon: TrendingUp,
-    border: "border-t-amber-400",
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-500",
+    iconBg: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    iconColor: "text-amber-500 dark:text-amber-400",
   },
 ];
