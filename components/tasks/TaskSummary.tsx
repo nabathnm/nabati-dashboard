@@ -16,7 +16,7 @@ export default function TaskSummary() {
       {error && (
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs font-medium text-rose-500 dark:text-rose-400"
         >
           {error}
         </div>

@@ -172,7 +172,7 @@ export default function TaskTable({
                         <span className="truncate">{format(dueDate, "d MMM yyyy")}</span>
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground/50">—</span>
+                      <span className="text-xs text-muted-foreground/50">Tidak ada</span>
                     )}
                   </div>
 

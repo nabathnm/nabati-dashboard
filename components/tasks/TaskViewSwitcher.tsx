@@ -23,10 +23,6 @@ import { pullTasksFromGoogleCalendar } from "@/lib/services/task-service";
 import type { Task, TaskCategory, TaskFilters } from "@/types/task";
 import { toast } from "sonner";
 
-/* =========================================================
-   HELPER
-========================================================= */
-
 function useDebouncedValue<T>(value: T, delay = 300): T {
   const [debounced, setDebounced] = useState(value);
 
@@ -37,10 +33,6 @@ function useDebouncedValue<T>(value: T, delay = 300): T {
 
   return debounced;
 }
-
-/* =========================================================
-   TASK VIEW SWITCHER
-========================================================= */
 
 export default function TaskViewSwitcher() {
   // Tampilan, filter, dan pencarian (dikendalikan toolbar)
@@ -270,7 +262,7 @@ export default function TaskViewSwitcher() {
       {errorMessage && (
         <div
           role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+          className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs font-medium text-rose-500 dark:text-rose-400"
         >
           {errorMessage}
         </div>
@@ -321,25 +313,29 @@ export default function TaskViewSwitcher() {
           if (!open && !isDeleting) setTaskToDelete(null);
         }}
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Task</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{taskToDelete?.title}&quot;? This
-              action cannot be undone.
+        <AlertDialogContent className="rounded-2xl border border-border/80 bg-card p-0 overflow-hidden text-card-foreground shadow-2xl">
+          <AlertDialogHeader className="px-6 py-5 border-b border-border/50 bg-card">
+            <AlertDialogTitle className="text-xl font-bold text-foreground">Hapus Tugas</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground text-sm mt-1">
+              Apakah Anda yakin ingin menghapus tugas &quot;{taskToDelete?.title}&quot;? Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="px-6 py-4 bg-muted/20 flex gap-2">
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="rounded-xl border-border/80 cursor-pointer"
+            >
+              Batal
+            </AlertDialogCancel>
             <AlertDialogAction
               disabled={isDeleting}
               onClick={e => {
                 e.preventDefault(); // tahan dialog sampai proses hapus selesai
                 handleConfirmDelete();
               }}
-              className="bg-rose-500 hover:bg-rose-600 border-0"
+              className="rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-medium border-0 cursor-pointer"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Menghapus..." : "Hapus"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

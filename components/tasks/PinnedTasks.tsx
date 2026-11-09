@@ -94,10 +94,6 @@ export default function PinnedTasks({ className }: PinnedTasksProps) {
   );
 }
 
-/* =========================================================
-   ITEM
-========================================================= */
-
 interface PinnedItemProps {
   task: Task;
   onToggleComplete: () => void;
