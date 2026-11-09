@@ -16,7 +16,7 @@ interface CalendarDayCellProps {
   onTaskDescriptionChange?: (taskId: string, newDescription: string) => void;
   onTaskTitleChange?: (taskId: string, newTitle: string) => void;
   onTaskCategoryChange?: (taskId: string, newCategory: TaskCategory) => void;
-  onProgressChange?: (taskId: string, newProgress: number) => void;
+  onTaskProgressChange?: (taskId: string, newProgress: number) => void;
   onEditTask?: (task: Task) => void;
   onDeleteTask?: (task: Task) => void;
 }

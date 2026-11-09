@@ -1,4 +1,10 @@
-import type { LucideIcon } from "lucide-react";
+import type React from "react";
+
+export type LucideIcon = React.ComponentType<{
+  className?: string;
+  size?: number | string;
+  [key: string]: any;
+}>;
 
 export type Task = {
   id: string;

@@ -63,7 +63,7 @@ export function GenericCalendarGrid({
 
       {/* Days Grid */}
       <div className={cn("grid grid-cols-7 w-full", classNames?.grid)}>
-        {calendarDays.map((day, idx) => (
+        {calendarDays.map((day: any, idx: number) => (
           <React.Fragment key={idx}>{renderDay(day)}</React.Fragment>
         ))}
       </div>
