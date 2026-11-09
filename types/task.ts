@@ -63,6 +63,7 @@ export type GoogleCalendarEvent = {
   description?: string;
   htmlLink?: string;
   status?: string;
+  colorId?: string;
   start?: { dateTime?: string; date?: string };
   end?: { dateTime?: string; date?: string };
   extendedProperties?: {

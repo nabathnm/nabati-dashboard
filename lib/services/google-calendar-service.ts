@@ -20,7 +20,7 @@ const DEFAULT_CALENDAR_ID =
  * 1: Lavender, 2: Sage (Hijau), 3: Grape, 4: Flamingo, 5: Banana,
  * 6: Tangerine (Oranye), 7: Peacock, 8: Graphite (Abu-abu), 9: Blueberry (Biru), 10: Basil, 11: Tomato
  */
-const CATEGORY_COLOR_MAP: Record<TaskCategory, string> = {
+export const CATEGORY_COLOR_MAP: Record<TaskCategory, string> = {
   Kuliah: "9", // Blueberry (Biru)
   Organisasi: "5", // Banana (Kuning)
   Praktikum: "11", // Tomato (Merah)
@@ -384,11 +384,30 @@ export async function syncAllTasksToGoogleCalendar(
 }
 
 /**
- * Memprediksi kategori tugas dari judul dan deskripsi event Google Calendar.
+ * Memprediksi kategori tugas dari Google Calendar, memprioritaskan colorId yang sesuai:
+ * - 9 (Blueberry): Kuliah (Biru)
+ * - 5 (Banana): Organisasi (Kuning)
+ * - 11/4 (Tomato/Flamingo): Praktikum (Merah)
+ * - 3/1 (Grape/Lavender): Lainnya / Personal (Ungu)
  */
-export function inferCategory(summary?: string, description?: string): TaskCategory {
+export function inferCategory(
+  summary?: string,
+  description?: string,
+  colorId?: string
+): TaskCategory {
+  // 1. Pemetaan berdasarkan colorId Google Calendar jika tersedia
+  if (colorId) {
+    if (colorId === "9") return "Kuliah";
+    if (colorId === "5") return "Organisasi";
+    if (colorId === "11" || colorId === "4") return "Praktikum";
+    if (colorId === "3" || colorId === "1") return "Lainnya";
+  }
+
+  // 2. Prediksi berdasarkan kata kunci judul dan deskripsi event
   const text = `${summary || ""} ${description || ""}`.toLowerCase();
-  if (/kuliah|kelas|dosen|tugas|matkul|ujian|uts|uas|skripsi|kkn|kampus|seminar/.test(text)) {
+  if (
+    /kuliah|kelas|dosen|tugas|matkul|ujian|uts|uas|skripsi|kkn|kampus|seminar/.test(text)
+  ) {
     return "Kuliah";
   }
   if (/organisasi|rapat|bph|divisi|himpunan|bem|kepanitiaan|proker|meeting/.test(text)) {
@@ -397,7 +416,9 @@ export function inferCategory(summary?: string, description?: string): TaskCateg
   if (/praktikum|lab|modul|laporan|asisten/.test(text)) {
     return "Praktikum";
   }
-  if (/pribadi|personal|belanja|olahraga|gym|workout|jalan|liburan|bayar|dokter/.test(text)) {
+  if (
+    /pribadi|personal|belanja|olahraga|gym|workout|jalan|liburan|bayar|dokter/.test(text)
+  ) {
     return "Personal";
   }
   return "Lainnya";
@@ -435,27 +456,11 @@ export function getThreeMonthRange(referenceDate: Date = new Date()) {
       : new Date();
 
   // Awal bulan lalu dengan buffer 1 hari sebelumnya (hari terakhir 2 bulan lalu, 00:00:00)
-  const startOfLastMonth = new Date(
-    ref.getFullYear(),
-    ref.getMonth() - 1,
-    0,
-    0,
-    0,
-    0,
-    0
-  );
+  const startOfLastMonth = new Date(ref.getFullYear(), ref.getMonth() - 1, 0, 0, 0, 0, 0);
 
   // Akhir bulan depan dengan buffer ke tanggal 2 bulan berikutnya jam 00:00:00
   // Memastikan semua event hingga detik terakhir bulan depan 100% masuk dalam filter timeMax
-  const endOfNextMonth = new Date(
-    ref.getFullYear(),
-    ref.getMonth() + 2,
-    2,
-    0,
-    0,
-    0,
-    0
-  );
+  const endOfNextMonth = new Date(ref.getFullYear(), ref.getMonth() + 2, 2, 0, 0, 0, 0);
 
   return {
     timeMin: startOfLastMonth.toISOString(),

@@ -739,7 +739,7 @@ export async function pullTasksFromGoogleCalendar(options?: {
 
       const category =
         (event.extendedProperties?.private?.nabatu_category as TaskCategory) ||
-        inferCategory(cleanTitle, cleanDescription);
+        inferCategory(cleanTitle, cleanDescription, event.colorId);
 
       if (matchedTask) {
         // Update tugas yang sudah ada jika ada perubahan
