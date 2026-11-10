@@ -7,34 +7,34 @@ export type TaskCategoryOption = {
   dotColor: string;
 };
 
-// Nord Theme Category Options for Select & Dropdown
+// Pilihan Kategori dengan Highlight
 export const TASK_CATEGORY_OPTIONS: TaskCategoryOption[] = [
   {
     value: "Kuliah",
     label: "Kuliah",
     activeClass:
-      "bg-[#81A1C1]/15 border-[#81A1C1]/40 text-[#5E81AC] dark:text-[#88C0D0]",
-    dotColor: "bg-[#81A1C1]",
+      "bg-blue-50 border-blue-300 text-blue-600 dark:bg-blue-950/50 dark:border-blue-800 dark:text-blue-300",
+    dotColor: "bg-blue-500",
   },
   {
     value: "Organisasi",
     label: "Organisasi",
     activeClass:
-      "bg-[#EBCB8B]/15 border-[#EBCB8B]/40 text-[#D08770] dark:text-[#EBCB8B]",
-    dotColor: "bg-[#EBCB8B]",
+      "bg-amber-50 border-amber-300 text-amber-600 dark:bg-amber-950/50 dark:border-amber-800 dark:text-amber-300",
+    dotColor: "bg-amber-500",
   },
   {
     value: "Praktikum",
     label: "Praktikum",
     activeClass:
-      "bg-[#BF616A]/15 border-[#BF616A]/40 text-[#BF616A] dark:text-[#BF616A]",
-    dotColor: "bg-[#BF616A]",
+      "bg-rose-50 border-rose-300 text-rose-600 dark:bg-rose-950/50 dark:border-rose-800 dark:text-rose-300",
+    dotColor: "bg-rose-500",
   },
   {
     value: "Lainnya",
     label: "Lainnya",
     activeClass:
-      "bg-[#B48EAD]/15 border-[#B48EAD]/40 text-[#B48EAD] dark:text-[#B48EAD]",
-    dotColor: "bg-[#B48EAD]",
+      "bg-purple-50 border-purple-300 text-purple-600 dark:bg-purple-950/50 dark:border-purple-800 dark:text-purple-300",
+    dotColor: "bg-purple-500",
   },
 ];

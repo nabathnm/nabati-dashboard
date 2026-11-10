@@ -7,40 +7,40 @@ export type TaskCategoryConfig = {
   label: string;
 };
 
-// Nord Theme Palette Configuration
-// Kuliah: Frost Blue (nord9 #81A1C1)
-// Organisasi: Aurora Yellow (nord13 #EBCB8B)
-// Praktikum: Aurora Red (nord11 #BF616A)
-// Personal / Lainnya: Aurora Purple (nord15 #B48EAD)
+// Konfigurasi Kategori Highlighted
+// Kuliah: Biru
+// Organisasi: Kuning (Amber)
+// Praktikum: Merah (Rose)
+// Personal / Lainnya: Ungu (Purple)
 export const CATEGORY_CONFIG: Record<TaskCategory, TaskCategoryConfig> = {
   Kuliah: {
-    color: "text-[#5E81AC] dark:text-[#88C0D0]",
-    bg: "bg-[#81A1C1]/15 border-[#81A1C1]/30 dark:bg-[#81A1C1]/20 dark:border-[#81A1C1]/40",
-    dot: "bg-[#81A1C1]",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:border-blue-900",
+    dot: "bg-blue-500",
     label: "Kuliah",
   },
   Organisasi: {
-    color: "text-[#D08770] dark:text-[#EBCB8B]",
-    bg: "bg-[#EBCB8B]/15 border-[#EBCB8B]/30 dark:bg-[#EBCB8B]/20 dark:border-[#EBCB8B]/40",
-    dot: "bg-[#EBCB8B]",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900",
+    dot: "bg-amber-500",
     label: "Organisasi",
   },
   Praktikum: {
-    color: "text-[#BF616A] dark:text-[#BF616A]",
-    bg: "bg-[#BF616A]/15 border-[#BF616A]/30 dark:bg-[#BF616A]/20 dark:border-[#BF616A]/40",
-    dot: "bg-[#BF616A]",
+    color: "text-rose-600 dark:text-rose-400",
+    bg: "bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900",
+    dot: "bg-rose-500",
     label: "Praktikum",
   },
   Personal: {
-    color: "text-[#B48EAD] dark:text-[#B48EAD]",
-    bg: "bg-[#B48EAD]/15 border-[#B48EAD]/30 dark:bg-[#B48EAD]/20 dark:border-[#B48EAD]/40",
-    dot: "bg-[#B48EAD]",
+    color: "text-purple-600 dark:text-purple-400",
+    bg: "bg-purple-50 border-purple-200 dark:bg-purple-950/40 dark:border-purple-900",
+    dot: "bg-purple-500",
     label: "Personal",
   },
   Lainnya: {
-    color: "text-[#B48EAD] dark:text-[#B48EAD]",
-    bg: "bg-[#B48EAD]/15 border-[#B48EAD]/30 dark:bg-[#B48EAD]/20 dark:border-[#B48EAD]/40",
-    dot: "bg-[#B48EAD]",
+    color: "text-purple-600 dark:text-purple-400",
+    bg: "bg-purple-50 border-purple-200 dark:bg-purple-950/40 dark:border-purple-900",
+    dot: "bg-purple-500",
     label: "Lainnya",
   },
 };

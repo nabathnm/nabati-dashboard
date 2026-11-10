@@ -12,41 +12,41 @@ export interface CategoryStyle {
   dot: string;
 }
 
-// Nord Theme Official Palette Mapping
-// Kuliah: Frost Blue (nord9 #81A1C1 / nord10 #5E81AC)
-// Organisasi: Aurora Yellow (nord13 #EBCB8B)
-// Praktikum: Aurora Red (nord11 #BF616A)
-// Personal/Lainnya: Aurora Purple (nord15 #B48EAD)
+// Class Tailwind ber-highlight untuk kontras tinggi dan keterbacaan optimal
+// Kuliah: Biru
+// Organisasi: Kuning (Amber)
+// Praktikum: Merah (Rose)
+// Personal/Lainnya: Ungu (Purple)
 export const categoryStyles: Record<TaskCategory, CategoryStyle> = {
   Kuliah: {
     label: "Kuliah",
-    bg: "bg-[#81A1C1]/15 border-[#81A1C1]/30 dark:bg-[#81A1C1]/20 dark:border-[#81A1C1]/40",
-    color: "text-[#5E81AC] dark:text-[#88C0D0]",
-    dot: "bg-[#81A1C1]",
+    bg: "bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:border-blue-900",
+    color: "text-blue-700 dark:text-blue-300",
+    dot: "bg-blue-500",
   },
   Organisasi: {
     label: "Organisasi",
-    bg: "bg-[#EBCB8B]/15 border-[#EBCB8B]/30 dark:bg-[#EBCB8B]/20 dark:border-[#EBCB8B]/40",
-    color: "text-[#D08770] dark:text-[#EBCB8B]",
-    dot: "bg-[#EBCB8B]",
+    bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900",
+    color: "text-amber-700 dark:text-amber-300",
+    dot: "bg-amber-500",
   },
   Praktikum: {
     label: "Praktikum",
-    bg: "bg-[#BF616A]/15 border-[#BF616A]/30 dark:bg-[#BF616A]/20 dark:border-[#BF616A]/40",
-    color: "text-[#BF616A] dark:text-[#BF616A]",
-    dot: "bg-[#BF616A]",
+    bg: "bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900",
+    color: "text-rose-700 dark:text-rose-300",
+    dot: "bg-rose-500",
   },
   Personal: {
     label: "Personal",
-    bg: "bg-[#B48EAD]/15 border-[#B48EAD]/30 dark:bg-[#B48EAD]/20 dark:border-[#B48EAD]/40",
-    color: "text-[#B48EAD] dark:text-[#B48EAD]",
-    dot: "bg-[#B48EAD]",
+    bg: "bg-purple-50 border-purple-200 dark:bg-purple-950/40 dark:border-purple-900",
+    color: "text-purple-700 dark:text-purple-300",
+    dot: "bg-purple-500",
   },
   Lainnya: {
     label: "Lainnya",
-    bg: "bg-[#B48EAD]/15 border-[#B48EAD]/30 dark:bg-[#B48EAD]/20 dark:border-[#B48EAD]/40",
-    color: "text-[#B48EAD] dark:text-[#B48EAD]",
-    dot: "bg-[#B48EAD]",
+    bg: "bg-purple-50 border-purple-200 dark:bg-purple-950/40 dark:border-purple-900",
+    color: "text-purple-700 dark:text-purple-300",
+    dot: "bg-purple-500",
   },
 };
 
