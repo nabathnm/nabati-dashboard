@@ -40,7 +40,7 @@ export default function TaskViewToggle({
         className={cn(
           "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
           view === "calendar"
-            ? "bg-card text-foreground font-semibold shadow-xs border border-border/60"
+            ? "bg-card text-[#5E81AC] dark:text-[#88C0D0] font-semibold shadow-xs border border-border/80 dark:border-[#88C0D0]/30"
             : "text-muted-foreground hover:text-foreground"
         )}
       >
@@ -54,7 +54,7 @@ export default function TaskViewToggle({
         className={cn(
           "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
           view === "list"
-            ? "bg-card text-foreground font-semibold shadow-xs border border-border/60"
+            ? "bg-card text-[#5E81AC] dark:text-[#88C0D0] font-semibold shadow-xs border border-border/80 dark:border-[#88C0D0]/30"
             : "text-muted-foreground hover:text-foreground"
         )}
       >

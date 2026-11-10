@@ -66,7 +66,7 @@ export default function CalendarDayCell({
           className={cn(
             "text-xs font-mono font-medium size-6 flex items-center justify-center rounded-lg transition-colors",
             isTodayDate
-              ? "bg-foreground text-background font-bold shadow-xs"
+              ? "bg-[#88C0D0] text-[#2E3440] font-bold shadow-xs ring-2 ring-[#88C0D0]/30"
               : isCurrentMonth
                 ? "text-muted-foreground group-hover:text-foreground"
                 : "text-muted-foreground/40"

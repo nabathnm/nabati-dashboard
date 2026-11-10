@@ -144,7 +144,7 @@ export default function TaskTable({
                       <div
                         className={cn(
                           "h-full rounded-full transition-all duration-300",
-                          isDone ? "bg-emerald-500" : "bg-foreground"
+                          isDone ? "bg-[#A3BE8C]" : "bg-[#88C0D0]"
                         )}
                         style={{ width: `${progress}%` }}
                       />
@@ -162,9 +162,9 @@ export default function TaskTable({
                           "flex max-w-full items-center gap-1.5 rounded-lg",
                           "border px-2.5 py-1 text-xs font-medium",
                           isOverdue
-                            ? "border-rose-500/30 bg-rose-500/10 text-rose-500 dark:text-rose-400"
+                            ? "border-[#BF616A]/30 bg-[#BF616A]/10 text-[#BF616A]"
                             : isDone
-                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                              ? "border-[#A3BE8C]/30 bg-[#A3BE8C]/10 text-[#A3BE8C]"
                               : "border-border/60 bg-muted/30 text-muted-foreground"
                         )}
                       >
@@ -192,8 +192,8 @@ export default function TaskTable({
                       className={cn(
                         "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-emerald-500/15 hover:text-emerald-500",
-                        isDone && "bg-emerald-500/15 text-emerald-500"
+                        "hover:bg-[#A3BE8C]/15 hover:text-[#A3BE8C]",
+                        isDone && "bg-[#A3BE8C]/15 text-[#A3BE8C]"
                       )}
                     >
                       {isDone ? (
@@ -221,8 +221,8 @@ export default function TaskTable({
                       className={cn(
                         "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-amber-500/15 hover:text-amber-500",
-                        isPinned && "bg-amber-500/15 text-amber-500",
+                        "hover:bg-[#EBCB8B]/15 hover:text-[#EBCB8B]",
+                        isPinned && "bg-[#EBCB8B]/15 text-[#EBCB8B]",
                         !onTogglePin && "opacity-40"
                       )}
                     >
@@ -254,7 +254,7 @@ export default function TaskTable({
                       className={cn(
                         "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-rose-500/15 hover:text-rose-500",
+                        "hover:bg-[#BF616A]/15 hover:text-[#BF616A]",
                         !onDeleteTask && "opacity-40"
                       )}
                     >

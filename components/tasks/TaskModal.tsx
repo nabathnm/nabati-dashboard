@@ -185,8 +185,8 @@ export default function TaskModal({
         <DialogContent className="sm:max-w-xl border border-border/80 bg-card shadow-2xl rounded-2xl overflow-hidden">
           <DialogHeader className="bg-card text-white border-b border-border/60 px-6 py-5 pr-14 shadow-none">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white border border-white/10 shadow-sm">
-                <ListTodo className="size-5 text-white" />
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/30 shadow-xs">
+                <ListTodo className="size-5 text-[#88C0D0]" />
               </div>
               <div className="min-w-0">
                 <DialogTitle className="text-xl font-bold text-white tracking-tight">
@@ -307,14 +307,14 @@ export default function TaskModal({
                     </span>
                   </div>
                 </div>
-                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-400">
+                <span className="rounded-full border border-[#A3BE8C]/40 bg-[#A3BE8C]/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#A3BE8C]">
                   Otomatis
                 </span>
               </div>
 
               {/* Server error */}
               {submitError && (
-                <p role="alert" className="text-sm text-rose-400 font-medium">
+                <p role="alert" className="text-sm text-[#BF616A] font-medium">
                   {submitError}
                 </p>
               )}
@@ -327,7 +327,7 @@ export default function TaskModal({
                     variant="ghost"
                     disabled={isPending}
                     onClick={() => setDeleteDialogOpen(true)}
-                    className="text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 rounded-xl h-10 px-3.5 text-xs font-medium cursor-pointer"
+                    className="text-[#BF616A] hover:bg-[#BF616A]/15 hover:text-[#BF616A] rounded-xl h-10 px-3.5 text-xs font-medium cursor-pointer"
                   >
                     <Trash2 className="mr-1.5 h-4 w-4" />
                     Hapus tugas
@@ -350,7 +350,7 @@ export default function TaskModal({
                   <Button
                     type="submit"
                     disabled={isPending}
-                    className="flex-1 sm:flex-initial rounded-xl h-10 px-6 text-sm font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-all shadow-sm active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                    className="flex-1 sm:flex-initial rounded-xl h-10 px-6 text-sm font-bold bg-[#88C0D0] text-[#2E3440] hover:bg-[#8FBCBB] transition-all shadow-xs active:scale-[0.98] cursor-pointer disabled:opacity-50"
                   >
                     {isSubmitting
                       ? "Menyimpan..."
@@ -388,7 +388,7 @@ export default function TaskModal({
                 e.preventDefault(); // tahan dialog tetap terbuka sampai proses hapus selesai
                 handleDelete();
               }}
-              className="rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-medium border-0"
+              className="rounded-xl bg-[#BF616A] hover:bg-[#BF616A]/90 text-white font-medium border-0"
             >
               {isDeleting ? "Menghapus..." : "Hapus"}
             </AlertDialogAction>

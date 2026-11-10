@@ -74,7 +74,7 @@ export default function TaskPopover({
             title={task.title}
           >
             {isDone ? (
-              <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
+              <CheckCircle2 className="size-3.5 shrink-0 text-[#A3BE8C]" />
             ) : (
               <Circle className="size-3.5 shrink-0 opacity-60" />
             )}
@@ -84,7 +84,7 @@ export default function TaskPopover({
             </span>
 
             {isPinned && (
-              <Pin className="size-3 shrink-0 text-amber-500 fill-amber-500/30" />
+              <Pin className="size-3 shrink-0 text-[#EBCB8B] fill-[#EBCB8B]/30" />
             )}
           </button>
         }
@@ -129,7 +129,7 @@ export default function TaskPopover({
                 className={cn(
                   "flex size-7 items-center justify-center rounded-lg transition-colors cursor-pointer",
                   isPinned
-                    ? "bg-amber-500/15 text-amber-500 hover:bg-amber-500/25"
+                    ? "bg-[#EBCB8B]/15 text-[#EBCB8B] hover:bg-[#EBCB8B]/25"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
@@ -147,7 +147,7 @@ export default function TaskPopover({
                 }}
                 aria-label="Hapus tugas"
                 title="Hapus tugas"
-                className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-rose-500/15 hover:text-rose-500 transition-colors cursor-pointer"
+                className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-[#BF616A]/15 hover:text-[#BF616A] transition-colors cursor-pointer"
               >
                 <Trash2 className="size-3.5" />
               </button>
@@ -179,7 +179,7 @@ export default function TaskPopover({
                 className={cn(
                   "inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-medium text-[11px]",
                   isOverdue
-                    ? "bg-rose-500/10 text-rose-500 dark:text-rose-400 font-semibold"
+                    ? "bg-[#BF616A]/10 text-[#BF616A] font-semibold"
                     : "bg-muted/60 text-muted-foreground"
                 )}
               >
@@ -205,7 +205,7 @@ export default function TaskPopover({
             className={cn(
               "flex items-center gap-2.5 w-full rounded-xl border p-2.5 transition-all cursor-pointer text-left",
               isDone
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                ? "border-[#A3BE8C]/40 bg-[#A3BE8C]/15 text-[#A3BE8C] dark:text-[#A3BE8C]"
                 : "border-border/70 bg-muted/30 text-foreground hover:bg-muted/60 hover:border-border"
             )}
           >
@@ -213,7 +213,7 @@ export default function TaskPopover({
               className={cn(
                 "flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
                 isDone
-                  ? "border-emerald-500 bg-emerald-500 text-white"
+                  ? "border-[#A3BE8C] bg-[#A3BE8C] text-[#2E3440]"
                   : "border-muted-foreground/40 bg-background"
               )}
             >
@@ -239,7 +239,7 @@ export default function TaskPopover({
               setIsOpen(false);
               onEditTask?.(task);
             }}
-            className="w-full h-8.5 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-semibold text-xs transition-all shadow-xs cursor-pointer active:scale-[0.98]"
+            className="w-full h-8.5 rounded-xl bg-[#2E3440] text-[#ECEFF4] hover:bg-[#3B4252] dark:bg-[#88C0D0] dark:text-[#2E3440] dark:hover:bg-[#8FBCBB] font-bold text-xs transition-all shadow-xs cursor-pointer active:scale-[0.98]"
           >
             <Pencil className="mr-1.5 size-3.5" />
             <span>Ubah Rincian di Modal</span>

@@ -39,7 +39,7 @@ export default function PinnedTasks({ className }: PinnedTasksProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 bg-muted/30">
         <div className="flex items-center gap-2">
-          <Pin className="size-4 text-amber-500 fill-amber-500/20" />
+          <Pin className="size-4 text-[#EBCB8B] fill-[#EBCB8B]/20" />
           <h3 className="text-sm font-bold text-foreground">Tugas Disematkan</h3>
         </div>
         {!isLoading && (
@@ -120,11 +120,11 @@ function PinnedItem({
           <button
             type="button"
             onClick={onToggleComplete}
-            className="mt-0.5 text-muted-foreground hover:text-emerald-500 transition-colors cursor-pointer shrink-0"
+            className="mt-0.5 text-muted-foreground hover:text-[#A3BE8C] transition-colors cursor-pointer shrink-0"
             title={isDone ? "Tandai belum selesai" : "Tandai selesai"}
           >
             {isDone ? (
-              <Check className="size-4 text-emerald-500" />
+              <Check className="size-4 text-[#A3BE8C]" />
             ) : (
               <CheckCircle2 className="size-4" />
             )}
@@ -166,9 +166,9 @@ function PinnedItem({
               className={cn(
                 "flex shrink-0 items-center gap-1 text-[11px] font-medium",
                 isOverdue
-                  ? "text-rose-500 dark:text-rose-400"
+                  ? "text-[#BF616A]"
                   : isDone
-                    ? "text-emerald-500"
+                    ? "text-[#A3BE8C]"
                     : "text-muted-foreground"
               )}
             >
@@ -184,7 +184,7 @@ function PinnedItem({
             <div
               className={cn(
                 "h-full rounded-full transition-[width] duration-300",
-                isDone ? "bg-emerald-500" : "bg-foreground"
+                isDone ? "bg-[#A3BE8C]" : "bg-[#88C0D0]"
               )}
               style={{ width: `${progress}%` }}
             />

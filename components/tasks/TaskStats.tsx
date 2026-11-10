@@ -15,7 +15,7 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+          <Skeleton key={i} className="h-28 w-full rounded-2xl bg-muted/60" />
         ))}
       </div>
     );
@@ -36,18 +36,28 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
           <div
             key={item.label}
             className={cn(
-              "relative flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200",
-              "bg-card/90 hover:bg-card border-border/70 hover:border-border/90 shadow-xs",
-              isOverdue && "border-rose-500/40 bg-rose-500/5 dark:bg-rose-500/10"
+              "relative flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200 overflow-hidden",
+              "bg-card/85 hover:bg-card border-border/70 shadow-xs",
+              item.cardAccent,
+              isOverdue && "border-[#BF616A]/40 bg-[#BF616A]/5 dark:bg-[#BF616A]/10"
             )}
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-medium text-muted-foreground truncate">
+            {/* Subtle Nord Decorative Background Ring (Section 5 nord-style) */}
+            <div
+              className={cn(
+                "pointer-events-none absolute -right-4 -bottom-4 size-20 rounded-full border border-current opacity-10",
+                item.iconColor
+              )}
+              aria-hidden="true"
+            />
+
+            <div className="flex items-center justify-between gap-2 relative z-10">
+              <span className="text-xs font-semibold text-muted-foreground truncate">
                 {item.label}
               </span>
               <div
                 className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-lg border",
+                  "flex size-7 shrink-0 items-center justify-center rounded-lg border shadow-2xs",
                   item.iconBg
                 )}
               >
@@ -55,7 +65,7 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
               </div>
             </div>
 
-            <div className="mt-3">
+            <div className="mt-3 relative z-10">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-bold tracking-tight text-foreground font-mono">
                   {statValues[index]}
@@ -68,7 +78,7 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
               {isRate ? (
                 <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
                   <div
-                    className="h-full rounded-full bg-amber-500 transition-all duration-500 ease-out"
+                    className="h-full rounded-full bg-[#B48EAD] transition-all duration-500 ease-out"
                     style={{ width: `${completionRate}%` }}
                   />
                 </div>
