@@ -144,8 +144,25 @@ Use the official Nord palette. A cool, light background combined with muted Nord
 | Urgent / overdue              | #BF616A (nord11) |
 | Warning / due soon            | #D08770 (nord12) |
 | Success / completed           | #A3BE8C (nord14) |
+| Category: Kuliah              | #2563EB (Biru / Blue highlight) |
+| Category: Organisasi          | #D97706 (Kuning / Amber highlight) |
+| Category: Praktikum           | #E11D48 (Merah / Rose highlight) |
+| Category: Personal / Lainnya  | #7C3AED (Ungu / Purple highlight) |
 
 Colors should feel soft and slightly muted, as Nord intends, never neon. Use Aurora colors to categorize information and Frost colors for interactive and structural accents.
+
+### Category Badges (Highlighted System)
+
+Badges for task categories must feel prominent, crisp, and highlighted ("terasa terhighlight") so they are instantly distinguishable at a glance against Nord surfaces, rather than blending into low-contrast muted pastels. Each badge combines a light-tint background, a distinct border, readable saturated text, and a solid 6px indicator dot.
+
+| Category | Color Theme | Light Mode Classes | Dark Mode Classes | Dot Indicator |
+| :--- | :--- | :--- | :--- | :--- |
+| **Kuliah** | Biru (Blue) | `bg-blue-50 border-blue-200 text-blue-700` | `dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-300` | `bg-blue-500` |
+| **Organisasi** | Kuning (Amber) | `bg-amber-50 border-amber-200 text-amber-700` | `dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-300` | `bg-amber-500` |
+| **Praktikum** | Merah (Rose) | `bg-rose-50 border-rose-200 text-rose-700` | `dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-300` | `bg-rose-500` |
+| **Personal / Lainnya** | Ungu (Purple) | `bg-purple-50 border-purple-200 text-purple-700` | `dark:bg-purple-950/40 dark:border-purple-900 dark:text-purple-300` | `bg-purple-500` |
+
+*Note on Calendar & Integration:* This color mapping must also be preserved consistently when synchronizing tasks with external services such as Google Calendar (Kuliah: Blue, Organisasi: Amber/Yellow, Praktikum: Red, Personal/Lainnya: Purple).
 
 **Contrast note:** Text on colored cards should use `#2E3440` (nord0). Never place white or Snow Storm text on Aurora or light Frost cards.
 
@@ -251,10 +268,14 @@ Each row should contain:
 
 - Checkbox or circular status icon.
 - Task title.
-- Optional project / category label.
+- Highlighted category badge with dot indicator:
+  - **Kuliah**: Biru (`bg-blue-50 border-blue-200 text-blue-700` + dot `bg-blue-500`)
+  - **Organisasi**: Kuning / Amber (`bg-amber-50 border-amber-200 text-amber-700` + dot `bg-amber-500`)
+  - **Praktikum**: Merah / Rose (`bg-rose-50 border-rose-200 text-rose-700` + dot `bg-rose-500`)
+  - **Personal / Lainnya**: Ungu (`bg-purple-50 border-purple-200 text-purple-700` + dot `bg-purple-500`)
 - Due date or priority badge (nord11 urgent, nord12 soon, nord14 done, nord9 normal).
 
-Use subtle alternating Aurora/Frost tints for category icons. Keep the list compact and easy to scan.
+Keep the list compact, readable, and easy to scan, using the highlighted category badges to quickly identify task context.
 
 ### G. Task / Note Details
 
@@ -264,7 +285,7 @@ Include:
 
 - Title.
 - Due date and time.
-- Category badges.
+- Highlighted category badge.
 - Description or notes.
 - Subtasks or checklist.
 
@@ -368,14 +389,15 @@ Use short transitions around 150–250ms with natural easing.
 Follow these principles throughout implementation:
 
 1. Information hierarchy comes first.
-2. Use Nord Aurora colors to distinguish types of information and Frost colors for interaction.
-3. Maintain a consistent spacing and border-radius system.
-4. Keep charts minimal and readable.
-5. Avoid excessive shadows, borders, and gradients.
-6. Use decorative shapes sparingly.
-7. Prioritize a calm, focused, personal experience.
-8. Ensure that all components remain visually consistent.
-9. Keep text contrast accessible (nord0 text on light cards, nord4–nord6 text on dark surfaces).
+2. Use Nord Aurora colors to distinguish types of information, Frost colors for interaction, and highlighted vibrant badges for task categories (Kuliah: Blue, Organisasi: Amber, Praktikum: Red, Personal/Lainnya: Purple).
+3. Maintain high contrast for task category badges ("terasa terhighlight") so they stand out clearly against the calm Nord background.
+4. Maintain a consistent spacing and border-radius system.
+5. Keep charts minimal and readable.
+6. Avoid excessive shadows, borders, and gradients.
+7. Use decorative shapes sparingly.
+8. Prioritize a calm, focused, personal experience.
+9. Ensure that all components remain visually consistent.
+10. Keep text contrast accessible (nord0 text on light cards, nord4–nord6 text on dark surfaces).
 
 ## 9. Expected Result
 
