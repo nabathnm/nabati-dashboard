@@ -21,8 +21,8 @@ export default function TasksPage() {
       <TaskSummary />
 
       {/* Main Workspace (View Switcher + Pinned Sidebar) */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-4 items-start">
-        <div className="lg:col-span-3 min-w-0">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 items-start">
+        <div className="lg:col-span-4 min-w-0">
           <TaskViewSwitcher />
         </div>
 

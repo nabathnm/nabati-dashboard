@@ -13,7 +13,7 @@ interface TaskStatsProps {
 export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-28 w-full rounded-2xl bg-muted/60" />
         ))}
@@ -26,7 +26,7 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
   const statValues = [total, inProgress, completed, overdue, `${completionRate}%`];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {taskStatStyles.map((item, index) => {
         const Icon = item.icon;
         const isRate = index === 4;
