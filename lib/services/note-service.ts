@@ -373,9 +373,14 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
     const userId = sessionData?.session?.user?.id;
 
     if (userId) {
+      // Biarkan Supabase men-generate UUID jika id client belum berupa UUID standar
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(newNote.id);
+      const { id: _tempId, ...dbPayload } = newNote;
+      const insertData = isUuid ? { ...newNote, user_id: userId } : { ...dbPayload, user_id: userId };
+
       const { data, error } = await supabase
         .from(TABLE)
-        .insert([{ ...newNote, user_id: userId }])
+        .insert([insertData])
         .select()
         .single();
 
