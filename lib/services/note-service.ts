@@ -184,16 +184,49 @@ Poin pembelajaran minggu ini:
 ];
 
 /* -------------------------------------------------------------------------- */
-/*  Notifikasi Perubahan (Observer Pattern)                                   */
+/*  Notifikasi Perubahan (Observer Pattern & Supabase Realtime)               */
 /* -------------------------------------------------------------------------- */
 
 type NoteChangeListener = () => void;
 const changeListeners = new Set<NoteChangeListener>();
+let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 
+/**
+ * Berlangganan perubahan data catatan.
+ * Otomatis mengaktifkan listener Supabase Realtime agar multi-tab & multi-device
+ * selalu ter-update secara real-time.
+ */
 export function subscribeToNoteChanges(listener: NoteChangeListener): () => void {
   changeListeners.add(listener);
+
+  // Inisialisasi Supabase Realtime channel jika belum aktif di browser
+  if (!realtimeChannel && typeof window !== "undefined") {
+    try {
+      realtimeChannel = supabase
+        .channel("public:notes:changes")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: TABLE },
+          () => {
+            notifyNotesChanged();
+          }
+        )
+        .subscribe();
+    } catch (err) {
+      console.warn("[NoteService] Gagal menghubungkan Supabase Realtime:", err);
+    }
+  }
+
   return () => {
     changeListeners.delete(listener);
+    if (changeListeners.size === 0 && realtimeChannel) {
+      try {
+        supabase.removeChannel(realtimeChannel);
+      } catch {
+        // Abaikan error cleanup
+      }
+      realtimeChannel = null;
+    }
   };
 }
 
@@ -202,7 +235,27 @@ function notifyNotesChanged(): void {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Local Storage Helpers (Fallback)                                          */
+/*  Auth Helper                                                               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Mengambil User ID dari sesi aktif Supabase.
+ */
+export async function getEffectiveUserId(): Promise<string | null> {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData?.session?.user?.id) {
+      return sessionData.session.user.id;
+    }
+    const { data: userData } = await supabase.auth.getUser();
+    return userData?.user?.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Local Storage Helpers (Fallback & Migrasi Otomatis)                       */
 /* -------------------------------------------------------------------------- */
 
 function getLocalNotes(): Note[] {
@@ -243,20 +296,50 @@ function saveLocalNotes(notes: Note[]): void {
   }
 }
 
+/**
+ * Migrasikan catatan lokal yang dibuat saat offline ke database Supabase
+ * ketika user login.
+ */
+async function syncLocalNotesToDatabase(userId: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const local = getLocalNotes();
+    const pendingNotes = local.filter((n) => n.id.startsWith("note-"));
+    if (pendingNotes.length === 0) return;
+
+    for (const note of pendingNotes) {
+      const { id: _, ...payload } = note;
+      await supabase.from(TABLE).insert([{ ...payload, user_id: userId }]);
+    }
+
+    // Bersihkan catatan lokal yang telah termigrasikan
+    const remaining = local.filter((n) => !n.id.startsWith("note-"));
+    if (remaining.length > 0) {
+      saveLocalNotes(remaining);
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+  } catch (err) {
+    console.warn("[NoteService] Sinkronisasi catatan lokal ke database dilewati:", err);
+  }
+}
+
 /* -------------------------------------------------------------------------- */
-/*  Service Methods                                                           */
+/*  Service Methods (Database Supabase dengan Fallback Offline)                */
 /* -------------------------------------------------------------------------- */
 
 export async function getNotes(filters?: NoteFilters): Promise<Note[]> {
-  try {
-    // Attempt Supabase fetch
-    const { data: sessionData } = await supabase.auth.getSession();
-    const userId = sessionData?.session?.user?.id;
+  const userId = await getEffectiveUserId();
 
-    if (userId) {
+  if (userId) {
+    try {
+      // Sinkronkan catatan lokal lama jika ada
+      await syncLocalNotesToDatabase(userId);
+
       let query = supabase
         .from(TABLE)
         .select("*")
+        .eq("user_id", userId)
         .order("is_pinned", { ascending: false })
         .order("updated_at", { ascending: false });
 
@@ -289,9 +372,13 @@ export async function getNotes(filters?: NoteFilters): Promise<Note[]> {
         }
         return results;
       }
+
+      if (error) {
+        console.warn("[NoteService] Gagal query notes dari Supabase, menggunakan fallback lokal:", error.message);
+      }
+    } catch (e) {
+      console.warn("[NoteService] Jaringan/koneksi Supabase gagal, menggunakan fallback lokal:", e);
     }
-  } catch {
-    // Fallback quietly to localStorage
   }
 
   // Local Storage Fallback
@@ -334,18 +421,22 @@ export async function getNotes(filters?: NoteFilters): Promise<Note[]> {
 }
 
 export async function getNoteById(id: string): Promise<Note | null> {
-  try {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select("*")
-      .eq("id", id)
-      .single();
+  const userId = await getEffectiveUserId();
 
-    if (!error && data) {
-      return data as Note;
+  if (userId) {
+    try {
+      const { data, error } = await supabase
+        .from(TABLE)
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (!error && data) {
+        return data as Note;
+      }
+    } catch {
+      // Fallback
     }
-  } catch {
-    // Fallback
   }
 
   const localNotes = getLocalNotes();
@@ -354,33 +445,27 @@ export async function getNoteById(id: string): Promise<Note | null> {
 
 export async function createNote(input: CreateNoteInput): Promise<Note> {
   const now = new Date().toISOString();
-  const newNote: Note = {
-    id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    title: input.title?.trim() || "Untitled Note",
-    content: input.content || "",
-    icon: input.icon || "📝",
-    cover_image: input.cover_image ?? null,
-    category: input.category || "Personal",
-    tags: input.tags || [],
-    is_pinned: input.is_pinned ?? false,
-    is_archived: input.is_archived ?? false,
-    created_at: now,
-    updated_at: now,
-  };
+  const userId = await getEffectiveUserId();
 
-  try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const userId = sessionData?.session?.user?.id;
+  if (userId) {
+    const payload = {
+      user_id: userId,
+      title: input.title?.trim() || "Dokumen Tanpa Judul",
+      content: input.content || "",
+      icon: input.icon || "📄",
+      cover_image: input.cover_image ?? null,
+      category: input.category || "Kuliah",
+      tags: input.tags || [],
+      is_pinned: input.is_pinned ?? false,
+      is_archived: input.is_archived ?? false,
+      created_at: now,
+      updated_at: now,
+    };
 
-    if (userId) {
-      // Biarkan Supabase men-generate UUID jika id client belum berupa UUID standar
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(newNote.id);
-      const { id: _tempId, ...dbPayload } = newNote;
-      const insertData = isUuid ? { ...newNote, user_id: userId } : { ...dbPayload, user_id: userId };
-
+    try {
       const { data, error } = await supabase
         .from(TABLE)
-        .insert([insertData])
+        .insert([payload])
         .select()
         .single();
 
@@ -388,12 +473,30 @@ export async function createNote(input: CreateNoteInput): Promise<Note> {
         notifyNotesChanged();
         return data as Note;
       }
+
+      if (error) {
+        console.error("[NoteService] Gagal menyimpan dokumen ke database Supabase:", error);
+      }
+    } catch (e) {
+      console.error("[NoteService] Jaringan database Supabase terputus:", e);
     }
-  } catch {
-    // Fallback
   }
 
-  // Fallback to local storage
+  // Fallback to local storage (jika offline / belum login)
+  const newNote: Note = {
+    id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    title: input.title?.trim() || "Dokumen Tanpa Judul",
+    content: input.content || "",
+    icon: input.icon || "📄",
+    cover_image: input.cover_image ?? null,
+    category: input.category || "Kuliah",
+    tags: input.tags || [],
+    is_pinned: input.is_pinned ?? false,
+    is_archived: input.is_archived ?? false,
+    created_at: now,
+    updated_at: now,
+  };
+
   const notes = getLocalNotes();
   notes.unshift(newNote);
   saveLocalNotes(notes);
@@ -406,24 +509,39 @@ export async function updateNote(
   input: UpdateNoteInput
 ): Promise<Note> {
   const now = new Date().toISOString();
+  const userId = await getEffectiveUserId();
 
-  try {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .update({ ...input, updated_at: now })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (!error && data) {
-      notifyNotesChanged();
-      return data as Note;
+  if (userId) {
+    const payload: Record<string, unknown> = {
+      ...input,
+      updated_at: now,
+    };
+    if (payload.title !== undefined) {
+      payload.title = String(payload.title).trim() || "Dokumen Tanpa Judul";
     }
-  } catch {
-    // Fallback
+
+    try {
+      const { data, error } = await supabase
+        .from(TABLE)
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (!error && data) {
+        notifyNotesChanged();
+        return data as Note;
+      }
+
+      if (error) {
+        console.warn("[NoteService] Gagal updateNote di Supabase, fallback lokal:", error.message);
+      }
+    } catch (e) {
+      console.warn("[NoteService] Jaringan updateNote gagal, fallback lokal:", e);
+    }
   }
 
-  // Local storage update
+  // Local storage update fallback
   const notes = getLocalNotes();
   const index = notes.findIndex((n) => n.id === id);
   if (index === -1) {
@@ -443,10 +561,20 @@ export async function updateNote(
 }
 
 export async function deleteNote(id: string): Promise<void> {
-  try {
-    await supabase.from(TABLE).delete().eq("id", id);
-  } catch {
-    // Fallback
+  const userId = await getEffectiveUserId();
+
+  if (userId) {
+    try {
+      const { error } = await supabase.from(TABLE).delete().eq("id", id);
+      if (error) {
+        console.warn("[NoteService] Gagal deleteNote dari Supabase:", error.message);
+      } else {
+        notifyNotesChanged();
+        return;
+      }
+    } catch (e) {
+      console.warn("[NoteService] Jaringan deleteNote gagal, fallback lokal:", e);
+    }
   }
 
   const notes = getLocalNotes().filter((n) => n.id !== id);
