@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -75,32 +75,45 @@ body {
 /* ==============================================================================
    NORD THEME - LIGHT MODE (Snow Storm Canvas with Frost & Polar Accents)
    ============================================================================== */
-:root {
+:root,
+.light,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Base Canvas & Foreground */
   --background: #eceff4; /* nord6: Snow Storm clean base canvas */
   --foreground: #2e3440; /* nord0: Polar Night deep readable text */
 
+  /* Elevated Surfaces */
   --card: #ffffff; /* Clean white elevated surface */
   --card-foreground: #2e3440; /* nord0: Polar Night card text */
   --card-border: #d8dee9; /* nord4: Crisp snow border */
 
+  /* Popover / Menus */
   --popover: #ffffff;
   --popover-foreground: #2e3440; /* nord0 */
 
+  /* Brand / Primary Action */
   --primary: #5e81ac; /* nord10: High contrast Frost deep blue */
   --primary-foreground: #eceff4; /* nord6: Crisp snow text */
 
+  /* Secondary Surface */
   --secondary: #e5e9f0; /* nord5: Snow Storm surface */
   --secondary-foreground: #2e3440; /* nord0 */
 
-  --muted: #e5e9f0; /* nord5 */
+  /* Muted Elements */
+  --muted: #e5e9f0; /* nord5: Soft snow muted background */
   --muted-foreground: #4c566a; /* nord3: Muted polar slate (WCAG AA compliant) */
 
+  /* Accent Elements */
   --accent: #e5e9f0; /* nord5 */
   --accent-foreground: #2e3440; /* nord0 */
 
+  /* Status / Destructive */
   --destructive: #bf616a; /* nord11: Aurora red */
   --destructive-foreground: #ffffff;
 
+  /* Borders & Inputs */
   --border: #d8dee9; /* nord4: Snow Storm subtle divider */
   --input: #d8dee9; /* nord4 */
   --ring: #88c0d0; /* nord8: Ice blue focus ring */
@@ -118,45 +131,59 @@ body {
   --sidebar-ring: #88c0d0; /* nord8 */
 
   /* Charts */
-  --chart-1: #5e81ac; /* nord10 */
-  --chart-2: #88c0d0; /* nord8 */
-  --chart-3: #a3be8c; /* nord14 */
-  --chart-4: #ebcb8b; /* nord13 */
-  --chart-5: #d08770; /* nord12 */
+  --chart-1: #5e81ac; /* nord10: Frost deep blue */
+  --chart-2: #88c0d0; /* nord8: Frost ice blue */
+  --chart-3: #a3be8c; /* nord14: Aurora green */
+  --chart-4: #ebcb8b; /* nord13: Aurora yellow */
+  --chart-5: #d08770; /* nord12: Aurora orange */
 }
 
 /* ==============================================================================
    NORD THEME - DARK MODE (Polar Night with Frost & Aurora Accents)
    ============================================================================== */
-.dark {
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Base Canvas & Foreground */
   --background: #2e3440; /* nord0: Polar Night deep slate */
   --foreground: #eceff4; /* nord6: Snow Storm bright text */
 
+  /* Elevated Surfaces */
   --card: #3b4252; /* nord1: Polar Night elevated surface */
   --card-foreground: #eceff4; /* nord6: Snow Storm text */
   --card-border: #434c5e; /* nord2: Secondary elevated border */
 
+  /* Popover / Menus */
   --popover: #3b4252; /* nord1 */
   --popover-foreground: #eceff4; /* nord6 */
 
+  /* Brand / Primary Action */
   --primary: #88c0d0; /* nord8: Iconic Frost sky/ice blue */
   --primary-foreground: #2e3440; /* nord0: High contrast deep polar text */
 
+  /* Secondary Surface */
   --secondary: #434c5e; /* nord2 */
   --secondary-foreground: #eceff4; /* nord6 */
 
+  /* Muted Elements */
   --muted: #434c5e; /* nord2 */
   --muted-foreground: #d8dee9; /* nord4: Muted snow text */
 
+  /* Accent Elements */
   --accent: #434c5e; /* nord2 */
   --accent-foreground: #eceff4; /* nord6 */
 
+  /* Status / Destructive */
   --destructive: #bf616a; /* nord11: Aurora red */
   --destructive-foreground: #eceff4; /* nord6 */
 
+  /* Borders & Inputs */
   --border: #434c5e; /* nord2 */
   --input: #434c5e; /* nord2 */
   --ring: #88c0d0; /* nord8: Ice blue glow */
+
+  --radius: 0.625rem;
 
   /* Sidebar */
   --sidebar: #242933; /* Deep Polar Night anchor */
@@ -174,6 +201,47 @@ body {
   --chart-3: #a3be8c; /* nord14: Aurora green */
   --chart-4: #ebcb8b; /* nord13: Aurora yellow */
   --chart-5: #b48ead; /* nord15: Aurora purple */
+}
+
+/* Fallback for explicit light containers nested inside dark mode */
+.dark .light,
+.dark [data-theme="light"],
+[data-theme="dark"] .light,
+[data-theme="dark"] [data-theme="light"] {
+  color-scheme: light;
+  --background: #eceff4;
+  --foreground: #2e3440;
+  --card: #ffffff;
+  --card-foreground: #2e3440;
+  --card-border: #d8dee9;
+  --popover: #ffffff;
+  --popover-foreground: #2e3440;
+  --primary: #5e81ac;
+  --primary-foreground: #eceff4;
+  --secondary: #e5e9f0;
+  --secondary-foreground: #2e3440;
+  --muted: #e5e9f0;
+  --muted-foreground: #4c566a;
+  --accent: #e5e9f0;
+  --accent-foreground: #2e3440;
+  --destructive: #bf616a;
+  --destructive-foreground: #ffffff;
+  --border: #d8dee9;
+  --input: #d8dee9;
+  --ring: #88c0d0;
+  --sidebar: #f0f3f8;
+  --sidebar-foreground: #2e3440;
+  --sidebar-primary: #5e81ac;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e5e9f0;
+  --sidebar-accent-foreground: #2e3440;
+  --sidebar-border: #d8dee9;
+  --sidebar-ring: #88c0d0;
+  --chart-1: #5e81ac;
+  --chart-2: #88c0d0;
+  --chart-3: #a3be8c;
+  --chart-4: #ebcb8b;
+  --chart-5: #d08770;
 }
 
 @layer base {
