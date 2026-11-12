@@ -190,6 +190,7 @@ Poin pembelajaran minggu ini:
 type NoteChangeListener = () => void;
 const changeListeners = new Set<NoteChangeListener>();
 let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+let notifyDebounceTimer: NodeJS.Timeout | null = null;
 
 /**
  * Berlangganan perubahan data catatan.
@@ -208,7 +209,11 @@ export function subscribeToNoteChanges(listener: NoteChangeListener): () => void
           "postgres_changes",
           { event: "*", schema: "public", table: TABLE },
           () => {
-            notifyNotesChanged();
+            // Debounce notifikasi agar tidak memicu banjir refresh
+            if (notifyDebounceTimer) clearTimeout(notifyDebounceTimer);
+            notifyDebounceTimer = setTimeout(() => {
+              notifyNotesChanged();
+            }, 300);
           }
         )
         .subscribe();
@@ -255,7 +260,7 @@ export async function getEffectiveUserId(): Promise<string | null> {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Local Storage Helpers (Fallback & Migrasi Otomatis)                       */
+/*  Local Storage Helpers (Fallback Offline)                                  */
 /* -------------------------------------------------------------------------- */
 
 function getLocalNotes(): Note[] {
@@ -263,22 +268,7 @@ function getLocalNotes(): Note[] {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) {
-      // Seed default notes from templates
-      const initialNotes: Note[] = NOTE_TEMPLATES.map((tpl, idx) => ({
-        id: `note-${idx + 1}-${Date.now()}`,
-        title: tpl.title,
-        content: tpl.content,
-        icon: tpl.icon,
-        cover_image: tpl.cover_image,
-        category: tpl.category,
-        tags: tpl.tags,
-        is_pinned: idx === 0,
-        is_archived: false,
-        created_at: new Date(Date.now() - idx * 86400000).toISOString(),
-        updated_at: new Date(Date.now() - idx * 3600000).toISOString(),
-      }));
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initialNotes));
-      return initialNotes;
+      return [];
     }
     return JSON.parse(raw);
   } catch (e) {
@@ -296,34 +286,6 @@ function saveLocalNotes(notes: Note[]): void {
   }
 }
 
-/**
- * Migrasikan catatan lokal yang dibuat saat offline ke database Supabase
- * ketika user login.
- */
-async function syncLocalNotesToDatabase(userId: string): Promise<void> {
-  if (typeof window === "undefined") return;
-  try {
-    const local = getLocalNotes();
-    const pendingNotes = local.filter((n) => n.id.startsWith("note-"));
-    if (pendingNotes.length === 0) return;
-
-    for (const note of pendingNotes) {
-      const { id: _, ...payload } = note;
-      await supabase.from(TABLE).insert([{ ...payload, user_id: userId }]);
-    }
-
-    // Bersihkan catatan lokal yang telah termigrasikan
-    const remaining = local.filter((n) => !n.id.startsWith("note-"));
-    if (remaining.length > 0) {
-      saveLocalNotes(remaining);
-    } else {
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-    }
-  } catch (err) {
-    console.warn("[NoteService] Sinkronisasi catatan lokal ke database dilewati:", err);
-  }
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Service Methods (Database Supabase dengan Fallback Offline)                */
 /* -------------------------------------------------------------------------- */
@@ -333,9 +295,6 @@ export async function getNotes(filters?: NoteFilters): Promise<Note[]> {
 
   if (userId) {
     try {
-      // Sinkronkan catatan lokal lama jika ada
-      await syncLocalNotesToDatabase(userId);
-
       let query = supabase
         .from(TABLE)
         .select("*")
@@ -418,6 +377,51 @@ export async function getNotes(filters?: NoteFilters): Promise<Note[]> {
     if (!a.is_pinned && b.is_pinned) return 1;
     return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
+}
+
+/**
+ * Membersihkan dokumen duplikat massal jika sempat terjadi perulangan.
+ * Menyimpan 1 dokumen per judul unik dan menghapus salinan lainnya.
+ */
+export async function cleanupDuplicateNotes(): Promise<number> {
+  const userId = await getEffectiveUserId();
+  if (!userId) return 0;
+
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("id, title, category, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error || !data) return 0;
+
+    const seen = new Set<string>();
+    const idsToDelete: string[] = [];
+
+    for (const item of data) {
+      const key = `${item.title.trim().toLowerCase()}::${item.category}`;
+      if (seen.has(key)) {
+        idsToDelete.push(item.id);
+      } else {
+        seen.add(key);
+      }
+    }
+
+    if (idsToDelete.length > 0) {
+      // Hapus per batch 100 id
+      for (let i = 0; i < idsToDelete.length; i += 100) {
+        const chunk = idsToDelete.slice(i, i + 100);
+        await supabase.from(TABLE).delete().in("id", chunk);
+      }
+      notifyNotesChanged();
+    }
+
+    return idsToDelete.length;
+  } catch (err) {
+    console.error("[NoteService] Gagal membersihkan dokumen duplikat:", err);
+    return 0;
+  }
 }
 
 export async function getNoteById(id: string): Promise<Note | null> {

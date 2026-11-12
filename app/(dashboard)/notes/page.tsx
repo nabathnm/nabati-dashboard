@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Note, NoteCategory, NoteTemplate } from "@/types/note";
 import {
+  cleanupDuplicateNotes,
   createNote,
   deleteNote,
   duplicateNote,
@@ -299,6 +300,25 @@ export default function NotesPage() {
     }
   };
 
+  // Cleanup Duplicate Notes
+  const [isCleaning, setIsCleaning] = useState(false);
+  const handleCleanupDuplicates = async () => {
+    setIsCleaning(true);
+    try {
+      const count = await cleanupDuplicateNotes();
+      if (count > 0) {
+        toast.success(`Berhasil membersihkan ${count} dokumen duplikat!`);
+        await loadNotes();
+      } else {
+        toast.info("Tidak ada dokumen duplikat yang ditemukan.");
+      }
+    } catch {
+      toast.error("Gagal membersihkan duplikat");
+    } finally {
+      setIsCleaning(false);
+    }
+  };
+
   // If currently in Google Docs Document Editor Mode:
   if (layoutMode === "docs" && selectedNote) {
     return (
@@ -351,6 +371,20 @@ export default function NotesPage() {
 
         {/* Top Status & Summary */}
         <div className="flex items-center gap-3">
+          {allNotes.length > 10 && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isCleaning}
+              onClick={handleCleanupDuplicates}
+              className="h-8 gap-1.5 rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 text-xs font-mono"
+              title="Bersihkan dokumen duplikat yang sama"
+            >
+              <Sparkles className="size-3.5" />
+              <span>{isCleaning ? "Membersihkan..." : "Bersihkan Duplikat"}</span>
+            </Button>
+          )}
+
           <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card/60 px-3 py-1.5 font-mono text-xs text-muted-foreground shadow-2xs">
             <span className="size-2 rounded-full bg-blue-500" />
             <span className="font-semibold text-foreground">{allNotes.length}</span>
