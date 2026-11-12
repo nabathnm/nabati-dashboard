@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Wallet2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -79,6 +81,7 @@ const portfolioItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { isMobile, setOpenMobile } = useSidebar();
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -96,8 +99,15 @@ export function AppSidebar() {
   }, []);
 
   const handleLogout = async () => {
+    if (isMobile) setOpenMobile(false);
     await supabase.auth.signOut();
     router.push("/login");
+  };
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   return (
@@ -112,6 +122,7 @@ export function AppSidebar() {
         <div className="flex items-center justify-between gap-2">
           <Link
             href="/dashboard"
+            onClick={handleLinkClick}
             className="flex items-center gap-2.5 overflow-hidden group focus-visible:outline-hidden"
           >
             {/* Clean Monochromatic Brand Emblem */}
@@ -127,8 +138,18 @@ export function AppSidebar() {
             </div>
           </Link>
 
-          {/* Minimalist Sidebar Toggle */}
-          <SidebarTrigger className="size-7 rounded-md text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors" />
+          {/* Tombol Tutup pada Drawer Mobile */}
+          <button
+            type="button"
+            onClick={() => setOpenMobile(false)}
+            aria-label="Tutup menu navigasi"
+            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent md:hidden cursor-pointer"
+          >
+            <X className="size-4.5" />
+          </button>
+
+          {/* Minimalist Sidebar Toggle pada Desktop */}
+          <SidebarTrigger className="hidden md:flex size-7 rounded-md text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors" />
         </div>
       </SidebarHeader>
 
@@ -152,11 +173,11 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      render={<Link href={item.url} />}
+                      render={<Link href={item.url} onClick={handleLinkClick} />}
                       isActive={isActive}
                       tooltip={item.title}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors",
+                        "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 md:py-2 text-xs transition-colors",
                         isActive
                           ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
                           : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -191,11 +212,11 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      render={<Link href={item.url} />}
+                      render={<Link href={item.url} onClick={handleLinkClick} />}
                       isActive={isActive}
                       tooltip={item.title}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors",
+                        "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 md:py-2 text-xs transition-colors",
                         isActive
                           ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
                           : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -240,11 +261,11 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-0.5">
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  render={<Link href="/settings" />}
+                  render={<Link href="/settings" onClick={handleLinkClick} />}
                   isActive={pathname === "/settings"}
                   tooltip="Pengaturan"
                   className={cn(
-                    "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs transition-colors",
+                    "flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 md:py-2 text-xs transition-colors",
                     pathname === "/settings"
                       ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
                       : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -259,7 +280,7 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   onClick={handleLogout}
                   tooltip="Keluar"
-                  className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                  className="flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 md:py-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
                 >
                   <LogOut className="size-4 shrink-0 text-muted-foreground group-hover:text-destructive" />
                   <span className="truncate">Keluar</span>
