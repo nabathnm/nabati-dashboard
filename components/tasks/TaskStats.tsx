@@ -37,9 +37,9 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
             key={item.label}
             className={cn(
               "relative flex flex-col justify-between rounded-2xl border p-4 transition-all duration-200 overflow-hidden",
-              "bg-card/85 hover:bg-card border-border/70 shadow-xs",
+              "bg-card hover:bg-card border-border/80 shadow-xs",
               item.cardAccent,
-              isOverdue && "border-[#BF616A]/40 bg-[#BF616A]/5 dark:bg-[#BF616A]/10"
+              isOverdue && "border-rose-500/40 bg-rose-500/5 dark:bg-[#BF616A]/10"
             )}
           >
             {/* Subtle Nord Decorative Background Ring (Section 5 nord-style) */}
@@ -58,7 +58,7 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
                 {item.label}
               </span>
               {isRate ? (
-                <span className="text-[11px] font-mono font-semibold text-[#B48EAD] bg-[#B48EAD]/10 border border-[#B48EAD]/25 px-1.5 py-0.5 rounded-md tabular-nums">
+                <span className="text-[11px] font-mono font-semibold text-purple-700 dark:text-[#B48EAD] bg-purple-500/10 dark:bg-[#B48EAD]/10 border border-purple-500/25 dark:border-[#B48EAD]/25 px-1.5 py-0.5 rounded-md tabular-nums">
                   {completed}/{total}
                 </span>
               ) : (
@@ -98,7 +98,7 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
                       cx="22"
                       cy="22"
                       r="17"
-                      className="stroke-muted/60 dark:stroke-muted/30"
+                      className="stroke-border dark:stroke-muted/30"
                       strokeWidth="3.5"
                       fill="transparent"
                     />
@@ -109,8 +109,8 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
                       className={cn(
                         "transition-all duration-700 ease-out",
                         completed === total && total > 0
-                          ? "stroke-[#A3BE8C]"
-                          : "stroke-[#B48EAD]"
+                          ? "stroke-emerald-600 dark:stroke-[#A3BE8C]"
+                          : "stroke-purple-600 dark:stroke-[#B48EAD]"
                       )}
                       strokeWidth="3.5"
                       strokeDasharray={106.81}
@@ -124,8 +124,8 @@ export default function TaskStats({ stats, isLoading }: TaskStatsProps) {
                       className={cn(
                         "size-4 transition-colors",
                         completed === total && total > 0
-                          ? "text-[#A3BE8C]"
-                          : "text-[#B48EAD]"
+                          ? "text-emerald-700 dark:text-[#A3BE8C]"
+                          : "text-purple-700 dark:text-[#B48EAD]"
                       )}
                     />
                   </div>

@@ -48,7 +48,7 @@ export default function TaskToolbar({
   const { searchRef, prepareAnimation } = useSearchWidthAnimation(view);
 
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 rounded-2xl border border-border/70 bg-card/90 p-2.5 shadow-xs backdrop-blur-md">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 rounded-2xl border border-border/80 bg-card p-2.5 shadow-xs">
       {/* Left controls: View toggle & Search/Navigation */}
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <TaskViewToggle
@@ -85,7 +85,7 @@ export default function TaskToolbar({
             variant="outline"
             onClick={onSyncGoogle}
             disabled={isSyncingGoogle}
-            className="h-9 rounded-xl border-border/80 text-foreground hover:bg-muted/60 px-3 cursor-pointer text-xs font-medium"
+            className="h-9 rounded-xl border-border text-foreground hover:bg-muted/60 px-3 cursor-pointer text-xs font-semibold"
             title="Tarik & sinkronkan event dari Google Calendar"
           >
             <RefreshCw
@@ -98,7 +98,7 @@ export default function TaskToolbar({
         <Button
           type="button"
           onClick={onCreateTask}
-          className="h-9 rounded-xl bg-[#2E3440] text-[#ECEFF4] hover:bg-[#3B4252] dark:bg-[#88C0D0] dark:text-[#2E3440] dark:hover:bg-[#8FBCBB] font-bold px-4 text-xs transition-all shadow-xs cursor-pointer active:scale-[0.98]"
+          className="h-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-4 text-xs transition-all shadow-xs cursor-pointer active:scale-[0.98]"
         >
           <Plus className="mr-1 h-3.5 w-3.5" />
           <span>Tambah Tugas</span>

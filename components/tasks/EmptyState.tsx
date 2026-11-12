@@ -29,7 +29,7 @@ export default function EmptyState({ onCreateTask }: EmptyStateProps) {
       <Button
         type="button"
         onClick={onCreateTask}
-        className="h-9 px-4 rounded-xl bg-[#2E3440] text-[#ECEFF4] hover:bg-[#3B4252] dark:bg-[#88C0D0] dark:text-[#2E3440] dark:hover:bg-[#8FBCBB] font-bold text-xs transition-all shadow-xs cursor-pointer active:scale-[0.98]"
+        className="h-9 px-4 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs transition-all shadow-xs cursor-pointer active:scale-[0.98]"
       >
         <Plus className="mr-1.5 size-3.5" />
         <span>Tambah Tugas Pertama</span>

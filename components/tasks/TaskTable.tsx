@@ -65,11 +65,11 @@ export default function TaskTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-xs">
+    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs">
       <div className="overflow-x-auto">
         <div className="min-w-[760px]">
           {/* Header */}
-          <div className={cn(GRID, "py-3 bg-muted/40 text-muted-foreground border-b border-border/60")}>
+          <div className={cn(GRID, "py-3 bg-muted/50 text-foreground/80 border-b border-border/70")}>
             {COLUMNS.map(col => (
               <div
                 key={col.label}
@@ -84,7 +84,7 @@ export default function TaskTable({
           </div>
 
           {/* Rows */}
-          <div className="divide-y divide-border/40">
+          <div className="divide-y divide-border/50">
             {tasks.map(task => {
               const cat = CATEGORY_CONFIG[task.category] ?? CATEGORY_CONFIG.Lainnya;
 
@@ -103,7 +103,7 @@ export default function TaskTable({
                   className={cn(
                     GRID,
                     "group cursor-pointer py-3.5 transition-colors",
-                    "hover:bg-muted/30",
+                    "hover:bg-muted/40",
                     isDone && "bg-muted/15"
                   )}
                   onClick={() => onEditTask(task)}
@@ -113,7 +113,7 @@ export default function TaskTable({
                     <span
                       className={cn(
                         "truncate text-sm font-medium",
-                        isDone ? "text-muted-foreground line-through opacity-70" : "text-foreground"
+                        isDone ? "text-muted-foreground line-through opacity-70" : "text-foreground font-medium"
                       )}
                       title={task.title}
                     >
@@ -126,7 +126,7 @@ export default function TaskTable({
                     <span
                       className={cn(
                         "inline-flex max-w-full items-center gap-1.5",
-                        "rounded-lg border px-2.5 py-1 text-xs font-medium",
+                        "rounded-lg border px-2.5 py-1 text-xs font-semibold",
                         cat.bg,
                         cat.color
                       )}
@@ -140,11 +140,11 @@ export default function TaskTable({
 
                   {/* Progress */}
                   <div className="flex min-w-0 items-center justify-center gap-2">
-                    <div className="h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-muted/60">
+                    <div className="h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-muted">
                       <div
                         className={cn(
                           "h-full rounded-full transition-all duration-300",
-                          isDone ? "bg-[#A3BE8C]" : "bg-[#88C0D0]"
+                          isDone ? "bg-emerald-600 dark:bg-[#A3BE8C]" : "bg-primary dark:bg-[#88C0D0]"
                         )}
                         style={{ width: `${progress}%` }}
                       />
@@ -162,10 +162,10 @@ export default function TaskTable({
                           "flex max-w-full items-center gap-1.5 rounded-lg",
                           "border px-2.5 py-1 text-xs font-medium",
                           isOverdue
-                            ? "border-[#BF616A]/30 bg-[#BF616A]/10 text-[#BF616A]"
+                            ? "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-[#BF616A] font-semibold"
                             : isDone
-                              ? "border-[#A3BE8C]/30 bg-[#A3BE8C]/10 text-[#A3BE8C]"
-                              : "border-border/60 bg-muted/30 text-muted-foreground"
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-[#A3BE8C]"
+                              : "border-border/70 bg-muted/40 text-muted-foreground"
                         )}
                       >
                         <CalendarDays className="h-3.5 w-3.5 shrink-0" />
@@ -192,8 +192,8 @@ export default function TaskTable({
                       className={cn(
                         "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-[#A3BE8C]/15 hover:text-[#A3BE8C]",
-                        isDone && "bg-[#A3BE8C]/15 text-[#A3BE8C]"
+                        "hover:bg-emerald-500/15 hover:text-emerald-700 dark:hover:text-[#A3BE8C]",
+                        isDone && "bg-emerald-500/15 text-emerald-700 dark:text-[#A3BE8C]"
                       )}
                     >
                       {isDone ? (
@@ -221,8 +221,8 @@ export default function TaskTable({
                       className={cn(
                         "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-[#EBCB8B]/15 hover:text-[#EBCB8B]",
-                        isPinned && "bg-[#EBCB8B]/15 text-[#EBCB8B]",
+                        "hover:bg-amber-500/15 hover:text-amber-700 dark:hover:text-[#EBCB8B]",
+                        isPinned && "bg-amber-500/15 text-amber-700 dark:text-[#EBCB8B]",
                         !onTogglePin && "opacity-40"
                       )}
                     >
@@ -254,7 +254,7 @@ export default function TaskTable({
                       className={cn(
                         "size-8 shrink-0 rounded-lg cursor-pointer",
                         "text-muted-foreground transition-colors",
-                        "hover:bg-[#BF616A]/15 hover:text-[#BF616A]",
+                        "hover:bg-rose-500/15 hover:text-rose-700 dark:hover:text-[#BF616A]",
                         !onDeleteTask && "opacity-40"
                       )}
                     >

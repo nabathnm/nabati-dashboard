@@ -23,13 +23,13 @@ export default function TaskCalendarNavigation({
         type="button"
         variant="outline"
         size="sm"
-        className="h-9 px-3.5 rounded-xl text-xs font-medium border-border/70 hover:bg-muted/60 cursor-pointer"
+        className="h-9 px-3.5 rounded-xl text-xs font-semibold border-border text-foreground hover:bg-muted cursor-pointer"
         onClick={onToday}
       >
         Hari Ini
       </Button>
 
-      <div className="flex items-center rounded-xl border border-border/70 bg-muted/30 p-0.5">
+      <div className="flex items-center rounded-xl border border-border bg-muted/40 p-0.5">
         <Button
           type="button"
           variant="ghost"

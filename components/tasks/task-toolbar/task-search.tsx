@@ -28,7 +28,7 @@ export default function TaskSearch({
         value={searchTerm}
         onChange={event => onSearchChange(event.target.value)}
         placeholder="Cari tugas..."
-        className="h-9 w-full rounded-xl pl-9 text-xs bg-muted/30 border-border/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border"
+        className="h-9 w-full rounded-xl pl-9 text-xs bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       />
     </div>
   );

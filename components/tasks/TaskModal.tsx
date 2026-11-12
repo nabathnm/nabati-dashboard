@@ -183,16 +183,16 @@ export default function TaskModal({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-xl border border-border/80 bg-card shadow-2xl rounded-2xl overflow-hidden">
-          <DialogHeader className="bg-card text-white border-b border-border/60 px-6 py-5 pr-14 shadow-none">
+          <DialogHeader className="bg-card text-foreground border-b border-border/60 px-6 py-5 pr-14 shadow-none">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/30 shadow-xs">
-                <ListTodo className="size-5 text-[#88C0D0]" />
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-xs">
+                <ListTodo className="size-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <DialogTitle className="text-xl font-bold text-white tracking-tight">
+                <DialogTitle className="text-xl font-bold text-foreground tracking-tight">
                   {isEditing ? "Ubah Tugas" : "Tambah Tugas Baru"}
                 </DialogTitle>
-                <DialogDescription className="text-xs text-zinc-400 mt-0.5">
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
                   {isEditing
                     ? "Perbarui rincian, tenggat waktu, atau kategori tugas ini."
                     : "Atur agenda baru agar terjadwal dan terpantau dengan rapi."}
@@ -205,35 +205,35 @@ export default function TaskModal({
             <form onSubmit={handleSubmit(onSubmit)} className="gap-5 flex flex-col">
               {/* Title */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <ListTodo className="h-4 w-4 text-zinc-300" />
+                <Label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <ListTodo className="h-4 w-4 text-muted-foreground" />
                   <span>Judul Tugas</span>
-                  <span className="text-rose-400 text-xs">*</span>
+                  <span className="text-rose-500 text-xs">*</span>
                 </Label>
 
                 <Input
                   placeholder="Contoh: Menyelesaikan laporan praktikum atau tugas akhir..."
-                  className="h-11 rounded-xl bg-background/70 border-border/80 text-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:border-white/50 focus-visible:ring-1 focus-visible:ring-white/30 text-sm transition-all"
+                  className="h-11 rounded-xl bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-ring text-sm transition-all"
                   {...register("title")}
                 />
 
                 {errors.title && (
-                  <p className="text-xs text-rose-400 font-medium">{errors.title.message}</p>
+                  <p className="text-xs text-rose-500 font-medium">{errors.title.message}</p>
                 )}
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-sm font-semibold text-white">
-                  <FileText className="h-4 w-4 text-zinc-300" />
+                <Label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
                   <span>Deskripsi</span>
-                  <span className="text-xs font-normal text-zinc-400">(Opsional)</span>
+                  <span className="text-xs font-normal text-muted-foreground">(Opsional)</span>
                 </Label>
 
                 <Textarea
                   placeholder="Tambahkan detail, catatan, atau checklist tugas di sini..."
                   rows={3}
-                  className="min-h-24 resize-none rounded-xl bg-background/70 border-border/80 text-white placeholder:text-zinc-500 focus-visible:outline-none focus-visible:border-white/50 focus-visible:ring-1 focus-visible:ring-white/30 text-sm transition-all"
+                  className="min-h-24 resize-none rounded-xl bg-background border-border text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-ring text-sm transition-all"
                   {...register("description")}
                 />
               </div>
@@ -242,22 +242,22 @@ export default function TaskModal({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Date */}
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <CalendarDays className="h-4 w-4 text-zinc-300" />
+                  <Label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
                     <span>Tenggat Waktu</span>
                   </Label>
 
                   <Input
                     type="date"
-                    className="h-11 rounded-xl bg-background/70 border-border/80 text-white [color-scheme:dark] focus-visible:outline-none focus-visible:border-white/50 focus-visible:ring-1 focus-visible:ring-white/30 text-sm transition-all"
+                    className="h-11 rounded-xl bg-background border-border text-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-ring text-sm transition-all"
                     {...register("due_date")}
                   />
                 </div>
 
                 {/* Category */}
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <Tag className="h-4 w-4 text-zinc-300" />
+                  <Label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
                     <span>Kategori</span>
                   </Label>
 
@@ -270,20 +270,20 @@ export default function TaskModal({
                       })
                     }
                   >
-                    <SelectTrigger className="h-11 rounded-xl bg-background/70 border-border/80 text-white focus-visible:outline-none focus-visible:border-white/50 focus-visible:ring-1 focus-visible:ring-white/30 text-sm w-full transition-all">
+                    <SelectTrigger className="h-11 rounded-xl bg-background border-border text-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-ring text-sm w-full transition-all">
                       <SelectValue placeholder="Pilih kategori" />
                     </SelectTrigger>
 
-                    <SelectContent className="bg-popover border-border/80 text-white shadow-2xl rounded-xl p-1.5">
+                    <SelectContent className="bg-popover border-border text-popover-foreground shadow-2xl rounded-xl p-1.5">
                       {TASK_CATEGORY_OPTIONS.map(option => (
                         <SelectItem
                           key={option.value}
                           value={option.value}
-                          className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white cursor-pointer py-2 rounded-lg transition-colors"
+                          className="text-popover-foreground hover:bg-muted focus:bg-muted focus:text-foreground cursor-pointer py-2 rounded-lg transition-colors"
                         >
                           <div className="flex items-center gap-2.5">
                             <span className={cn("size-2 rounded-full shrink-0", option.dotColor)} />
-                            <span className="font-medium text-white">{option.label}</span>
+                            <span className="font-medium text-foreground">{option.label}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -293,28 +293,28 @@ export default function TaskModal({
               </div>
 
               {/* Google Calendar Sync Indicator */}
-              <div className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/30 p-3.5 transition-all">
+              <div className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/40 p-3.5 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
-                    <CalendarDays className="size-4 text-white" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <CalendarDays className="size-4 text-primary" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-white">
+                    <span className="text-xs font-semibold text-foreground">
                       Sinkronkan ke Google Calendar
                     </span>
-                    <span className="text-[11px] text-zinc-400">
+                    <span className="text-[11px] text-muted-foreground">
                       Event otomatis dibuat di Google Calendar saat tanggal tenggat diisi
                     </span>
                   </div>
                 </div>
-                <span className="rounded-full border border-[#A3BE8C]/40 bg-[#A3BE8C]/15 px-2.5 py-0.5 text-[10px] font-semibold text-[#A3BE8C]">
+                <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-[#A3BE8C] dark:border-[#A3BE8C]/40 dark:bg-[#A3BE8C]/15">
                   Otomatis
                 </span>
               </div>
 
               {/* Server error */}
               {submitError && (
-                <p role="alert" className="text-sm text-[#BF616A] font-medium">
+                <p role="alert" className="text-sm text-rose-500 font-medium">
                   {submitError}
                 </p>
               )}
@@ -327,7 +327,7 @@ export default function TaskModal({
                     variant="ghost"
                     disabled={isPending}
                     onClick={() => setDeleteDialogOpen(true)}
-                    className="text-[#BF616A] hover:bg-[#BF616A]/15 hover:text-[#BF616A] rounded-xl h-10 px-3.5 text-xs font-medium cursor-pointer"
+                    className="text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 dark:text-[#BF616A] dark:hover:bg-[#BF616A]/15 dark:hover:text-[#BF616A] rounded-xl h-10 px-3.5 text-xs font-medium cursor-pointer"
                   >
                     <Trash2 className="mr-1.5 h-4 w-4" />
                     Hapus tugas
@@ -342,7 +342,7 @@ export default function TaskModal({
                     variant="outline"
                     disabled={isPending}
                     onClick={() => onOpenChange(false)}
-                    className="flex-1 sm:flex-initial rounded-xl h-10 px-4 text-sm font-medium border-border/80 text-zinc-300 hover:text-white hover:bg-white/10 cursor-pointer"
+                    className="flex-1 sm:flex-initial rounded-xl h-10 px-4 text-sm font-medium border-border text-foreground hover:bg-muted cursor-pointer"
                   >
                     Batal
                   </Button>
@@ -350,7 +350,7 @@ export default function TaskModal({
                   <Button
                     type="submit"
                     disabled={isPending}
-                    className="flex-1 sm:flex-initial rounded-xl h-10 px-6 text-sm font-bold bg-[#88C0D0] text-[#2E3440] hover:bg-[#8FBCBB] transition-all shadow-xs active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                    className="flex-1 sm:flex-initial rounded-xl h-10 px-6 text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-xs active:scale-[0.98] cursor-pointer disabled:opacity-50"
                   >
                     {isSubmitting
                       ? "Menyimpan..."
@@ -369,8 +369,8 @@ export default function TaskModal({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="rounded-2xl border border-border/80 p-0 overflow-hidden bg-card text-card-foreground shadow-2xl">
           <AlertDialogHeader className="px-6 py-5 border-b border-border/50 bg-card">
-            <AlertDialogTitle className="text-xl font-bold text-white">Hapus Tugas</AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-300 text-sm mt-1">
+            <AlertDialogTitle className="text-xl font-bold text-foreground">Hapus Tugas</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground text-sm mt-1">
               Apakah Anda yakin ingin menghapus tugas &quot;{task?.title}&quot;? Tindakan ini
               tidak dapat dibatalkan.
             </AlertDialogDescription>
@@ -378,7 +378,7 @@ export default function TaskModal({
           <AlertDialogFooter className="px-6 py-4 bg-muted/20 flex gap-2">
             <AlertDialogCancel
               disabled={isDeleting}
-              className="rounded-xl border-border/80 text-zinc-300 hover:text-white hover:bg-white/10"
+              className="rounded-xl border-border text-foreground hover:bg-muted"
             >
               Batal
             </AlertDialogCancel>
@@ -388,7 +388,7 @@ export default function TaskModal({
                 e.preventDefault(); // tahan dialog tetap terbuka sampai proses hapus selesai
                 handleDelete();
               }}
-              className="rounded-xl bg-[#BF616A] hover:bg-[#BF616A]/90 text-white font-medium border-0"
+              className="rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-medium border-0 cursor-pointer"
             >
               {isDeleting ? "Menghapus..." : "Hapus"}
             </AlertDialogAction>

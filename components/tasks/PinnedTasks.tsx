@@ -32,18 +32,18 @@ export default function PinnedTasks({ className }: PinnedTasksProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-xs",
+        "flex flex-col overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/60 px-4 py-3 bg-muted/30">
+      <div className="flex items-center justify-between border-b border-border/70 px-4 py-3 bg-muted/40">
         <div className="flex items-center gap-2">
-          <Pin className="size-4 text-[#EBCB8B] fill-[#EBCB8B]/20" />
+          <Pin className="size-4 text-amber-600 dark:text-[#EBCB8B] fill-amber-500/20 dark:fill-[#EBCB8B]/20" />
           <h3 className="text-sm font-bold text-foreground">Tugas Disematkan</h3>
         </div>
         {!isLoading && (
-          <span className="flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full bg-muted border border-border/70 text-xs font-mono font-semibold text-muted-foreground tabular-nums">
+          <span className="flex h-5 min-w-5 px-1.5 items-center justify-center rounded-full bg-muted border border-border/80 text-xs font-mono font-semibold text-muted-foreground tabular-nums">
             {tasks.length}
           </span>
         )}
@@ -113,18 +113,18 @@ function PinnedItem({
   const progress = Math.min(100, Math.max(0, task.progress));
 
   return (
-    <li className="group rounded-xl border border-border/60 bg-muted/20 p-3 transition-all hover:bg-muted/40 hover:border-border">
+    <li className="group rounded-xl border border-border/70 bg-card hover:bg-muted/40 p-3 transition-all hover:border-border">
       {/* Title & Actions */}
       <div className="flex min-w-0 items-start justify-between gap-2 pb-2">
         <div className="flex items-start gap-2 min-w-0 flex-1">
           <button
             type="button"
             onClick={onToggleComplete}
-            className="mt-0.5 text-muted-foreground hover:text-[#A3BE8C] transition-colors cursor-pointer shrink-0"
+            className="mt-0.5 text-muted-foreground hover:text-emerald-600 dark:hover:text-[#A3BE8C] transition-colors cursor-pointer shrink-0"
             title={isDone ? "Tandai belum selesai" : "Tandai selesai"}
           >
             {isDone ? (
-              <Check className="size-4 text-[#A3BE8C]" />
+              <Check className="size-4 text-emerald-600 dark:text-[#A3BE8C]" />
             ) : (
               <CheckCircle2 className="size-4" />
             )}
@@ -158,7 +158,7 @@ function PinnedItem({
             <span
               className={cn("size-1.5 shrink-0 rounded-full", cat.dot)}
             />
-            <span className="truncate text-[11px] font-medium text-muted-foreground">{cat.label}</span>
+            <span className="truncate text-[11px] font-semibold text-foreground/80">{cat.label}</span>
           </span>
 
           {dueDate && (
@@ -166,9 +166,9 @@ function PinnedItem({
               className={cn(
                 "flex shrink-0 items-center gap-1 text-[11px] font-medium",
                 isOverdue
-                  ? "text-[#BF616A]"
+                  ? "text-rose-600 dark:text-[#BF616A] font-semibold"
                   : isDone
-                    ? "text-[#A3BE8C]"
+                    ? "text-emerald-600 dark:text-[#A3BE8C]"
                     : "text-muted-foreground"
               )}
             >
@@ -180,11 +180,11 @@ function PinnedItem({
 
         {/* Progress */}
         <div className="flex items-center gap-2">
-          <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted/60">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
             <div
               className={cn(
                 "h-full rounded-full transition-[width] duration-300",
-                isDone ? "bg-[#A3BE8C]" : "bg-[#88C0D0]"
+                isDone ? "bg-emerald-600 dark:bg-[#A3BE8C]" : "bg-primary dark:bg-[#88C0D0]"
               )}
               style={{ width: `${progress}%` }}
             />

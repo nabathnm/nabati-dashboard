@@ -33,15 +33,15 @@ export default function TaskViewToggle({
   };
 
   return (
-    <div className="inline-flex items-center rounded-xl border border-border/70 bg-muted/40 p-1 shrink-0">
+    <div className="inline-flex items-center rounded-xl border border-border/80 bg-muted/50 p-1 shrink-0">
       <button
         type="button"
         onClick={() => handleSelect("calendar")}
         className={cn(
-          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
+          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-all cursor-pointer",
           view === "calendar"
-            ? "bg-card text-[#5E81AC] dark:text-[#88C0D0] font-semibold shadow-xs border border-border/80 dark:border-[#88C0D0]/30"
-            : "text-muted-foreground hover:text-foreground"
+            ? "bg-card text-primary font-bold shadow-xs border border-border"
+            : "text-muted-foreground hover:text-foreground font-medium"
         )}
       >
         <CalendarDays className="size-3.5" />
@@ -52,10 +52,10 @@ export default function TaskViewToggle({
         type="button"
         onClick={() => handleSelect("list")}
         className={cn(
-          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer",
+          "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-all cursor-pointer",
           view === "list"
-            ? "bg-card text-[#5E81AC] dark:text-[#88C0D0] font-semibold shadow-xs border border-border/80 dark:border-[#88C0D0]/30"
-            : "text-muted-foreground hover:text-foreground"
+            ? "bg-card text-primary font-bold shadow-xs border border-border"
+            : "text-muted-foreground hover:text-foreground font-medium"
         )}
       >
         <LayoutList className="size-3.5" />

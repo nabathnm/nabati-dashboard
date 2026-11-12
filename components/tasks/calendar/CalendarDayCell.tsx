@@ -53,11 +53,11 @@ export default function CalendarDayCell({
         }
       }}
       className={cn(
-        "min-h-32 p-2.5 border-r border-b border-border/40 relative group transition-colors cursor-pointer",
+        "min-h-32 p-2.5 border-r border-b border-border/70 relative group transition-colors cursor-pointer",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:z-10",
         !isCurrentMonth
-          ? "bg-card/20 text-muted-foreground/40"
-          : "bg-card/70 hover:bg-card/90"
+          ? "bg-muted/30 text-muted-foreground/40"
+          : "bg-card hover:bg-muted/20"
       )}
       onClick={() => onDateClick(day)}
     >
@@ -66,9 +66,9 @@ export default function CalendarDayCell({
           className={cn(
             "text-xs font-mono font-medium size-6 flex items-center justify-center rounded-lg transition-colors",
             isTodayDate
-              ? "bg-[#88C0D0] text-[#2E3440] font-bold shadow-xs ring-2 ring-[#88C0D0]/30"
+              ? "bg-primary text-primary-foreground font-bold shadow-xs ring-2 ring-primary/30"
               : isCurrentMonth
-                ? "text-muted-foreground group-hover:text-foreground"
+                ? "text-foreground font-semibold group-hover:text-primary"
                 : "text-muted-foreground/40"
           )}
         >

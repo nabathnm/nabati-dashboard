@@ -38,7 +38,7 @@ export default function TaskFiltersComponent({
           })
         }
       >
-        <SelectTrigger className="h-9 w-full xl:w-32 rounded-xl text-xs bg-muted/30 border-border/70">
+        <SelectTrigger className="h-9 w-full xl:w-32 rounded-xl text-xs bg-background border-border text-foreground">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
 
@@ -58,7 +58,7 @@ export default function TaskFiltersComponent({
           })
         }
       >
-        <SelectTrigger className="h-9 w-full xl:w-36 rounded-xl text-xs bg-muted/30 border-border/70">
+        <SelectTrigger className="h-9 w-full xl:w-36 rounded-xl text-xs bg-background border-border text-foreground">
           <SelectValue placeholder="Kategori" />
         </SelectTrigger>
 

@@ -27,7 +27,7 @@ export const categoryStyles: Record<TaskCategory, CategoryStyle> = {
   Organisasi: {
     label: "Organisasi",
     bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900",
-    color: "text-amber-700 dark:text-amber-300",
+    color: "text-amber-800 dark:text-amber-300",
     dot: "bg-amber-500",
   },
   Praktikum: {
