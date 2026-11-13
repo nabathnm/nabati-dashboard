@@ -26,7 +26,7 @@ export default function Header() {
   const pageTitle = getPageTitle(pathname);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-border/70 bg-background/95 px-4 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-md sm:px-6">
       {/* Sisi Kiri: Mobile Hamburger + Brand / Desktop Sidebar Trigger + Breadcrumb */}
       <div className="flex items-center gap-3 min-w-0">
         {/* Tombol Hamburger Khusus Layar Mobile */}

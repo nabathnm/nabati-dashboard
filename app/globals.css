@@ -192,7 +192,7 @@ body {
   --sidebar-primary-foreground: #2e3440; /* nord0 */
   --sidebar-accent: #3b4252; /* nord1 */
   --sidebar-accent-foreground: #eceff4; /* nord6 */
-  --sidebar-border: #3b4252; /* nord1 */
+  --sidebar-border: #434c5e; /* nord2: matched to --border */
   --sidebar-ring: #88c0d0; /* nord8 */
 
   /* Charts */

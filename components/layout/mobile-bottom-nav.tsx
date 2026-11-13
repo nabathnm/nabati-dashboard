@@ -42,7 +42,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Navigasi Bawah Mobile"
-      className="fixed bottom-0 inset-x-0 z-40 block md:hidden border-t border-border/80 bg-background/95 backdrop-blur-lg shadow-lg pb-[max(env(safe-area-inset-bottom),0.35rem)]"
+      className="fixed bottom-0 inset-x-0 z-40 block md:hidden border-t border-border bg-background/95 backdrop-blur-lg shadow-lg pb-[max(env(safe-area-inset-bottom),0.35rem)]"
     >
       <div className="flex h-15 items-center justify-around px-1">
         {NAV_ITEMS.map((item) => {

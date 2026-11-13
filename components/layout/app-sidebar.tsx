@@ -113,13 +113,13 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300"
+      className="border-r border-border bg-sidebar text-sidebar-foreground transition-all duration-300"
     >
       {/* ==================================================================== */}
       {/* HEADER: CLEAN MINIMALIST BRAND & TOGGLE                              */}
       {/* ==================================================================== */}
-      <SidebarHeader className="border-b border-sidebar-border/60 p-3">
-        <div className="flex items-center justify-between gap-2">
+      <SidebarHeader className="h-14 flex flex-row items-center justify-between border-b border-border px-3.5 py-0 group-data-[collapsible=icon]:px-2">
+        <div className="flex w-full items-center justify-between gap-2 group-data-[collapsible=icon]:justify-center">
           <Link
             href="/dashboard"
             onClick={handleLinkClick}
@@ -149,7 +149,7 @@ export function AppSidebar() {
           </button>
 
           {/* Minimalist Sidebar Toggle pada Desktop */}
-          <SidebarTrigger className="hidden md:flex size-7 rounded-md text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors" />
+          <SidebarTrigger className="hidden md:flex size-7 rounded-md text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors group-data-[collapsible=icon]:hidden" />
         </div>
       </SidebarHeader>
 
@@ -241,7 +241,7 @@ export function AppSidebar() {
       {/* ==================================================================== */}
       {/* FOOTER: CLEAN USER INFO, SETTINGS & LOGOUT                           */}
       {/* ==================================================================== */}
-      <SidebarFooter className="border-t border-sidebar-border/60 p-2 space-y-1">
+      <SidebarFooter className="border-t border-border p-2 space-y-1">
         {/* Simple User Badge */}
         {userEmail && (
           <div className="group-data-[collapsible=icon]:hidden px-2.5 py-1.5 flex items-center gap-2 rounded-lg">
